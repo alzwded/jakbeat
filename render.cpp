@@ -66,8 +66,6 @@ std::map<std::string, std::vector<float>> LoadData(File& f)
             wav.resize(len / sizeof(int16_t));
             int16_t* shorts = (int16_t*)sdlWavData;
             for(size_t i = 0; i < len/sizeof(int16_t); ++i) {
-				//int16_t thing = (sdlWavData[2 * i] << 8) | sdlWavData[2 * i + 1];
-				//wav[i] = (float)thing / (float)0x7FFF;
                 wav[i] = (float)shorts[i]/(float)0x7FFF;
             }
         } else {
@@ -105,9 +103,9 @@ void Render(File f, std::string filename)
                 size_t sampSize = mydata.size();
                 size_t toCopy = std::min(sampSize, numSamplesPerBeat);
                 auto volume = (float)f.samples[beat.first].volume / 100.f;
-				for (size_t i = 0; i < toCopy; ++i) {
-					ff[i] += gain * mydata[i] * volume;
-				}
+		for (size_t i = 0; i < toCopy; ++i) {
+			ff[i] += gain * mydata[i] * volume;
+		}
             }
             std::for_each(ff.begin(), ff.end(), [](float& f) {
                         f = tanhf(f);
