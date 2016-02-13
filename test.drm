@@ -1,0 +1,22 @@
+[WHO]
+kick = (
+    path = kick.wav
+    volume = 50
+)
+snare = (
+    path = snare.wav
+    volume = 50
+)
+
+[WHAT]
+Output = (A1 A1 A2 A1)
+A1 = ( bpm = 240 )
+A2 = ( bpm = 480 )
+
+[A1]
+kick =  !...!!.!
+snare = ..-...!.
+
+[A2]
+kick =  !!!!....
+snare = ....!-!-
