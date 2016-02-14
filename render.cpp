@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <numeric>
 #include <utility>
 #include <iterator>
+#include <type_traits>
 
 std::map<std::string, std::vector<float>> LoadData(File& f)
 {
@@ -79,9 +80,130 @@ std::map<std::string, std::vector<float>> LoadData(File& f)
     return std::move(data);
 }
 
-void Render(File f, std::string filename)
+#define RenderNew Render
+
+void RenderNew(File f, std::string filename)
 {
     std::map<std::string, std::vector<float>> data = LoadData(f);
+    std::map<std::string, std::pair<std::vector<float>, std::vector<float>>> unmixed;
+    size_t end = 0;
+
+    for(auto&& track: f.samples) {
+        size_t i = 0;
+        auto&& leftData = unmixed[track.first].first;
+        auto&& rightData = unmixed[track.first].second;
+        float gain = 0.f;
+        float volume = (float)track.second.volume / 100.f;
+        auto&& mydata = data[track.first];
+        std::remove_reference<decltype(mydata)>::type::iterator ptr = mydata.end();
+
+        for(auto&& name: f.output) {
+            auto&& phrase = f.phrases[name];
+            size_t numSamplesPerBeat = 44100 * 60 / phrase.bpm;
+            size_t numBeats = std::accumulate(
+                    phrase.beats.begin(), phrase.beats.end(), (size_t)0,
+                    [](size_t a, decltype(phrase.beats)::value_type b) -> size_t {
+                        return std::max(a, b.second.size());
+                    }
+                    );
+            size_t newestI = i + numBeats * numSamplesPerBeat;
+
+            auto&& found = phrase.beats.find(track.first);
+            if(found == phrase.beats.end()) {
+				for (size_t k = 0; k < numSamplesPerBeat * numBeats && ptr != mydata.end(); ++k, ++ptr) {
+						while (i + k >= leftData.size()) leftData.emplace_back();
+						while (i + k >= rightData.size()) rightData.emplace_back();
+						leftData[i + k] = gain * (*ptr) * volume;
+						rightData[i + k] = gain * (*ptr) * volume;
+				}
+                auto startLeft = leftData.size();
+                auto startRight = rightData.size();
+                leftData.resize(i + numSamplesPerBeat * numBeats);
+                rightData.resize(i + numSamplesPerBeat * numBeats);
+                i += numSamplesPerBeat * numBeats;
+                for(auto j = startLeft; j < i; ++j) {
+                    leftData[j] = 0.f;
+                }
+                for(auto j = startRight; j < i; ++j) {
+                    rightData[j] = 0.f;
+                }
+            } else {
+                auto&& beats = phrase.beats[track.first];
+
+                for(auto&& beat: beats) {
+                    if(beat == File::Beat::REST) {
+                        for(size_t k = 0;
+                                k < numSamplesPerBeat && ptr != mydata.end();
+                                ++k, ++ptr)
+                        {
+                            while(i + k >= leftData.size()) leftData.emplace_back();
+                            while(i + k >= rightData.size()) rightData.emplace_back();
+                            leftData[i + k] = gain * (*ptr) * volume;
+                            rightData[i + k] = gain * (*ptr) * volume;
+                        }
+                        i += numSamplesPerBeat;
+                        continue;
+                    } else if(beat == File::Beat::HALF) {
+                        gain = 0.5f;
+                    } else {
+                        gain = 1.f;
+                    }
+                    ptr = mydata.begin();
+                    for(size_t k = 0;
+                            k < numSamplesPerBeat && ptr != mydata.end();
+                            ++k, ++ptr)
+                    {
+                        while(i + k >= leftData.size()) leftData.emplace_back();
+                        while(i + k >= rightData.size()) rightData.emplace_back();
+                        leftData[i + k] = gain * (*ptr) * volume;
+                        rightData[i + k] = gain * (*ptr) * volume;
+                    }
+                    i += numSamplesPerBeat;
+                }
+            }
+
+            i = newestI;
+        }
+    }
+
+    std::vector<float> left;
+    std::vector<float> right;
+    size_t maxLen = 0;
+    maxLen = std::accumulate(unmixed.begin(), unmixed.end(), maxLen, [](size_t a, decltype(unmixed)::value_type const& b) -> size_t {
+                return std::max(a, std::max(b.second.first.size(), b.second.second.size()));
+            });
+    left.resize(maxLen);
+    right.resize(maxLen);
+
+    for(auto&& track: unmixed) {
+        for(size_t i = 0; i < track.second.first.size(); ++i) {
+            left[i] += track.second.first[i];
+        }
+        for(size_t i = 0; i < track.second.second.size(); ++i) {
+            right[i] += track.second.second[i];
+        }
+    }
+
+    std::for_each(left.begin(), left.end(), [](float& f) { f = tanhf(f); });
+    std::for_each(right.begin(), right.end(), [](float& f) { f = tanhf(f); });
+
+    while(left.size() < right.size()) left.emplace_back();
+    while(right.size() < left.size()) right.emplace_back();
+
+    std::vector<float> outWAV;
+
+    for(size_t i = 0; i < left.size(); ++i) {
+        outWAV.push_back(left[i]);
+        outWAV.push_back(right[i]);
+    }
+
+    extern void wav_write_file(std::string const&, std::vector<float> const&, unsigned, unsigned);
+    wav_write_file(filename, outWAV, 44100, 2);
+}
+
+void RenderOld(File f, std::string filename)
+{
+    auto&& data = LoadData(f);
     std::vector<float> outWAV;
 
     for(auto&& name: f.output) {
@@ -116,6 +238,6 @@ void Render(File f, std::string filename)
         }
     }
 
-    extern void wav_write_file(std::string const&, std::vector<float> const&, unsigned);
-    wav_write_file(filename, outWAV, 44100);
+    extern void wav_write_file(std::string const&, std::vector<float> const&, unsigned, unsigned);
+    wav_write_file(filename, outWAV, 44100, 1);
 }

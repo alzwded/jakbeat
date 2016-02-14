@@ -13,11 +13,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdexcept>
 #include <exception>
 
-static void wav_write_header(FILE* f, unsigned samplPerSec, unsigned numSamples)
+static void wav_write_header(FILE* f, unsigned samplPerSec, unsigned numSamples, unsigned numChannels)
 {
     // for PCM: M = 2
 #define M 4
-#define NC 1
+#define NC numChannels
 #define NS numSamples
 #define F samplPerSec
 #define WAVE_FORMAT_PCM 0x0001
@@ -77,7 +77,7 @@ static void wav_write_samples(FILE* f, std::vector<float> const& samples)
     }
 }
 
-void wav_write_file(std::string const& filename, std::vector<float> const& samples, unsigned samples_per_second)
+void wav_write_file(std::string const& filename, std::vector<float> const& samples, unsigned samples_per_second, unsigned numChannels)
 {
     FILE* f = fopen(filename.c_str(), "wb");
     if(!f) {
@@ -86,7 +86,7 @@ void wav_write_file(std::string const& filename, std::vector<float> const& sampl
 
     try {
         clearerr(f);
-        wav_write_header(f, samples_per_second, samples.size());
+        wav_write_header(f, samples_per_second, samples.size() / numChannels, numChannels);
         wav_write_samples(f, samples);
     } catch(std::exception e) {
         fclose(f);
