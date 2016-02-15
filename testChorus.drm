@@ -1,0 +1,74 @@
+[WHO]
+kick = (
+    path = kick.wav
+    volume = 80
+)
+snare = (
+    path = snare.wav
+    volume = 80
+    stereo = pan
+    params = (pan=-50)
+)
+crash = (
+    path = crash.wav
+    volume = 50
+    stereo = pan
+    params = (pan = 70)
+)
+snareC = (
+    path = snare.wav
+    volume = 80
+    stereo = chorus
+    params = (
+        pan = -50
+        speed = 40
+        depth = 70
+    )
+)
+crashC = (
+    path = crash.wav
+    volume = 50
+    stereo = chorus
+    params = (
+        pan = 70
+        amount = 60
+    )
+)
+
+[WHAT]
+Output = (A1 A1b A2 A3 A4 A5 A1)
+A1 = ( bpm = 240 )
+A1b = ( bpm = 240 )
+A2 = ( bpm = 480 )
+A3 = ( bpm = 480 )
+A4 = ( bpm = 480 )
+A5 = ( bpm = 960 )
+
+[A1]
+kick =  !...!!.!
+snare = ..-...!.
+crash = -.......
+crashC= .......-
+
+[A1b]
+kick =  !...!!.!
+snareC= ..-...!.
+crash = .......-
+crashC= -.......
+
+[A2]
+kick =  !!!!....
+snare = ....!-..
+snareC= ......!-
+
+[A3]
+kick =  ..!.!.!.
+crashC= !.......
+
+[A4]
+snare  = !-!-!-!-........
+snareC = ........!-!-!-!-
+
+[A5]
+snare  = !---!---!---!---................
+snareC = ................!---!---!---!---
