@@ -46,10 +46,11 @@ static void AddWho(File* f, Section* s)
             } else if(o->name.compare("stereo") == 0) {
                 auto&& val = o->value;
                 assert(val->GetType() == IValue::SCALAR);
-                sample.effect.name = ((Scalar*)val)->value;
+                sample.effect->name = ((Scalar*)val)->value;
             } else if(o->name.compare("params") == 0) {
                 auto&& val = o->value;
-                sample.effect.params.reset(val->Clone());
+                printf("!!!!!!!!!!!!!!!!%d\n", 12);
+                sample.effect->params.reset(val->Clone());
             } else {
                 assert(o->name == "volume" || o->name == "path" || o->name == "stereo" || o->name == "params");
             }

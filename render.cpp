@@ -111,8 +111,9 @@ void RenderNew(File f, std::string filename)
 				for (size_t k = 0; k < numSamplesPerBeat * numBeats && ptr != mydata.end(); ++k, ++ptr) {
 						while (i + k >= leftData.size()) leftData.emplace_back();
 						while (i + k >= rightData.size()) rightData.emplace_back();
-						leftData[i + k] = gain * (*ptr) * volume;
-						rightData[i + k] = gain * (*ptr) * volume;
+                        auto data = track.second.effect->apply(gain * (*ptr) * volume);
+						leftData[i + k] = data.data[0];
+						rightData[i + k] = data.data[1];
 				}
                 auto startLeft = leftData.size();
                 auto startRight = rightData.size();
@@ -136,8 +137,9 @@ void RenderNew(File f, std::string filename)
                         {
                             while(i + k >= leftData.size()) leftData.emplace_back();
                             while(i + k >= rightData.size()) rightData.emplace_back();
-                            leftData[i + k] = gain * (*ptr) * volume;
-                            rightData[i + k] = gain * (*ptr) * volume;
+                            auto data = track.second.effect->apply(gain * (*ptr) * volume);
+                            leftData[i + k] = data.data[0];
+                            rightData[i + k] = data.data[1];
                         }
                         i += numSamplesPerBeat;
                         continue;
@@ -153,8 +155,9 @@ void RenderNew(File f, std::string filename)
                     {
                         while(i + k >= leftData.size()) leftData.emplace_back();
                         while(i + k >= rightData.size()) rightData.emplace_back();
-                        leftData[i + k] = gain * (*ptr) * volume;
-                        rightData[i + k] = gain * (*ptr) * volume;
+                        auto data = track.second.effect->apply(gain * (*ptr) * volume);
+                        leftData[i + k] = data.data[0];
+                        rightData[i + k] = data.data[1];
                     }
                     i += numSamplesPerBeat;
                 }

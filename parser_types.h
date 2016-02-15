@@ -125,24 +125,20 @@ struct File
     {
         struct Effect {
             std::string name;
-            std::unique_ptr<IValue> params;
-
-            Effect(Effect const& other)
-            {
-                name = other.name;
-                if(other.params) params.reset(params->Clone());
-            }
+            std::shared_ptr<IValue> params;
+            std::function<stereo_sample_t(float)> apply;
+            std::function<StereoInstance*()> getInstance;
 
             Effect()
                 : params(nullptr)
                   , name("")
             {
-                getInstance = [this]() -> StereoInstance* {
+                this->apply = [this](float mono) -> stereo_sample_t {
                     auto instance = std::shared_ptr<StereoInstance>(NewStereoInstance(name, params.get()));
-                    getInstance = [instance]() -> StereoInstance* {
-                        return instance.get();
+                    this->apply = [instance](float mono) -> stereo_sample_t {
+                        return (*instance)(mono);
                     };
-                    return instance.get();
+                    return (*instance)(mono);
                 };
             }
 
@@ -151,14 +147,11 @@ struct File
                 auto inst = getInstance();
                 return (*inst)(mono);
             }
-
-        private:
-            std::function<StereoInstance*()> getInstance;
         };
 
         int volume;
         std::string path;
-        Effect effect;
+        std::shared_ptr<Effect> effect = new Effect(); // pointer because iterating over a map copies this whole thing (for some reason)
     };
 
     enum class Beat {

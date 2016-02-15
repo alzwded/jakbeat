@@ -16,7 +16,8 @@ TODO
   + [ ] stereo kit setup
 * [x] PCM flt 44.1khz output
   + [ ] live output
-  + [ ] stereo output
+  + [x] stereo output
+    - [ ] dynamically load plugins
 
 Input deck
 ==========

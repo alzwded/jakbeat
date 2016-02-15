@@ -25,7 +25,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stereo.h>
+#include <parser_types.h>
 #include <map>
+#include <assert.h>
 
 typedef struct {
     stereo_plugin_init_fn init;
@@ -33,18 +35,61 @@ typedef struct {
     stereo_plugin_dispose_fn dispose;
 } plugin_t;
 
-static stereo_state_t pan_init(IValue* params)
-{
-    return NULL;
+namespace {
+    struct pan_state
+    {
+        int pan;
+    };
 }
 
-static stereo_sample_t pan_fn(stereo_state_t state, float sample)
+static void pan_assign_params(pan_state* state, IValue* params)
 {
+    switch(params->GetType()) {
+    case IValue::SCALAR:
+        {
+            auto value = atoi(((Scalar*)params)->value.c_str());
+            state->pan = value;
+        };
+        break;
+    case IValue::OPTION:
+        {
+            auto o = (Option*)params;
+            if(o->name.compare("pan") == 0) {
+                return pan_assign_params(state, o->value);
+            }
+        };
+        break;
+    case IValue::LIST:
+        {
+            for(auto&& o: ((List*)params)->values) {
+                pan_assign_params(state, o);
+            }
+        };
+        break;
+    }
+}
+
+static stereo_state_t pan_init(IValue* params)
+{
+    auto state = (pan_state*)malloc(sizeof(pan_state));
+    state->pan = 0;
+    assert(params);
+    pan_assign_params(state, params);
+    return state;
+}
+
+static stereo_sample_t pan_fn(stereo_state_t pstate, float sample)
+{
+    auto state = (pan_state*)pstate;
+    if(state->pan < 0) return {sample, ((100 - abs(state->pan))/100.f) * sample};
+    else if(state->pan > 0) return {((100 - abs(state->pan))/100.f) * sample, sample};
     return {sample, sample};
 }
 
-static void pan_dispose(stereo_state_t state)
+static void pan_dispose(stereo_state_t pstate)
 {
+    auto state = (pan_state*)pstate;
+    free(state);
 }
 
 // TODO dynamic loading
@@ -55,7 +100,7 @@ static std::map<std::string, plugin_t> instanceMap{
 StereoInstance* NewStereoInstance(std::string name, IValue* params)
 {
     auto&& found = instanceMap.find(name);
-    if(found == instanceMap.end()) return nullptr;
+    if(found == instanceMap.end()) return new StereoInstance(new pan_state{0}, pan_fn, pan_dispose);
     auto&& plugin = found->second;
     auto state = plugin.init(params);
     return new StereoInstance(state, plugin.fn, plugin.dispose);

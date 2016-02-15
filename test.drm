@@ -6,10 +6,14 @@ kick = (
 snare = (
     path = snare.wav
     volume = 50
+    stereo = pan
+    params = (pan=-50)
 )
 crash = (
     path = crash.wav
     volume = 30
+    stereo = pan
+    params = (pan = 100)
 )
 
 [WHAT]
