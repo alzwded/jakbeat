@@ -101,7 +101,8 @@ struct Tokenizer
             if(feof(f)) break;
         }
         if(quoted) c = fgetc(f);
-        return {STRING, ss.str()};
+        //return {STRING, ss.str()}; // curly bracket form crashes msvc 18.00.21005.1
+        return Token(STRING, ss.str());
     }
 };
 
