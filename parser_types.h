@@ -28,18 +28,31 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include <map>
+#include <memory>
+#include <functional>
+#include <stereo.h>
 
 struct IValue
 {
     typedef enum {
         SCALAR, LIST, OPTION
     } Type;
+    virtual IValue* Clone() = 0;
     virtual Type GetType() const = 0;
     virtual ~IValue() {}
 };
 
 struct List : IValue
 {
+    IValue* Clone() override
+    {
+        List* clone = new List();
+        for(auto&& v: values) {
+            clone->values.push_back(v->Clone());
+        }
+        return clone;
+    }
+
     IValue::Type GetType() const override { return IValue::LIST; }
     std::vector<IValue*> values;
 
@@ -51,6 +64,7 @@ struct List : IValue
 
 struct Scalar : IValue
 {
+    IValue* Clone() override { return new Scalar(value.c_str()); }
     IValue::Type GetType() const override { return IValue::SCALAR; }
     std::string value;
     Scalar(char* s)
@@ -58,10 +72,12 @@ struct Scalar : IValue
         value.assign(s);
         free(s);
     }
+    Scalar(char const* s) { value.assign(s); }
 };
 
 struct Option : IValue
 {
+    IValue* Clone() override { return new Option(name.c_str(), value->Clone()); }
     IValue::Type GetType() const override { return IValue::OPTION; }
     std::string name;
     IValue* value;
@@ -69,6 +85,11 @@ struct Option : IValue
     {
         name.assign(name_);
         free(name_);
+        value = value_;
+    }
+    Option(char const* name_, IValue* value_)
+    {
+        name.assign(name_);
         value = value_;
     }
     virtual ~Option()
@@ -102,8 +123,42 @@ struct File
 
     struct Sample
     {
+        struct Effect {
+            std::string name;
+            std::unique_ptr<IValue> params;
+
+            Effect(Effect const& other)
+            {
+                name = other.name;
+                if(other.params) params.reset(params->Clone());
+            }
+
+            Effect()
+                : params(nullptr)
+                  , name("")
+            {
+                getInstance = [this]() -> StereoInstance* {
+                    auto instance = std::shared_ptr<StereoInstance>(NewStereoInstance(name, params.get()));
+                    getInstance = [instance]() -> StereoInstance* {
+                        return instance.get();
+                    };
+                    return instance.get();
+                };
+            }
+
+            stereo_sample_t operator()(float mono)
+            {
+                auto inst = getInstance();
+                return (*inst)(mono);
+            }
+
+        private:
+            std::function<StereoInstance*()> getInstance;
+        };
+
         int volume;
         std::string path;
+        Effect effect;
     };
 
     enum class Beat {

@@ -14,7 +14,7 @@ LIBS = SDL2.lib
 
 .SUFFIXES:.cpp .hpp .h .obj
 
-OBJS = parser.obj tokenizer.obj file.obj render.obj wave.obj
+OBJS = parser.obj tokenizer.obj file.obj render.obj wave.obj stereo.obj
 
 jakbeat.exe: $(OBJS) SDL2.dll
 	$(LD) $(LDOPTS) $(OBJS) $(LIBS)
