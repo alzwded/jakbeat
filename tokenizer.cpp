@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sstream>
 #include <vector>
 #include <functional>
+#include <assert.h>
 
 #include <parser.h>
 #include <parser_types.h>
@@ -108,10 +109,15 @@ struct Tokenizer
 
 int main(int argc, char* argv[])
 {
+    std::string fileName = "test.wav";
     for(int i = 1; i < argc; ++i) {
         if(strcmp(argv[i], "-v") == 0) {
             printf("jakbeat v%d\nCopyright Vlad Mesco 2016\n\n", VERSION);
             exit(0);
+        } else if(strcmp(argv[i], "-w") == 0) {
+            ++i;
+            assert(i < argc);
+            fileName.assign(argv[i]);
         }
     }
 
@@ -132,7 +138,7 @@ int main(int argc, char* argv[])
     } while(1);
     ParseFree(pParser, free);
 
-    Render(f, "test.wav");
+    Render(f, fileName);
 
     return 0;
 }
