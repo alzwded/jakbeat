@@ -51,6 +51,14 @@ namespace {
         float amount;
         float depth;
     };
+
+    struct reverb_state
+    {
+        int delay, pan, level, decay;
+        float lap1[512], lap2[512], lfb1[512], lfb2[512];
+        float rap1[512], rap2[512], rfb1[512], rfb2[512];
+        size_t head;
+    };
 }
 
 static void pan_assign_params(pan_state* state, IValue* params)
@@ -207,10 +215,104 @@ static void chorus_dispose(stereo_state_t pstate)
     free(pstate);
 }
 
+static stereo_state_t reverb_init(IValue* params)
+{
+    reverb_state* state = (reverb_state*)malloc(sizeof(reverb_state));
+    memset(state, 0, sizeof(reverb_state));
+    state->delay = 100;
+    state->pan = -50;
+    //state->level = 50;
+    state->level = 100;
+    //state->decay = 67;
+    state->decay = 1;
+    state->head = 0;
+    return state;
+}
+
+static stereo_sample_t reverb_fn(stereo_state_t pstate, float dry)
+{
+    reverb_state* state = (reverb_state*)pstate;
+
+    // compute reverb for left and for right
+    // so a double buffer; cross talk should exist
+    // left: dry + lwet[-1] + lwet[-3] + rwet[-4]
+    // right: dry + rwet[-1] + rwet[-3] + rwet[-4]
+    // left[0] = lgain*(dry + decay*left[-1] + decay*decay*left[-3]) + rgain*decay*right[-4]
+    // right[0] = rgain*(dry + decay*right[-2] + decay*decay*right[-4]) + lgain*decay*left[-5]
+    // no
+    //
+    // left: dry + AP_1 + AP_3 + FB_5 + FB_6
+    // right: dry + AP_2 + AP_4 + FB_6 + FB_7
+    // left: dry->AP_1->AP_3->FB_5->FB_7
+    // right: dry->AP_2->AP4->FB_6->FB_8
+
+    /*
+    ap1[0] = dry * lgain + ap1[0 - delay] * decay - dry * lgain * decay; 
+    ap3[0] = ap1[0] + ap3[0 - delay] * decay - ap1[0] * decay;
+    fb5[0] = ap3[0] + fb5[0 - delay] * decay;
+    fb7[0] = fb5[0] + fb7[0 - delay] * decay;
+    left = level * (fb5[head] + fb8[head]) + (1 - level) * lgain * dry;
+    left = level * (fb6[head] + fb7[head]) + (1 - level) * rgain * dry;
+
+    params: decay, delay (ap), level, pan
+    */
+
+    int delay = state->delay / 100.f * 512.f;
+    float decay = state->decay / 105.f;
+    float lgain = 1.0;
+    float rgain = 1.0;
+    if(state->pan < 0) {
+        rgain = (100.f - abs(state->pan)) / 100.f;
+    } else if(state->pan > 0) {
+        lgain = (100.f - abs(state->pan)) / 100.f;
+    }
+
+    state->lap1[state->head] = 0.6 * dry * lgain
+        + 0.5 * state->lap1[(state->head + 512 - delay) % 512] * decay
+        - 0.33 * dry * lgain * decay;
+    state->rap1[state->head] = 0.6 * dry * rgain
+        + 0.5 * state->lap1[(state->head + 512 - delay) % 512] * decay
+        - 0.33 * dry * rgain * decay;
+    state->lap2[state->head] = 0.6 * state->lap1[state->head]
+        + 0.5 * state->lap2[(state->head + 512 - delay) % 512] * decay
+        - 0.33 * state->lap1[state->head] * decay;
+    state->rap2[state->head] = 0.6 * state->rap1[state->head]
+        + 0.5 * state->rap2[(state->head + 512 - delay) % 512] * decay
+        - 0.33 * state->rap1[state->head] * decay;
+    
+#define RF1_DELAY 220
+#define RF2_DELAY 75
+
+    state->lfb1[state->head] = 0.6 * state->lap2[state->head]
+        + 0.5 * state->lfb1[(state->head + 512 - RF1_DELAY) % 512] * decay;
+    state->rfb1[state->head] = 0.6 * state->rap2[state->head]
+        + 0.5 * state->rfb1[(state->head + 512 - RF1_DELAY) % 512] * decay;
+
+    state->lfb2[state->head] = 0.6 * state->lfb1[state->head]
+        + 0.33 * state->lfb2[(state->head + 512 - RF2_DELAY) % 512] * decay
+        - 0.33 * state->rfb2[(state->head + 512 - RF1_DELAY) % 512] * decay;
+    state->rfb2[state->head] = 0.6 * state->rfb1[state->head]
+        + 0.33 * state->rfb2[(state->head + 512 - RF2_DELAY) % 512] * decay
+        - 0.33 * state->lfb2[(state->head + 512 - RF1_DELAY) % 512] * decay;
+
+    float left = (state->level/100.f) * state->lfb2[state->head] + (100.f - state->level) / 100.f * lgain * dry;
+    float right = (state->level/100.f) * state->rfb2[state->head] + (100.f - state->level) / 100.f * rgain * dry;
+
+    state->head = (state->head + 1) % 512;
+
+    return {left, right};
+}
+
+static void reverb_dispose(stereo_state_t state)
+{
+    free(state);
+}
+
 // TODO dynamic loading
 static std::map<std::string, plugin_t> instanceMap{
     { "pan", { pan_init, pan_fn, pan_dispose }},
-    { "chorus", { chorus_init, chorus_fn, chorus_dispose }}
+    { "chorus", { chorus_init, chorus_fn, chorus_dispose }},
+    { "reverb", { reverb_init, reverb_fn, reverb_dispose }}
 };
 
 StereoInstance* NewStereoInstance(std::string name, IValue* params)
