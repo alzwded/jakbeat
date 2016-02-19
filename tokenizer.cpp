@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sstream>
 #include <vector>
 #include <functional>
-#include <assert.h>
+#include <errorassert.h>
 
 #include <parser.h>
 #include <parser_types.h>
@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
             exit(0);
         } else if(strcmp(argv[i], "-w") == 0) {
             ++i;
-            assert(i < argc);
+            ASSERT(i < argc);
             fileName.assign(argv[i]);
         }
     }

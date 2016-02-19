@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <parser_types.h>
 #include <map>
 #include <SDL.h>
-#include <assert.h>
+#include <errorassert.h>
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -62,7 +62,10 @@ std::map<std::string, std::vector<float>> LoadData(File& f)
             fprintf(stderr, "SDL_LoadWAV failed: %s\n", SDL_GetError());
             abort();
         }
-        assert(desired.freq == 44100 && (desired.format == AUDIO_F32SYS || desired.format == AUDIO_F32 || desired.format == AUDIO_F32LSB || desired.format == AUDIO_S16LSB) && desired.channels == 1);
+        ASSERT(desired.freq == 44100 && (desired.format == AUDIO_F32SYS || desired.format == AUDIO_F32 || desired.format == AUDIO_F32LSB || desired.format == AUDIO_S16LSB) && desired.channels == 1,
+                "Expecting a mono sample at 44100Hz either in float32 format or signed 16bit little endian; got sample rate ", desired.freq,
+                ", channels ", desired.channels,
+                " and format code ", desired.format);
         if(desired.format == AUDIO_S16LSB) {
             wav.resize(len / sizeof(int16_t));
             int16_t* shorts = (int16_t*)sdlWavData;

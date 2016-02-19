@@ -24,35 +24,34 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <parser_types.h>
-#include <assert.h>
+#include <errorassert.h>
 #include <string.h>
 
 static void AddWho(File* f, Section* s)
 {
     for(auto&& o: s->options) {
         auto& sample = f->samples[o->name];
-        assert(o->value->GetType() == IValue::LIST);
+        ASSERT(o->value->GetType() == IValue::LIST, "Expecting a list of parameters for sample declaration ", o->name);
         for(auto&& o2: ((List*)o->value)->values) {
-            assert(o2->GetType() == IValue::OPTION);
+            ASSERT(o2->GetType() == IValue::OPTION, "Expecting key value pairs for ", o->name);
             Option* o = (Option*)o2;
             if(o->name.compare("path") == 0) {
                 auto&& val = o->value;
-                assert(val->GetType() == IValue::SCALAR);
+                ASSERT(val->GetType() == IValue::SCALAR, "Expecting path to be a string");
                 sample.path = ((Scalar*)val)->value;
             } else if(o->name.compare("volume") == 0) {
                 auto&& val = o->value;
-                assert(val->GetType() == IValue::SCALAR);
+                ASSERT(val->GetType() == IValue::SCALAR, "Expecting volume to be a scalar");
                 sample.volume = atoi(((Scalar*)val)->value.c_str());
             } else if(o->name.compare("stereo") == 0) {
                 auto&& val = o->value;
-                assert(val->GetType() == IValue::SCALAR);
+                ASSERT(val->GetType() == IValue::SCALAR, "Expecting stereo to be a scalar");
                 sample.effect->name = ((Scalar*)val)->value;
             } else if(o->name.compare("params") == 0) {
                 auto&& val = o->value;
-                printf("!!!!!!!!!!!!!!!!%d\n", 12);
                 sample.effect->params.reset(val->Clone());
             } else {
-                assert(o->name == "volume" || o->name == "path" || o->name == "stereo" || o->name == "params");
+                ASSERT(o->name == "volume" || o->name == "path" || o->name == "stereo" || o->name == "params", "Unknown parameter ", o->name);
             }
         }
     }
@@ -70,23 +69,23 @@ static void AddWhat(File* f, Section* s)
                 case IValue::LIST:
                     {
                         for(auto&& o: ((List*)v)->values) {
-                            assert(o->GetType() == IValue::SCALAR);
+                            ASSERT(o->GetType() == IValue::SCALAR, "Expecting a list of options");
                             f->output.push_back(((Scalar*)o)->value);
                         }
                     }
             }
         } else {
             auto& phrase = f->phrases[o->name];
-            assert(o->value->GetType() == IValue::LIST);
+            ASSERT(o->value->GetType() == IValue::LIST, "Expecting a list of options for ", o->name);
             for(auto& o2: ((List*)o->value)->values) {
-                assert(o2->GetType() == IValue::OPTION);
+                ASSERT(o2->GetType() == IValue::OPTION, "Expecting a list of options for ", o->name);
                 auto o = (Option*)o2;
                 auto name = o->name;
                 if(name.compare("bpm") == 0) {
-                    assert(o->value->GetType() == IValue::SCALAR);
+                    ASSERT(o->value->GetType() == IValue::SCALAR, "Expecting bpm to be a scalar");
                     phrase.bpm = atoi(((Scalar*)o->value)->value.c_str());
                 } else {
-                    assert(name == "bpm");
+                    ASSERT(name == "bpm", "Unknown parameter ", name);
                 }
             }
         }
@@ -117,13 +116,13 @@ static void AddBeats(File* f, Section* s)
                 case ' ':
                     break;
                 default:
-                    assert(c == '.' || c == '-' || c == '!');
+                    ASSERT(c == '.' || c == '-' || c == '!', "Unknown beat character ", c);
                     break;
                 }
             }
             break;
         default:
-            assert("Not implemented" == NULL);
+            ASSERT("Not implemented" == NULL);
             break;
         }
     }

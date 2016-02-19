@@ -25,10 +25,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 %include {
     #include <parser_types.h>
-    #include <assert.h>
     #include <stdlib.h>
     #include <stdio.h>
+    #include <errorassert.h>
     extern int tokenizer_lineno;
+
+    #define assert(X) ASSERT(X)
 }
 
 %parse_accept {

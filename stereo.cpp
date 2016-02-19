@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stereo.h>
 #include <parser_types.h>
 #include <map>
-#include <assert.h>
 
 typedef struct {
     stereo_plugin_init_fn init;
@@ -84,8 +83,7 @@ static stereo_state_t pan_init(IValue* params)
 {
     auto state = (pan_state*)malloc(sizeof(pan_state));
     state->pan = 0;
-    assert(params);
-    pan_assign_params(state, params);
+    if(params) pan_assign_params(state, params);
     return state;
 }
 
@@ -160,7 +158,7 @@ static stereo_state_t chorus_init(IValue* params)
     state->depth = 44100.f / 20.f;
     state->writeHead = 0;
     memset(state->buffer, 0, sizeof(state->buffer));
-    chorus_assign_params(state, params);
+    if(params) chorus_assign_params(state, params);
     return state;
 }
 
