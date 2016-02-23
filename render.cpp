@@ -133,7 +133,12 @@ void RenderNew(File f, std::string filename)
                 auto&& beats = phrase.beats[track.first];
 
                 for(auto&& beat: beats) {
-                    if(beat == File::Beat::REST) {
+                    if(beat == File::Beat::REST
+                            || beat == File::Beat::STOP) {
+                        if(beat == File::Beat::STOP) {
+                            ptr = mydata.end();
+                            gain = 0.f;
+                        }
                         for(size_t k = 0;
                                 k < numSamplesPerBeat && ptr != mydata.end();
                                 ++k, ++ptr)
@@ -148,9 +153,10 @@ void RenderNew(File f, std::string filename)
                         continue;
                     } else if(beat == File::Beat::HALF) {
                         gain = 0.5f;
-                    } else {
+                    } else if(beat == File::Beat::FULL) {
                         gain = 1.f;
                     }
+
                     ptr = mydata.begin();
                     for(size_t k = 0;
                             k < numSamplesPerBeat && ptr != mydata.end();

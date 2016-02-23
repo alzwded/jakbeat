@@ -110,13 +110,16 @@ static void AddBeats(File* f, Section* s)
                 case '!':
                     beats.push_back(File::Beat::FULL);
                     break;
+                case '_':    
+                    beats.push_back(File::Beat::STOP);
+                    break;
                 case 10:
                 case 13:
                 case '\t':
                 case ' ':
                     break;
                 default:
-                    ASSERT(c == '.' || c == '-' || c == '!', "Unknown beat character ", c);
+                    ASSERT(c == '.' || c == '-' || c == '!' || c == '_', "Unknown beat character ", c);
                     break;
                 }
             }

@@ -155,7 +155,7 @@ struct File
     };
 
     enum class Beat {
-        REST, HALF, FULL
+        REST, HALF, FULL, STOP
     };
 
     struct Phrase
