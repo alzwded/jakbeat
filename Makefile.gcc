@@ -23,16 +23,16 @@ tokenizer.cpp: parser.h
 
 parser.h: parser.cpp
 
-parser.cpp: parser.y
-	lemon parser.y
+parser.cpp: $(LEMONROOT)/lemon parser.y
+	$(LEMONROOT)/lemon parser.y
 	[ -f parser.cpp ] && rm -f parser.cpp || true
 	mv parser.c parser.cpp
 
 %.o: %.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
-#$(LEMONROOT)\lemon.exe: $(LEMONROOT)\lemon.c $(LEMONROOT)\lempar.c
-#	$(CC) /Fe:$(LEMONROOT)\lemon.exe $(LEMONROOT)\lemon.c
+$(LEMONROOT)/lemon: $(LEMONROOT)/lemon.c $(LEMONROOT)/lempar.c
+	$(CC) -o $(LEMONROOT)/lemon $(LEMONROOT)/lemon.c
 
 clean:
-	rm -f *.o jakbeat parser.cpp parser.out parser.h parser.c
+	rm -f *.o jakbeat parser.cpp parser.out parser.h parser.c $(LEMONROOT)/lemon
