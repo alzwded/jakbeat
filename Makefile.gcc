@@ -1,0 +1,38 @@
+VERSION = 1
+CC = gcc
+CXX = g++
+LEMONROOT = vendor/lemon
+LD = g++
+LDOPTS = -o jakbeat
+LIBS = -lSDL2
+
+ifeq ($(JAKBEAT_OPTS), "debug")
+CFLAGS = -O0 -c -g -msse4 -DVERSION=$(VERSION) -I. -I/usr/include/SDL2 -Wno-multichar
+else
+CFLAGS = -O2 -c -msse4 -DVERSION=$(VERSION) -I. -I/usr/include/SDL2 -Wno-multichar
+endif
+
+CXXFLAGS = $(CFLAGS) --std=gnu++14
+
+OBJS = parser.o tokenizer.o file.o render.o wave.o stereo.o
+
+jakbeat: $(OBJS)
+	$(LD) $(LDOPTS) $(OBJS) $(LIBS)
+
+tokenizer.cpp: parser.h
+
+parser.h: parser.cpp
+
+parser.cpp: parser.y
+	lemon parser.y
+	[ -f parser.cpp ] && rm -f parser.cpp || true
+	mv parser.c parser.cpp
+
+%.o: %.cpp
+	$(CXX) -o $@ $(CXXFLAGS) $<
+
+#$(LEMONROOT)\lemon.exe: $(LEMONROOT)\lemon.c $(LEMONROOT)\lempar.c
+#	$(CC) /Fe:$(LEMONROOT)\lemon.exe $(LEMONROOT)\lemon.c
+
+clean:
+	rm -f *.o jakbeat parser.cpp parser.out parser.h parser.c

@@ -18,7 +18,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 # define __func__ __FUNCTION__
 #endif
 
-#define ASSERT(X, ...) do{ if(!(X)) error_assert(__FILE__, __LINE__, __func__, #X, __VA_ARGS__); }while(0)
+#ifdef __GNUC__
+# define ASSERT(X, ...) do{ if(!(X)) error_assert(__FILE__, __LINE__, __func__, #X, ##__VA_ARGS__); }while(0)
+#else
+# define ASSERT(X, ...) do{ if(!(X)) error_assert(__FILE__, __LINE__, __func__, #X, __VA_ARGS__); }while(0)
+#endif
 
 template<typename T, typename... ARGS>
 std::string error_message(T head, ARGS... tail);
@@ -29,7 +33,7 @@ inline std::string error_message(void)
 }
 
 template<typename T, typename... Y>
-std::string error_message<T, Y>(T head, Y... tail)
+std::string error_message(T head, Y... tail)
 {
     std::stringstream s;
     s << head << error_message(tail...);

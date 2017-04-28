@@ -151,7 +151,7 @@ struct File
 
         int volume;
         std::string path;
-        std::shared_ptr<Effect> effect = new Effect(); // pointer because iterating over a map copies this whole thing (for some reason)
+        std::shared_ptr<Effect> effect = decltype(effect)(new Effect()); // pointer because iterating over a map copies this whole thing (for some reason)
     };
 
     enum class Beat {

@@ -26,6 +26,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stereo.h>
 #include <parser_types.h>
+#include <cstring>
+#include <cmath>
 #include <map>
 
 typedef struct {
