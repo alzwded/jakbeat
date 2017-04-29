@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016-2017, Vlad Meșco
+Copyright (c) 2017, Vlad Meșco
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -23,47 +23,78 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef STEREO_H
-#define STEREO_H
+#ifndef MODEL_H
+#define MODEL_H
 
 #include <string>
+#include <list>
+#include <memory>
+#include <vector>
+#include "view.h"
 
-struct IValue;
+struct Schema
+{
+    enum Type
+    {
+        STRING,
+        READ_ONLY_STRING,
+        STUB,
+        NUMBER,
+        SUBSCHEMA
+    };
+    struct Attribute
+    {
+        const char* name;
+        Type type;
+        std::vector<Attribute> children;
+    };
+    const char* name;
+    std::vector<Attribute> attributes;
+};
 
-typedef struct {
-    float data[2];
-} stereo_sample_t;
+typedef std::list<char> row_t;
+typedef std::list<row_t> rows_t;
+typedef rows_t::iterator row_p_t;
 
-typedef void* stereo_state_t;
+struct Column
+{
+    std::list<row_p_t> rows;
+};
 
-typedef stereo_state_t (*stereo_plugin_init_fn)(IValue* params);
-typedef stereo_sample_t (*stereo_plugin_fn)(stereo_state_t state, float mono_sample);
-typedef void (*stereo_plugin_dispose_fn)(stereo_state_t);
+typedef Column column_t;
+typedef std::list<Column> columns_t;
+typedef columns_t::iterator column_p_t;
 
-struct StereoInstance;
+struct WhoEntry
+{
+    std::string name;
+    Schema const* schema;
+    typedef std::list<std::pair<std::string, std::string>> Params;
+    Params params;
+};
 
-StereoInstance* NewStereoInstance(std::string name, IValue* params);
+struct WhatEntry
+{
+    std::string name;
+    Schema const* schema;
+    column_p_t start, end;
+};
 
-struct StereoInstance {
-    stereo_sample_t operator()(float sample) { return fn(state, sample); }
-    ~StereoInstance() { dispose(state); }
+struct Output
+{
+    columns_t columns;
+    rows_t rows;
+};
 
-private:
-    stereo_state_t state;
-    stereo_plugin_fn fn;
-    stereo_plugin_dispose_fn dispose;
-
-private:
-    StereoInstance(stereo_state_t state_,
-            stereo_plugin_fn fn_,
-            stereo_plugin_dispose_fn dispose_)
-        : dispose(dispose_)
-          , fn(fn_)
-          , state(state_)
-    {}
-
-    friend StereoInstance* NewStereoInstance(std::string, IValue*);
+struct Model
+{
+    std::string path;
+    std::list<std::shared_ptr<View>> views;
+    std::list<WhoEntry> whos;
+    std::list<WhatEntry> whats;
+    Output output;
+    columns_t columns;
+    rows_t rows;
 };
 
 #endif

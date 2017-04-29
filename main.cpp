@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016-2017, Vlad Mesco
+Copyright (c) 2017, Vlad Mesco
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -23,6 +23,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include <tokenizer.h>
+
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
@@ -33,61 +35,41 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <errorassert.h>
 
-#include <tokenizer.h>
 #include <parser.h>
 #include <parser_types.h>
 
-int tokenizer_lineno = 1;
-
-Tokenizer::Tokenizer(FILE* f_)
-    : f(f_)
+int main(int argc, char* argv[])
 {
-    if(feof(f)) c = EOF;
-    else c = fgetc(f);
-}
-
-Token Tokenizer::operator()()
-{
-    while(isspace(c) || c == 13 || c == 10)
-    {
-        c = fgetc(f);
-        if(feof(f)) return {TEOF};
-        if(c == 10) tokenizer_lineno++;
+    std::string fileName = "test.wav";
+    for(int i = 1; i < argc; ++i) {
+        if(strcmp(argv[i], "-v") == 0) {
+            printf("jakbeat v%d\nCopyright Vlad Mesco 2016\n\n", VERSION);
+            exit(0);
+        } else if(strcmp(argv[i], "-w") == 0) {
+            ++i;
+            ASSERT(i < argc);
+            fileName.assign(argv[i]);
+        }
     }
-    if(c == '[') { c = fgetc(f); return {LSQUARE}; }
-    if(c == ']') { c = fgetc(f); return {RSQUARE}; }
-    if(c == '(') { c = fgetc(f); return {LPAREN}; }
-    if(c == ')') { c = fgetc(f); return {RPAREN}; }
-    if(c == '=') { c = fgetc(f); return {EQUALS}; }
 
-    std::stringstream ss;
-    std::function<bool(char)> conditions[] = {
-        [](char c) -> bool {
-            return !(isspace(c)
-                    || c == 13
-                    || c == 10
-                    || c == '['
-                    || c == ']'
-                    || c == '('
-                    || c == ')'
-                    || c == '='
-                    );
-        },
-        [](char c) -> bool {
-            return c != '"';
-        },
-    };
-    bool quoted = (c == '"');
-    auto condition = conditions[quoted];
-    if(quoted) c = fgetc(f);
-    while(condition(c))
-    {
-        ss << c;
-        c = fgetc(f);
-        if(feof(f)) break;
-    }
-    if(quoted) c = fgetc(f);
-    //return {STRING, ss.str()}; // curly bracket form crashes msvc 18.00.21005.1
-    return Token(STRING, ss.str());
+    extern void* ParseAlloc(void* (*)(size_t));
+    extern void Parse(void*, int, char*, File*);
+    extern void ParseFree(void*, void (*)(void*));
+    extern void Render(File, std::string);
+
+    File f;
+    Tokenizer tok(stdin);
+    auto pParser = ParseAlloc(malloc);
+    do {
+        auto t = tok();
+        printf("%d %s\n", t.type, (t.type == STRING) ? t.value.c_str() : "");
+        char* s = strdup(t.value.c_str());
+        Parse(pParser, t.type, s, &f);
+        if(t.type == TEOF) break;
+    } while(1);
+    ParseFree(pParser, free);
+
+    Render(f, fileName);
+
+    return 0;
 }
-

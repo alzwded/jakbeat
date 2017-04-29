@@ -14,12 +14,12 @@ endif
 
 CXXFLAGS = $(CFLAGS) --std=gnu++14
 
-OBJS = parser.o tokenizer.o file.o render.o wave.o stereo.o
+OBJS = main.o parser.o tokenizer.o file.o render.o wave.o stereo.o
 
 jakbeat: $(OBJS)
 	$(LD) $(LDOPTS) $(OBJS) $(LIBS)
 
-tokenizer.cpp: parser.h
+main.cpp tokenizer.cpp: parser.h
 
 parser.h: parser.cpp
 
