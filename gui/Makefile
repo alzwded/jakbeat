@@ -1,6 +1,6 @@
 VERSION = 1
 
-jakbeat-gui: gui.cpp
+jakbeat-gui: gui.cpp parser.cpp
 	g++ -o jakbeat-gui -DVERSION=$(VERSION) -g -I. -I.. `fltk-config --cxxflags` gui.cpp parser.cpp ../tokenizer.cpp ../file.cpp ../stereo.cpp `fltk-config --libs`
 
 parser.cpp: parser.y ../vendor/lemon/lemon

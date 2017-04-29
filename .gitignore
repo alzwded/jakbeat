@@ -45,3 +45,9 @@ temp
 
 jakbeat
 vendor/lemon/lemon
+gui/parser.y
+gui/jakbeat-gui
+
+*.txz
+*.tar
+*.zip
