@@ -3,6 +3,8 @@
 #include <FL/fl_ask.H>
 
 #include <cassert>
+#include <algorithm>
+#include <vector>
 
 void Vindow::FileNew(Fl_Widget*, void*)
 {}
@@ -95,10 +97,15 @@ void Vindow::WindowCloseAll(Fl_Widget*, void* p)
         int which = fl_choice("There are unsaved changes in the document.\nDo you want to close this document, discarding changes?", "&No", nullptr, "&Yes");
         if(which != 2) return;
     }
-    for(auto* view : me->model_->views)
+    std::vector<View*> toDestroy;
+    std::copy_if(me->model_->views.begin(), me->model_->views.end(), std::back_inserter(toDestroy), [me](View* view) -> bool {
+                auto* w = dynamic_cast<Vindow*>(view);
+                if(w == me) return false;
+                return w != nullptr;
+            });
+    for(auto* view : toDestroy)
     {
         auto* w = dynamic_cast<Vindow*>(view);
-        if(w == me) continue;
         if(w) destroy_window(w);
     }
     return destroy_window(me);
