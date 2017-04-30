@@ -26,9 +26,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "window.h"
 
-Window::Window(int w, int h, const char* t)
+Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
     : Fl_Double_Window(w, h, t)
     , View()
+    , model_(m)
 {}
 
 void Window::OnEvent(Event* e)

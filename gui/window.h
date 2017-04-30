@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define WINDOW_H
 
 #include "view.h"
+#include "model.h"
 #include <FL/Fl.H>
 #include <Fl/Fl_Double_Window.H>
 
@@ -34,9 +35,12 @@ struct Window
 : public Fl_Double_Window
 , public View
 {
-    Window(int w = 400, int h = 300, const char* t = "jakbeat-gui");
+    Window(std::shared_ptr<Model> m, int w = 400, int h = 300, const char* t = "jakbeat-gui");
     ~Window() override = default;
     void OnEvent(Event*) override;
+
+private:
+    std::shared_ptr<Model> model_;
 };
 
 #endif

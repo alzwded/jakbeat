@@ -26,6 +26,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "model.h"
 #include "window.h"
 
+#include <FL/Fl.H>
+
 Schema drumSchemas[] = {
     /* Basic Drum */
     {
@@ -89,15 +91,19 @@ void save_model(std::shared_ptr<Model> m)
 {
 }
 
-Window create_window(std::shared_ptr<Model> m)
+void create_window(std::shared_ptr<Model> m, int argc, char* argv[])
 {
-    return {};
+    windows.emplace_back(m);
+    windows.back().show(1, argv);
 }
 
 int main(int argc, char* argv[])
 {
-    Model m;
-    m.whos.push_back({
+#if 1
+    /* test code */
+
+    std::shared_ptr<Model> m(new Model());
+    m->whos.push_back({
                 "kick",
                 &drumSchemas[0],
                 {
@@ -105,4 +111,8 @@ int main(int argc, char* argv[])
                     { "volume", "100" },
                 }
             });
+    create_window(m, argc, argv);
+
+    return Fl::run();
+#endif
 }
