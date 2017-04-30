@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <errorassert.h>
 
+#include <file.h>
 #include <parser.h>
 #include <parser_types.h>
 

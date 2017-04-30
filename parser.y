@@ -25,6 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 %include {
     #include <parser_types.h>
+    #include <file.h>
     #include <stdlib.h>
     #include <stdio.h>
     #include <errorassert.h>
