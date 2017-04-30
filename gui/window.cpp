@@ -23,20 +23,14 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef WINDOW_H
-#define WINDOW_H
 
-#include "view.h"
-#include <FL/Fl.H>
-#include <Fl/Fl_Double_Window.H>
+#include "window.h"
 
-struct Window
-: public Fl_Double_Window
-, public View
+Window::Window(int w, int h, const char* t)
+    : Fl_Double_Window(w, h, t)
+    , View()
+{}
+
+void Window::OnEvent(Event* e)
 {
-    Window(int w = 400, int h = 300, const char* t = "jakbeat-gui");
-    ~Window() override = default;
-    void OnEvent(Event*) override;
-};
-
-#endif
+}
