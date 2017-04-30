@@ -28,12 +28,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <FL/Fl_Menu_Item.H>
 
+#include <cassert>
+
 Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
     : Fl_Double_Window(w, h, t)
     , View()
     , model_(m)
     , menu_(nullptr)
 {
+    assert(model_);
+    model_->views.push_back(this);
     // init menu
     Fl_Menu_Item menuitems[] = {
         { "&File",
@@ -82,9 +86,9 @@ Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
           { "&New Window",
               FL_COMMAND + 'n', (Fl_Callback*)WindowNew },
           { "&Close",
-              FL_COMMAND + 'w', (Fl_Callback*)WindowClose },
+              FL_COMMAND + 'w', (Fl_Callback*)WindowClose, this },
           { "Close &All",
-              0, (Fl_Callback*)WindowCloseAll },
+              0, (Fl_Callback*)WindowCloseAll, this },
           { 0 },
         { 0 }
     };

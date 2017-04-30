@@ -89,7 +89,7 @@ struct Output
 struct Model
 {
     std::string path;
-    std::list<std::shared_ptr<View>> views;
+    std::list<View*> views;
     std::list<WhoEntry> whos;
     std::list<WhatEntry> whats;
     Output output;

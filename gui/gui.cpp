@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FL/Fl.H>
 
 #include <algorithm>
+#include <cassert>
 
 Schema drumSchemas[] = {
     /* Basic Drum */
@@ -103,7 +104,22 @@ bool is_any_model_dirty()
 void create_window(std::shared_ptr<Model> m, int argc, char* argv[])
 {
     windows.emplace_back(m);
+    assert(m);
+    assert(windows.back().GetModel());
     windows.back().show(1, argv);
+}
+
+void destroy_window(Window* whom)
+{
+    auto found = std::find_if(windows.begin(), windows.end(), [whom](Window const& w) -> bool {
+                return &w == whom;
+            });
+    if(found == windows.end())
+    {
+        fprintf(stderr, "window not found... not abort()-ing to not lose data, but it should be fixed");
+        return;
+    }
+    windows.erase(found);
 }
 
 int main(int argc, char* argv[])

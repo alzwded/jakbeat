@@ -2,6 +2,8 @@
 
 #include <FL/fl_ask.H>
 
+#include <cassert>
+
 void Window::FileNew(Fl_Widget*, void*)
 {}
 
@@ -67,9 +69,34 @@ void Window::EditDeleteSection(Fl_Widget*, void*)
 void Window::WindowNew(Fl_Widget*, void*)
 {}
 
-void Window::WindowClose(Fl_Widget*, void*)
-{}
+void Window::WindowClose(Fl_Widget*, void* p)
+{
+    extern void destroy_window(Window*);
+    Window* me = (Window*)p;
+    if(me->model_->dirty
+            && me->model_->views.size() == 1)
+    {
+        int which = fl_choice("There are unsaved changes in the document.\nClosing this window will discard all changes.\nDo you want to close this document?", "&No", nullptr, "&Yes");
+        if(which != 2) return;
+    }
+    return destroy_window(me);
+}
 
-void Window::WindowCloseAll(Fl_Widget*, void*)
-{}
+void Window::WindowCloseAll(Fl_Widget*, void* p)
+{
+    extern void destroy_window(Window*);
+    Window* me = (Window*)p;
+    if(me->model_->dirty)
+    {
+        int which = fl_choice("There are unsaved changes in the document.\nDo you want to close this document, discarding changes?", "&No", nullptr, "&Yes");
+        if(which != 2) return;
+    }
+    for(auto* view : me->model_->views)
+    {
+        auto* w = dynamic_cast<Window*>(view);
+        if(w == me) continue;
+        if(w) destroy_window(w);
+    }
+    return destroy_window(me);
+}
 
