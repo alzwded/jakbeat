@@ -97,6 +97,11 @@ Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
           { "Close &All",
               0, (Fl_Callback*)WindowCloseAll, this },
           { 0 },
+        { "&Help",
+            0, 0, 0, FL_SUBMENU },
+          { "A&bout",
+              FL_F + 1, (Fl_Callback*)HelpAbout, this },
+          { 0 },
         { 0 }
     };
 

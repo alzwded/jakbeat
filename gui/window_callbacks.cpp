@@ -111,6 +111,11 @@ void Vindow::WindowCloseAll(Fl_Widget*, void* p)
     return destroy_window(me);
 }
 
+void Vindow::HelpAbout(Fl_Widget*, void*)
+{
+    fl_alert("JakBeat GUI\nCopyright (c) 2015-2017 Vlad Meșco\nAvailable under the 2-Clause BSD License");
+}
+
 void Vindow::WhatClicked(Fl_Widget* w, void* p)
 {
     Vindow* me = (Vindow*)p;
