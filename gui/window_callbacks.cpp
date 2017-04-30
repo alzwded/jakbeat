@@ -100,3 +100,8 @@ void Window::WindowCloseAll(Fl_Widget*, void* p)
     return destroy_window(me);
 }
 
+void Window::WindowCallback(Fl_Widget* w, void* p)
+{
+    WindowClose(w, p);
+}
+

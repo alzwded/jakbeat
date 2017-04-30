@@ -69,6 +69,8 @@ private:
     static void WindowClose(Fl_Widget*, void*);
     static void WindowCloseAll(Fl_Widget*, void*);
 
+    static void WindowCallback(Fl_Widget*, void*);
+
 private:
     enum class Layout
     {

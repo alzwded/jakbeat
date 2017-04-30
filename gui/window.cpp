@@ -95,6 +95,10 @@ Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
 
     auto* mb = new Fl_Menu_Bar(0, 0, w, 30);
     mb->copy(menuitems);
+
+    // callback
+    callback(WindowCallback, this);
+
     // init common components
 }
 
