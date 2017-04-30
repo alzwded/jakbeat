@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <FL/Fl.H>
 
+#include <algorithm>
+
 Schema drumSchemas[] = {
     /* Basic Drum */
     {
@@ -91,6 +93,13 @@ void save_model(std::shared_ptr<Model> m)
 {
 }
 
+bool is_any_model_dirty()
+{
+    return std::any_of(windows.begin(), windows.end(), [](Window& w) -> bool {
+                return w.GetModel()->dirty;
+            });
+}
+
 void create_window(std::shared_ptr<Model> m, int argc, char* argv[])
 {
     windows.emplace_back(m);
@@ -111,6 +120,7 @@ int main(int argc, char* argv[])
                     { "volume", "100" },
                 }
             });
+    m->dirty = true;
     create_window(m, argc, argv);
 
     return Fl::run();

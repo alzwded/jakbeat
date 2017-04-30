@@ -30,17 +30,61 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "model.h"
 #include <FL/Fl.H>
 #include <Fl/Fl_Double_Window.H>
+#include <FL/Fl_Menu_Bar.H>
 
 struct Window
 : public Fl_Double_Window
 , public View
 {
     Window(std::shared_ptr<Model> m, int w = 400, int h = 300, const char* t = "jakbeat-gui");
-    ~Window() override = default;
+    ~Window() override;
     void OnEvent(Event*) override;
+
+    std::shared_ptr<Model> GetModel() const
+    {
+        return model_;
+    }
+
+private:
+    // callbacks
+    static void FileNew(Fl_Widget*, void*);
+    static void FileOpen(Fl_Widget*, void*);
+    static void FileSave(Fl_Widget*, void*);
+    static void FileSaveAs(Fl_Widget*, void*);
+    static void FileReload(Fl_Widget*, void*);
+    static void FileExit(Fl_Widget*, void*);
+    static void EditUndo(Fl_Widget*, void*);
+    static void EditCut(Fl_Widget*, void*);
+    static void EditCopy(Fl_Widget*, void*);
+    static void EditPaste(Fl_Widget*, void*);
+    static void EditOverwrite(Fl_Widget*, void*);
+    static void EditInsertRest(Fl_Widget*, void*);
+    static void EditInsertBlank(Fl_Widget*, void*);
+    static void EditClearColumns(Fl_Widget*, void*);
+    static void EditDeleteColumns(Fl_Widget*, void*);
+    static void EditAddWhat(Fl_Widget*, void*);
+    static void EditAddWho(Fl_Widget*, void*);
+    static void EditDeleteSection(Fl_Widget*, void*);
+    static void WindowNew(Fl_Widget*, void*);
+    static void WindowClose(Fl_Widget*, void*);
+    static void WindowCloseAll(Fl_Widget*, void*);
+
+private:
+    enum class Layout
+    {
+        WHO,
+        OUTPUT,
+        WHAT,
+    };
+
+    void SetLayout(Layout);
 
 private:
     std::shared_ptr<Model> model_;
+    Layout layout_;
+
+private:
+    Fl_Menu_Bar* menu_;
 };
 
 #endif

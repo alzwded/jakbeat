@@ -1,7 +1,7 @@
 VERSION = 1
 
 JAKBEAT-DEPS = parser.cpp ../tokenizer.cpp
-SOURCES = gui.cpp file.cpp window.cpp
+SOURCES = gui.cpp file.cpp window.cpp window_callbacks.cpp
 
 jakbeat-gui: $(SOURCES) $(JAKBEAT-DEPS)
 	g++ --std=gnu++14 -o jakbeat-gui -DVERSION=$(VERSION) -g -I. -I.. `fltk-config --cxxflags` $(SOURCES) $(JAKBEAT-DEPS) `fltk-config --ldflags`

@@ -95,6 +95,8 @@ struct Model
     Output output;
     columns_t columns;
     rows_t rows;
+
+    bool dirty = false;
 };
 
 #endif
