@@ -107,38 +107,35 @@ Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
     callback(WindowCallback, this);
 
     // init common components
-    auto* container = new Fl_Tile(0, mb->h(), 400, 300 - mb->h());
-    container_ = container;
+    container_ =  new Fl_Tile(0, mb->h(), w, h - mb->h());
       // create something strange from FLTK test code...
       constexpr int dx = 100;
-      auto* limit = new Fl_Box(container->x() + dx, container->y() + dx, container->w() - 2*dx, container->h() - 2*dx);
-      container->resizable(limit);
+      auto* limit = new Fl_Box(container_->x() + dx, container_->y() + dx, container_->w() - 2*dx, container_->h() - 2*dx);
+      container_->resizable(limit);
 
       CreateWhoList();
 
       CreateWhatList();
 
-      mainGroup_ = new Fl_Group(whoGroup_->w(), container->y(), 300, 300 - mb->h());
+      mainGroup_ = new Fl_Group(whoGroup_->w(), container_->y(), w - whoGroup_->w(), h - mb->h());
       mainGroup_->box(FL_DOWN_BOX);
-      container->add(mainGroup_);
+      container_->add(mainGroup_);
         auto* mainLabel = new Fl_Box(mainGroup_->x() + 10, mainGroup_->y() + 10, 100, 30);
         mainLabel->label("main...");
         mainGroup_->add(mainLabel);
       mainGroup_->end();
-    container->end();
-
-    //resizable(mainTile);
+    container_->end();
 
     // init self
     border(true);
-    resizable(container);
+    resizable(container_);
 
     end();
 }
 
 void Vindow::CreateWhoList()
 {
-      whoGroup_ = new Fl_Group(container_->x(), container_->y(), 100, container_->h() / 2);
+      whoGroup_ = new Fl_Group(container_->x(), container_->y(), container_->w() / 4, container_->h() / 2);
       container_->add(whoGroup_);
       whoGroup_->box(FL_DOWN_BOX);
         fl_font(FL_HELVETICA, 14);
@@ -153,7 +150,7 @@ void Vindow::CreateWhoList()
 
         int i = 0;
         for(auto&& who : model_->whos) {
-          int w = fl_width(who.name.c_str()) + 0.5 + 2*Fl::box_dx(FL_UP_BOX);
+          int w = fl_width(who.name.c_str()) + 0.5 + 2*Fl::box_dw(FL_UP_BOX);
           auto* b = new Fl_Button(
                   scroll->x() + Fl::box_dx(scroll->box()),
                   scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
@@ -170,7 +167,7 @@ void Vindow::CreateWhoList()
 
 void Vindow::CreateWhatList()
 {
-      whatGroup_ = new Fl_Group(container_->x(), whoGroup_->y() + whoGroup_->h(), 100, container_->h() / 2);
+      whatGroup_ = new Fl_Group(container_->x(), whoGroup_->y() + whoGroup_->h(), container_->w() / 4, container_->h() / 2);
       container_->add(whatGroup_);
       whatGroup_->box(FL_DOWN_BOX);
         fl_font(FL_HELVETICA, 14);
@@ -185,13 +182,13 @@ void Vindow::CreateWhatList()
         auto* b = new Fl_Button(
                 scroll->x() + Fl::box_dx(scroll->box()),
                 scroll->y() + Fl::box_dy(scroll->box()),
-                (int)(fl_width("OUTPUT") + 0.5) + Fl::box_dx(FL_UP_BOX),
+                (int)(fl_width("OUTPUT") + 0.5) + Fl::box_dw(FL_UP_BOX),
                 20,
                 "OUTPUT");
         b->callback(OutputClicked, this);
         int i = 1;
         for(auto&& what : model_->whats) {
-          int w = fl_width(what.name.c_str()) + 0.5 + 2*Fl::box_dx(FL_UP_BOX);
+          int w = fl_width(what.name.c_str()) + 0.5 + 2*Fl::box_dw(FL_UP_BOX);
           auto* b = new Fl_Button(
                   scroll->x() + Fl::box_dx(scroll->box()),
                   scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
@@ -208,8 +205,6 @@ void Vindow::CreateWhatList()
 
 Vindow::~Vindow()
 {
-    delete menu_;
-
     auto found = std::find_if(model_->views.begin(), model_->views.end(), [this](View* v) -> bool {
                 auto* w = dynamic_cast<Vindow*>(v);
                 return w == this;
