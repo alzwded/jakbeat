@@ -143,7 +143,6 @@ int main(int argc, char* argv[])
                 m->columns.begin()
             });
     m->output.rows.emplace_back();
-    m->dirty = true;
     create_window(m);
 
     return Fl::run();
