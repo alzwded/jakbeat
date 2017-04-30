@@ -31,13 +31,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FL/Fl.H>
 #include <Fl/Fl_Double_Window.H>
 #include <FL/Fl_Menu_Bar.H>
+#include <FL/Fl_Tile.H>
 
-struct Window
+struct Vindow
 : public Fl_Double_Window
 , public View
 {
-    Window(std::shared_ptr<Model> m, int w = 400, int h = 300, const char* t = "jakbeat-gui");
-    ~Window() override;
+    Vindow(std::shared_ptr<Model> m, int w = 400, int h = 300, const char* t = "jakbeat-gui");
+    ~Vindow() override;
     void OnEvent(Event*) override;
 
     std::shared_ptr<Model> GetModel() const
@@ -81,12 +82,17 @@ private:
 
     void SetLayout(Layout);
 
+    void CreateWhoList();
+    void CreateWhatList();
+
 private:
     std::shared_ptr<Model> model_;
     Layout layout_;
 
 private:
     Fl_Menu_Bar* menu_;
+    Fl_Group* mainGroup_, * whoGroup_, * whatGroup_;
+    Fl_Tile* container_;
 };
 
 #endif

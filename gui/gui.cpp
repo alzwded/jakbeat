@@ -83,7 +83,7 @@ Schema whatSchemas[] = {
     },
 };
 
-std::list<Window> windows;
+std::list<Vindow> windows;
 
 std::shared_ptr<Model> load_model(std::string path)
 {
@@ -96,7 +96,7 @@ void save_model(std::shared_ptr<Model> m)
 
 bool is_any_model_dirty()
 {
-    return std::any_of(windows.begin(), windows.end(), [](Window& w) -> bool {
+    return std::any_of(windows.begin(), windows.end(), [](Vindow& w) -> bool {
                 return w.GetModel()->dirty;
             });
 }
@@ -109,9 +109,9 @@ void create_window(std::shared_ptr<Model> m)
     windows.back().show();
 }
 
-void destroy_window(Window* whom)
+void destroy_window(Vindow* whom)
 {
-    auto found = std::find_if(windows.begin(), windows.end(), [whom](Window const& w) -> bool {
+    auto found = std::find_if(windows.begin(), windows.end(), [whom](Vindow const& w) -> bool {
                 return &w == whom;
             });
     if(found == windows.end())

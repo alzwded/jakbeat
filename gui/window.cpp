@@ -26,12 +26,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "window.h"
 
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/fl_draw.H>
 #include <FL/Fl_Menu_Item.H>
+#include <FL/Fl_Scroll.H>
+#include <FL/Fl_Tile.H>
 
 #include <cassert>
 #include <algorithm>
 
-Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
+Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
     : Fl_Double_Window(w, h, t)
     , View()
     , model_(m)
@@ -39,6 +44,7 @@ Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
 {
     assert(model_);
     model_->views.push_back(this);
+
     // init menu
     Fl_Menu_Item menuitems[] = {
         { "&File",
@@ -82,9 +88,9 @@ Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
           { "Delete &Section",
               0, (Fl_Callback*)EditDeleteSection, 0, FL_MENU_DIVIDER },
           { 0 },
-        { "&Window",
+        { "&Vindow",
             0, 0, 0, FL_SUBMENU },
-          { "&New Window",
+          { "&New Vindow",
               FL_COMMAND + 'n', (Fl_Callback*)WindowNew, this },
           { "&Close",
               FL_COMMAND + 'w', (Fl_Callback*)WindowClose, this },
@@ -101,14 +107,99 @@ Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
     callback(WindowCallback, this);
 
     // init common components
+    auto* container = new Fl_Tile(0, mb->h(), 400, 300 - mb->h());
+    container_ = container;
+      // create something strange from FLTK test code...
+      constexpr int dx = 100;
+      auto* limit = new Fl_Box(container->x() + dx, container->y() + dx, container->w() - 2*dx, container->h() - 2*dx);
+      container->resizable(limit);
+
+      CreateWhoList();
+
+      CreateWhatList();
+
+      mainGroup_ = new Fl_Group(whoGroup_->w(), container->y(), 300, 300 - mb->h());
+      mainGroup_->box(FL_DOWN_BOX);
+      container->add(mainGroup_);
+        auto* mainLabel = new Fl_Box(mainGroup_->x() + 10, mainGroup_->y() + 10, 100, 30);
+        mainLabel->label("main...");
+        mainGroup_->add(mainLabel);
+      mainGroup_->end();
+    container->end();
+
+    //resizable(mainTile);
+
+    // init self
+    border(true);
+    resizable(container);
+
+    end();
 }
 
-Window::~Window()
+void Vindow::CreateWhoList()
+{
+      whoGroup_ = new Fl_Group(container_->x(), container_->y(), 100, container_->h() / 2);
+      container_->add(whoGroup_);
+      whoGroup_->box(FL_DOWN_BOX);
+        fl_font(FL_HELVETICA, 14);
+        auto* whoLabel = new Fl_Box(5, whoGroup_->y() + 5, fl_width("WHO"), fl_height());
+        whoLabel->label("WHO");
+        whoLabel->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
+        whoGroup_->add(whoLabel);
+
+        auto* scroll = new Fl_Scroll(5, whoLabel->y() + whoLabel->h(), whoGroup_->w() - 10, whoGroup_->h() - whoLabel->h() - 10);
+        scroll->box(FL_DOWN_BOX);
+        whoGroup_->add(scroll);
+          for(int i = 0; i < 10; ++i) {
+            fl_font(FL_HELVETICA, 14);
+            int w = fl_width("Hello") + 0.5 + 2*Fl::box_dx(FL_UP_BOX);
+            auto* b = new Fl_Button(
+                    scroll->x() + Fl::box_dx(scroll->box()),
+                    scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
+                    w,
+                    20);
+            b->label("Hello");
+          }
+        scroll->end();
+        whoGroup_->resizable(scroll);
+      whoGroup_->end();
+}
+
+void Vindow::CreateWhatList()
+{
+      whatGroup_ = new Fl_Group(container_->x(), whoGroup_->y() + whoGroup_->h(), 100, container_->h() / 2);
+      container_->add(whatGroup_);
+      whatGroup_->box(FL_DOWN_BOX);
+        fl_font(FL_HELVETICA, 14);
+        auto* whatLabel = new Fl_Box(5, whatGroup_->y() + 5, fl_width("WHAT"), fl_height());
+        whatLabel->label("WHAT");
+        whatLabel->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
+        whatGroup_->add(whatLabel);
+
+        auto* scroll = new Fl_Scroll(5, whatLabel->y() + whatLabel->h(), whatGroup_->w() - 10, whatGroup_->h() - whatLabel->h() - 10);
+        scroll->box(FL_DOWN_BOX);
+        whatGroup_->add(scroll);
+          for(int i = 0; i < 10; ++i) {
+            fl_font(FL_HELVETICA, 14);
+            int w = fl_width("Hello") + 0.5 + 2*Fl::box_dx(FL_UP_BOX);
+            auto* b = new Fl_Button(
+                    scroll->x() + Fl::box_dx(scroll->box()),
+                    scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
+                    w,
+                    20);
+            b->label("Hello");
+          }
+        scroll->end();
+        whatGroup_->resizable(scroll);
+      whatGroup_->end();
+}
+
+Vindow::~Vindow()
 {
     delete menu_;
 
     auto found = std::find_if(model_->views.begin(), model_->views.end(), [this](View* v) -> bool {
-                auto* w = dynamic_cast<Window*>(v);
+                auto* w = dynamic_cast<Vindow*>(v);
                 return w == this;
             });
     if(found == model_->views.end()) {
@@ -119,11 +210,11 @@ Window::~Window()
     model_->views.erase(found);
 }
 
-void Window::OnEvent(Event* e)
+void Vindow::OnEvent(Event* e)
 {
 }
 
-void Window::SetLayout(Layout lyt)
+void Vindow::SetLayout(Layout lyt)
 {
     layout_ = lyt;
 }
