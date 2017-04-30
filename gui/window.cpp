@@ -163,6 +163,7 @@ void Vindow::CreateWhoList()
                   scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
                   w,
                   20);
+          b->down_box(FL_FLAT_BOX);
           b->label(who.name.c_str());
           b->callback(WhoClicked, this);
           ++i;
@@ -194,6 +195,7 @@ void Vindow::CreateWhatList()
                 (int)(fl_width("OUTPUT") + 0.5) + Fl::box_dw(FL_UP_BOX),
                 20,
                 "OUTPUT");
+        b->down_box(FL_FLAT_BOX);
         b->value(1); // FIXME currently active section should have value(1)
         b->callback(OutputClicked, this);
         int i = 1;
@@ -204,6 +206,7 @@ void Vindow::CreateWhatList()
                   scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
                   w,
                   20);
+          b->down_box(FL_FLAT_BOX);
           b->label(what.name.c_str());
           b->callback(WhatClicked, this);
           ++i;
