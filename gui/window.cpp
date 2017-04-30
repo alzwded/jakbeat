@@ -222,12 +222,16 @@ Vindow::~Vindow()
     model_->views.erase(found);
 }
 
+// TODO will be useful for param changes, sequence changes etc
+// More relvant changes that impact the who/what lists still
+// need to update those
+#define IGNORE_OWN do{\
+    Vindow* w = dynamic_cast<Vindow*>(e->sourceView); \
+    if(w == this) return; \
+}while(0)
+
 void Vindow::OnEvent(Event* e)
 {
-    // ignore own events
-    Vindow* w = dynamic_cast<Vindow*>(e->sourceView);
-    if(w == this) return;
-
     switch(e->type)
     {
         case Event::RELOADED:
