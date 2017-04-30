@@ -1,0 +1,119 @@
+  ____________________________________________________________________
+ |X|__________________________________________________________________|
+ |_File_|_Edit_|_Window_|_____________________________________________|
+ |               |                                                    |
+ |_WHO___________|  Section:   |_A________|                           |
+ | [kick]      |^|                                                    |
+ | [snare]     |_|  Rate:      |__200_| bpm                           |
+ | [hat]       | |                                                    |
+ | [+]         | |                                                    |
+ |             | |                                                    |
+ |             | |   _______________________________________________  |
+ |             | |  | kick     !...!...                           |^| |
+ |             | |  | snare    ..!...!.                           |_| |
+ |             | |  | hat      !.!.!.!.                           |_| |
+ |_____________|v|  |                                             | | |
+ |               |  |                                             | | |
+ |_WHAT__________|  |                                             | | |
+ | [OUTPUT]    |^|  |                                             | | |
+ | [A]         |_|  |                                             | | |
+ | [B]         | |  |                                             | | |
+ | [C]         | |  |                                             | | |
+ | [+]         | |  |                                             |_| |
+ |             | |  |_____________________________________________|v| |
+ |             | |  |<|_|_______________________________________|>|_| |
+ |             | |                                                    |
+ |_____________|v|_At beat: 1______Length: 14s________________________|
+
+click [A], [B], [C]: what's above
+click [kick]: edit PATH, VOLUME, PLUGIN, PLUGIN_SETTINGS
+click [OUTPUT]: order editor
+
+Menu
+    New...
+    Open...
+    Save
+    Save as...
+    Reload
+    --
+    Exit
+
+Edit
+    Undo
+    --
+    Cut
+    Copy
+    Paste
+    --
+    Insert rest
+    Insert blank
+    Clear column(s)
+    Delete column(s)
+    --
+    Add WHO section
+    Add WHAT section
+    Delete section
+
+Window
+    New window
+    Close
+    Close all
+
+WHO entry editor: schema based (define KV; list options spawn new window)
+    none = { path=string volume=number }
+    stereo = { path=string volume=number pan=number }
+    chorus = { path=string volume=number pan=number delay=number amount=number speed=number }
+
+WHAT entry editor: 
+- schema based (define bpm for now)
+    std = { bpm=number }
+- show all drum lines all the time
+- custom pattern editor control
+  + highlight current cell
+  + can block select
+
+Multiple windows showing same document update in real time (assuming they are in the same application instance...)
+
+Show PID in window title
+
+WHO list context menu:
+- New
+- Clone
+- Delete
+
+WHAT list context menu:
+- New
+- Clone
+- Delete
+
+OUTPUT editor
+- use sample editor
+- Y axis: samples
+- X axis: time
+- cell: active
+
+Model:
+- path = string
+- registeredViews[] = *View
+- who[] = WhoEntry
+          - name = string
+          - *schema
+          - params[] = Param
+                       - name = string
+                       - value = string
+- what[] = WhatEntry
+           - name = string
+           - *schema
+           - start = *column
+           - length = int
+- out[] = string
+- columns[] = column
+              - *rows[] = row
+- rows[] = list of char
+
+View:
++ OnEvent(e)
+
+Application:
+- models[] = Model
+- windows[] = View
