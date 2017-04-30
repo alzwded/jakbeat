@@ -66,8 +66,12 @@ void Window::EditAddWho(Fl_Widget*, void*)
 void Window::EditDeleteSection(Fl_Widget*, void*)
 {}
 
-void Window::WindowNew(Fl_Widget*, void*)
-{}
+void Window::WindowNew(Fl_Widget*, void* p)
+{
+    extern void create_window(std::shared_ptr<Model>);
+    Window* me = (Window*)p;
+    create_window(me->model_);
+}
 
 void Window::WindowClose(Fl_Widget*, void* p)
 {

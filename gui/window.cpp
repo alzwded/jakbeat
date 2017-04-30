@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FL/Fl_Menu_Item.H>
 
 #include <cassert>
+#include <algorithm>
 
 Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
     : Fl_Double_Window(w, h, t)
@@ -84,7 +85,7 @@ Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
         { "&Window",
             0, 0, 0, FL_SUBMENU },
           { "&New Window",
-              FL_COMMAND + 'n', (Fl_Callback*)WindowNew },
+              FL_COMMAND + 'n', (Fl_Callback*)WindowNew, this },
           { "&Close",
               FL_COMMAND + 'w', (Fl_Callback*)WindowClose, this },
           { "Close &All",
@@ -105,6 +106,17 @@ Window::Window(std::shared_ptr<Model> m, int w, int h, const char* t)
 Window::~Window()
 {
     delete menu_;
+
+    auto found = std::find_if(model_->views.begin(), model_->views.end(), [this](View* v) -> bool {
+                auto* w = dynamic_cast<Window*>(v);
+                return w == this;
+            });
+    if(found == model_->views.end()) {
+        fprintf(stderr, "disconnected window destroyed!\n");
+        return;
+    }
+
+    model_->views.erase(found);
 }
 
 void Window::OnEvent(Event* e)

@@ -101,12 +101,12 @@ bool is_any_model_dirty()
             });
 }
 
-void create_window(std::shared_ptr<Model> m, int argc, char* argv[])
+void create_window(std::shared_ptr<Model> m)
 {
     windows.emplace_back(m);
     assert(m);
     assert(windows.back().GetModel());
-    windows.back().show(1, argv);
+    windows.back().show();
 }
 
 void destroy_window(Window* whom)
@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
                 }
             });
     m->dirty = true;
-    create_window(m, argc, argv);
+    create_window(m);
 
     return Fl::run();
 #endif
