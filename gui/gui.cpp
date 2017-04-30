@@ -124,6 +124,7 @@ void destroy_window(Vindow* whom)
 
 int main(int argc, char* argv[])
 {
+    Fl::scheme("gtk+");
 #if 1
     /* test code */
 

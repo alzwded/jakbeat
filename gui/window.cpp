@@ -145,6 +145,8 @@ void Vindow::CreateWhoList()
       whoGroup_->box(FL_DOWN_BOX);
         fl_font(FL_HELVETICA, 14);
         auto* whoLabel = new Fl_Box(5, whoGroup_->y() + 5, fl_width("WHO"), fl_height());
+        fl_font(whoLabel->labelfont(), whoLabel->labelsize());
+        whoLabel->size(fl_width("WHO"), fl_height());
         whoLabel->label("WHO");
         whoLabel->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
         whoGroup_->add(whoLabel);
@@ -177,6 +179,8 @@ void Vindow::CreateWhatList()
       whatGroup_->box(FL_DOWN_BOX);
         fl_font(FL_HELVETICA, 14);
         auto* whatLabel = new Fl_Box(5, whatGroup_->y() + 5, fl_width("WHAT"), fl_height());
+        fl_font(whatLabel->labelfont(), whatLabel->labelsize());
+        whatLabel->size(fl_width("WHAT"), fl_height());
         whatLabel->label("WHAT");
         whatLabel->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
         whatGroup_->add(whatLabel);
