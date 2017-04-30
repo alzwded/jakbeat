@@ -1,6 +1,6 @@
 VERSION = 1
 
-JAKBEAT-DEPS = parser.cpp ../tokenizer.cpp ../stereo.cpp 
+JAKBEAT-DEPS = parser.cpp ../tokenizer.cpp
 SOURCES = gui.cpp file.cpp
 
 jakbeat-gui: gui.cpp parser.cpp
