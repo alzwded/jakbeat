@@ -104,6 +104,29 @@ void Vindow::WindowCloseAll(Fl_Widget*, void* p)
     return destroy_window(me);
 }
 
+void Vindow::WhatClicked(Fl_Widget* w, void* p)
+{
+    Vindow* me = (Vindow*)p;
+    const char* label = w->label();
+    fl_alert("WHAT %s selected", label);
+    me->SetLayout(Layout::WHAT);
+}
+
+void Vindow::WhoClicked(Fl_Widget* w, void* p)
+{
+    Vindow* me = (Vindow*)p;
+    const char* label = w->label();
+    fl_alert("WHO %s selected", label);
+    me->SetLayout(Layout::WHO);
+}
+
+void Vindow::OutputClicked(Fl_Widget*, void* p)
+{
+    Vindow* me = (Vindow*)p;
+    me->SetLayout(Layout::OUTPUT);
+    fl_alert("OUTPUT mode enabled");
+}
+
 void Vindow::WindowCallback(Fl_Widget* w, void* p)
 {
     WindowClose(w, p);

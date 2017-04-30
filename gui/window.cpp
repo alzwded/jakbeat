@@ -88,9 +88,9 @@ Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
           { "Delete &Section",
               0, (Fl_Callback*)EditDeleteSection, 0, FL_MENU_DIVIDER },
           { 0 },
-        { "&Vindow",
+        { "&Window",
             0, 0, 0, FL_SUBMENU },
-          { "&New Vindow",
+          { "&New Window",
               FL_COMMAND + 'n', (Fl_Callback*)WindowNew, this },
           { "&Close",
               FL_COMMAND + 'w', (Fl_Callback*)WindowClose, this },
@@ -150,16 +150,19 @@ void Vindow::CreateWhoList()
         auto* scroll = new Fl_Scroll(5, whoLabel->y() + whoLabel->h(), whoGroup_->w() - 10, whoGroup_->h() - whoLabel->h() - 10);
         scroll->box(FL_DOWN_BOX);
         whoGroup_->add(scroll);
-          for(int i = 0; i < 10; ++i) {
-            fl_font(FL_HELVETICA, 14);
-            int w = fl_width("Hello") + 0.5 + 2*Fl::box_dx(FL_UP_BOX);
-            auto* b = new Fl_Button(
-                    scroll->x() + Fl::box_dx(scroll->box()),
-                    scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
-                    w,
-                    20);
-            b->label("Hello");
-          }
+
+        int i = 0;
+        for(auto&& who : model_->whos) {
+          int w = fl_width(who.name.c_str()) + 0.5 + 2*Fl::box_dx(FL_UP_BOX);
+          auto* b = new Fl_Button(
+                  scroll->x() + Fl::box_dx(scroll->box()),
+                  scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
+                  w,
+                  20);
+          b->label(who.name.c_str());
+          b->callback(WhoClicked, this);
+          ++i;
+        }
         scroll->end();
         whoGroup_->resizable(scroll);
       whoGroup_->end();
@@ -179,16 +182,25 @@ void Vindow::CreateWhatList()
         auto* scroll = new Fl_Scroll(5, whatLabel->y() + whatLabel->h(), whatGroup_->w() - 10, whatGroup_->h() - whatLabel->h() - 10);
         scroll->box(FL_DOWN_BOX);
         whatGroup_->add(scroll);
-          for(int i = 0; i < 10; ++i) {
-            fl_font(FL_HELVETICA, 14);
-            int w = fl_width("Hello") + 0.5 + 2*Fl::box_dx(FL_UP_BOX);
-            auto* b = new Fl_Button(
-                    scroll->x() + Fl::box_dx(scroll->box()),
-                    scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
-                    w,
-                    20);
-            b->label("Hello");
-          }
+        auto* b = new Fl_Button(
+                scroll->x() + Fl::box_dx(scroll->box()),
+                scroll->y() + Fl::box_dy(scroll->box()),
+                (int)(fl_width("OUTPUT") + 0.5) + Fl::box_dx(FL_UP_BOX),
+                20,
+                "OUTPUT");
+        b->callback(OutputClicked, this);
+        int i = 1;
+        for(auto&& what : model_->whats) {
+          int w = fl_width(what.name.c_str()) + 0.5 + 2*Fl::box_dx(FL_UP_BOX);
+          auto* b = new Fl_Button(
+                  scroll->x() + Fl::box_dx(scroll->box()),
+                  scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
+                  w,
+                  20);
+          b->label(what.name.c_str());
+          b->callback(WhatClicked, this);
+          ++i;
+        }
         scroll->end();
         whatGroup_->resizable(scroll);
       whatGroup_->end();
@@ -212,6 +224,45 @@ Vindow::~Vindow()
 
 void Vindow::OnEvent(Event* e)
 {
+    // ignore own events
+    Vindow* w = dynamic_cast<Vindow*>(e->sourceView);
+    if(w == this) return;
+
+    switch(e->type)
+    {
+        case Event::RELOADED:
+            delete whoGroup_;
+            delete whatGroup_;
+            CreateWhoList();
+            CreateWhatList();
+            break;
+        case Event::DELETED:
+            switch(e->source)
+            {
+                case Event::WHO:
+                    delete whoGroup_;
+                    CreateWhoList();
+                    break;
+                case Event::WHAT:
+                    delete whoGroup_;
+                    CreateWhoList();
+                    break;
+            }
+            break;
+        case Event::NAME_CHANGED:
+            switch(e->source)
+            {
+                case Event::WHO:
+                    delete whoGroup_;
+                    CreateWhoList();
+                    break;
+                case Event::WHAT:
+                    delete whoGroup_;
+                    CreateWhoList();
+                    break;
+            }
+            break;
+    }
 }
 
 void Vindow::SetLayout(Layout lyt)

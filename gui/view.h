@@ -26,6 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef VIEW_H
 #define VIEW_H
 
+struct View;
 struct Event
 {
     enum Source
@@ -45,10 +46,11 @@ struct Event
         DATA_CHANGED,
         DELETED,
         SAVED,
-        LOADED
+        RELOADED
     } type;
 
     int id;
+    View* sourceView;
 };
 
 struct View

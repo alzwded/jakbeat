@@ -33,6 +33,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Tile.H>
 
+// if you're wondering why it's called Vindow,
+// it's because a particular FL header has a typedef ... Window
+// in the global ns...
 struct Vindow
 : public Fl_Double_Window
 , public View
@@ -72,11 +75,15 @@ private:
 
     static void WindowCallback(Fl_Widget*, void*);
 
+    static void WhatClicked(Fl_Widget*, void*);
+    static void WhoClicked(Fl_Widget*, void*);
+    static void OutputClicked(Fl_Widget*, void*);
+
 private:
     enum class Layout
     {
-        WHO,
         OUTPUT,
+        WHO,
         WHAT,
     };
 

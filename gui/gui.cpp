@@ -136,6 +136,13 @@ int main(int argc, char* argv[])
                     { "volume", "100" },
                 }
             });
+    m->whats.push_back({
+                "A1",
+                &whatSchemas[0],
+                m->columns.begin(),
+                m->columns.begin()
+            });
+    m->output.rows.emplace_back();
     m->dirty = true;
     create_window(m);
 
