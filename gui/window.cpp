@@ -190,6 +190,7 @@ void Vindow::CreateWhatList()
                 (int)(fl_width("OUTPUT") + 0.5) + Fl::box_dw(FL_UP_BOX),
                 20,
                 "OUTPUT");
+        b->value(1); // FIXME currently active section should have value(1)
         b->callback(OutputClicked, this);
         int i = 1;
         for(auto&& what : model_->whats) {
