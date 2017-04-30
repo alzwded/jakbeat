@@ -86,7 +86,7 @@ Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
           { "Add WH&O Section",
               0, (Fl_Callback*)EditAddWho },
           { "Delete &Section",
-              0, (Fl_Callback*)EditDeleteSection, 0, FL_MENU_DIVIDER },
+              0, (Fl_Callback*)EditDeleteSection },
           { 0 },
         { "&Window",
             0, 0, 0, FL_SUBMENU },
