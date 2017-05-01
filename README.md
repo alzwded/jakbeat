@@ -15,6 +15,10 @@ If you want to run the `test.drm` example, get some kick and snare samples from 
 Building
 ========
 
+There are platform/compiler specific makefiles. See below.
+
+To activate debug, `setenv JAKBEAT_OPTS debug` before running make/nmake
+
 Win32
 -----
 
@@ -31,4 +35,6 @@ There's [this makefile](Makefile.gcc) that can be used to build on linux.
 
 Tested with gcc 6.3, but should work with any gcc that supports `--std=gnu++14`.
 
-It depends on libSDL2 and its headers which are expected to be in installed in the standard paths.
+It depends on libSDL2 and its headers which are expected to be in installed in the standard paths. In its current state, the headers REALLY need to be in `/usr/include`, otherwise you need to manually patch the makefile. (mostly because the silly win32 package doesn't include and SDL2 subdirectory in the include dir...)
+
+To build with GNU make do a `make -f Makefile.gcc` and to clean `make -f Makefile.gcc clean`.
