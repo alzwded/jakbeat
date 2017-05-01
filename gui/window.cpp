@@ -501,7 +501,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     TWOTHIRD,
                     25);
 
-            auto* dummy = new Fl_Box(schemas->x(), at, mainGroup_->w(), 25);
+            auto* dummy = new Fl_Box(schemas->x(), at, schemas->w(), 25);
             mainGroup_->resizable(dummy);
         }
         break;
