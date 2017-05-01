@@ -39,6 +39,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cassert>
 #include <algorithm>
 
+#define WHO_GROUP_BUTTON_START 1u
+#define WHAT_GROUP_BUTTON_START 1u
+
 Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
     : Fl_Double_Window(w, h, t)
     , View()
@@ -361,8 +364,8 @@ void Vindow::SetLayout(Layout lyt, const char* name)
 
 void Vindow::SelectButton(const char* reactivate1)
 {
-    auto* whoGroup = dynamic_cast<Fl_Group*>(whoGroup_->child(1)),
-        * whatGroup = dynamic_cast<Fl_Group*>(whatGroup_->child(1));
+    auto* whoGroup = dynamic_cast<Fl_Group*>(whoGroup_->child(WHO_GROUP_BUTTON_START)),
+        * whatGroup = dynamic_cast<Fl_Group*>(whatGroup_->child(WHAT_GROUP_BUTTON_START));
     const char* reactivate = (reactivate1 && *reactivate1)
         ? reactivate1
         : "OUTPUT"
