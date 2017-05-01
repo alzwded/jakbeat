@@ -148,6 +148,20 @@ int main(int argc, char* argv[])
                     { "pan", "-10" },
                 }
             });
+    m->whos.push_back({
+                "hat",
+                &drumSchemas[2],
+                {
+                    { "path", "snare.wav" },
+                    { "volume", "100" },
+                    { "stereo", "chorus" },
+                    { "pan", "-10" },
+                    { "delay", "3" },
+                    { "amount", "60" },
+                    { "speed", "30" },
+                    { "depth", "30" },
+                }
+            });
     m->whats.push_back({
                 "A1",
                 "120",
