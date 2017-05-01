@@ -150,6 +150,7 @@ Vindow::Vindow(
     , model_(m)
     , drumSchemas_(drumSchemas)
     , whatSchemas_(whatSchemas)
+    , active_("OUTPUT")
     , menu_(nullptr)
     , mainGroup_(nullptr)
 {
@@ -375,6 +376,21 @@ void Vindow::OnEvent(Event* e)
                 case Event::WHO:
                     Fl::delete_widget(whoGroup_);
                     CreateWhoList();
+                    if(active_.compare(e->original) == 0)
+                    {
+#if 0
+                        SetLayout(Layout::WHO, e->changed.c_str());
+#else
+                        if(e->sourceView == static_cast<View*>(this))
+                        {
+                            SelectButton(e->changed.c_str());
+                        }
+                        else
+                        {
+                            SetLayout(Layout::WHO, e->changed.c_str());
+                        }
+#endif
+                    }
                     break;
                 case Event::WHAT:
                     Fl::delete_widget(whoGroup_);
@@ -443,6 +459,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     25,
                     "WHO");
             wholbl->value(name);
+            wholbl->callback(WhoNameChanged, this);
             mainGroup_->add(wholbl);
 
             auto* schemas = new Fl_Input_Choice(
@@ -542,6 +559,7 @@ void Vindow::SelectButton(const char* reactivate1)
         ? reactivate1
         : "OUTPUT"
         ;
+    active_.assign(reactivate);
     assert(whoGroup);
     assert(whatGroup);
     for(size_t i = 0; i < whoGroup->children(); ++i) {

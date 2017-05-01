@@ -84,7 +84,7 @@ std::vector<Schema> whatSchemas {
     },
 };
 
-std::list<Vindow> windows;
+std::list<Vindow*> windows;
 
 std::shared_ptr<Model> load_model(std::string path)
 {
@@ -97,23 +97,23 @@ void save_model(std::shared_ptr<Model> m)
 
 bool is_any_model_dirty()
 {
-    return std::any_of(windows.begin(), windows.end(), [](Vindow& w) -> bool {
-                return w.GetModel()->dirty;
+    return std::any_of(windows.begin(), windows.end(), [](Vindow* w) -> bool {
+                return w->GetModel()->dirty;
             });
 }
 
 void create_window(std::shared_ptr<Model> m)
 {
-    windows.emplace_back(m, drumSchemas, whatSchemas);
+    windows.emplace_back(new Vindow(m, drumSchemas, whatSchemas));
     assert(m);
-    assert(windows.back().GetModel());
-    windows.back().show();
+    assert(windows.back()->GetModel());
+    windows.back()->show();
 }
 
 void destroy_window(Vindow* whom)
 {
-    auto found = std::find_if(windows.begin(), windows.end(), [whom](Vindow const& w) -> bool {
-                return &w == whom;
+    auto found = std::find_if(windows.begin(), windows.end(), [whom](Vindow * w) -> bool {
+                return w == whom;
             });
     if(found == windows.end())
     {
@@ -121,6 +121,7 @@ void destroy_window(Vindow* whom)
         return;
     }
     windows.erase(found);
+    Fl::delete_widget(whom);
 }
 
 int main(int argc, char* argv[])

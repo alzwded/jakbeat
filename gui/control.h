@@ -26,24 +26,34 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CONTROL_H
 #define CONTROL_H
 
+#include <memory>
+#include "model.h"
+#include "view.h"
+
 class Control
 {
     std::shared_ptr<Model> model_;
+    View* source_;
 
 public:
-    Control(std::shared_ptr<Model> model)
+    Control(
+            std::shared_ptr<Model> model,
+            View* source)
         : model_(model)
+        , source_(source)
     {}
+
+    typedef const char* evData;
 
     int AddWho();
     int AddWhat();
-    void SetWhosName(int id, std::string name);
-    void SetWhosSchema(int id, Schema const* schema);
-    void SetWhosParams(int id, WhoEntry::Params params);
-    void SetWho(int id, std::string name, Schema const* schema, WhoEntry::Params params);
-    void SetWhatsName(int id, std::string name);
-    void DeleteWho(int id);
-    void DeleteWhat(int id);
+    void SetWhosName(evData id, std::string name);
+    void SetWhosSchema(evData id, Schema const* schema);
+    void SetWhosParams(evData id, WhoEntry::Params params);
+    void SetWho(evData id, std::string name, Schema const* schema, WhoEntry::Params params);
+    void SetWhatsName(evData id, std::string name);
+    void DeleteWho(evData id);
+    void DeleteWhat(evData id);
 
     void InsertColumn(column_p_t before, char c = ' ');
     void DeleteColumn(column_p_t column);

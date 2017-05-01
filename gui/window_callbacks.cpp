@@ -1,6 +1,8 @@
 #include "window.h"
+#include "control.h"
 
 #include <FL/fl_ask.H>
+#include <FL/Fl_Input.H>
 
 #include <cassert>
 #include <algorithm>
@@ -139,5 +141,17 @@ void Vindow::OutputClicked(Fl_Widget* w, void* p)
 void Vindow::WindowCallback(Fl_Widget* w, void* p)
 {
     WindowClose(w, p);
+}
+
+void Vindow::WhoNameChanged(Fl_Widget* w, void* p)
+{
+    auto* inp = (Fl_Input*)w;
+    auto* me = (Vindow*)p;
+
+    const char* newName = inp->value();
+    const char* oldName = me->active_.c_str();
+
+    Control ctrl(me->model_, me);
+    ctrl.SetWhosName(oldName, newName);
 }
 

@@ -23,43 +23,31 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef VIEW_H
-#define VIEW_H
 
-#include <string>
+#include "control.h"
 
-struct View;
-struct Event
+#include <algorithm>
+#include <cstdio>
+
+void Control::SetWhosName(evData oldName, std::string name)
 {
-    enum Source
+    auto found = std::find_if(model_->whos.begin(), model_->whos.end(), [oldName](WhoEntry& e) -> bool {
+                return e.name == oldName;
+            });
+    if(found == model_->whos.end())
     {
-        WHO,
-        OUTPUT,
-        WHAT,
-        GLOBAL,
-    } source;
-
-    enum Type
-    {
-        CREATED,
-        NAME_CHANGED,
-        SCHEMA_CHANGED,
-        PARAMS_CHANGED,
-        DATA_CHANGED,
-        DELETED,
-        SAVED,
-        RELOADED
-    } type;
-
-    std::string original;
-    std::string changed;
-    View* sourceView;
-};
-
-struct View
-{
-    virtual ~View() = default;
-    virtual void OnEvent(Event*) = 0;
-};
-
-#endif
+        fprintf(stderr, "Failed to find %s...", oldName);
+        return;
+    }
+    found->name = name;
+    Event e = {
+        Event::WHO,
+        Event::NAME_CHANGED,
+        oldName,
+        name.c_str(),
+        source_
+    };
+    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
+                v->OnEvent(&e);
+            });
+}

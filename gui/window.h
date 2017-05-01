@@ -86,6 +86,8 @@ private:
     static void WhoClicked(Fl_Widget*, void*);
     static void OutputClicked(Fl_Widget*, void*);
 
+    static void WhoNameChanged(Fl_Widget*, void*);
+
 private:
     enum class Layout
     {
@@ -106,6 +108,7 @@ private:
     std::vector<Schema> const& drumSchemas_;
     std::vector<Schema> const& whatSchemas_;
     Layout layout_;
+    std::string active_;
 
 private:
     Fl_Menu_Bar* menu_;
