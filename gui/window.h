@@ -88,10 +88,12 @@ private:
         WHAT,
     };
 
-    void SetLayout(Layout);
+    void SetLayout(Layout, const char* = "");
 
     void CreateWhoList();
     void CreateWhatList();
+
+    void SelectButton(const char* reactivate = nullptr);
 
 private:
     std::shared_ptr<Model> model_;

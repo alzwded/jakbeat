@@ -27,9 +27,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "window.h"
 #include "matrix_editor.h"
 
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl_Input.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Tile.H>
@@ -42,6 +44,7 @@ Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
     , View()
     , model_(m)
     , menu_(nullptr)
+    , mainGroup_(nullptr)
 {
     assert(model_);
     model_->views.push_back(this);
@@ -123,20 +126,13 @@ Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
 
       CreateWhatList();
 
-      mainGroup_ = new Fl_Group(whoGroup_->w(), container_->y(), w - whoGroup_->w(), h - mb->h());
-      mainGroup_->box(FL_DOWN_BOX);
-      container_->add(mainGroup_);
-        auto* mainLabel = new Fl_Box(mainGroup_->x() + 10, mainGroup_->y() + 10, 100, 30);
-        mainLabel->label("main...");
-        mainGroup_->add(mainLabel);
-      mainGroup_->end();
+      SetLayout(Layout::OUTPUT);
+
     container_->end();
 
     // init self
     border(true);
     resizable(container_);
-
-    SetLayout(Layout::OUTPUT);
 
     end();
 }
@@ -199,7 +195,6 @@ void Vindow::CreateWhatList()
                 20,
                 "OUTPUT");
         b->down_box(FL_FLAT_BOX);
-        b->value(1); // FIXME currently active section should have value(1)
         b->callback(OutputClicked, this);
         int i = 1;
         for(auto&& what : model_->whats) {
@@ -246,8 +241,8 @@ void Vindow::OnEvent(Event* e)
     switch(e->type)
     {
         case Event::RELOADED:
-            delete whoGroup_;
-            delete whatGroup_;
+            Fl::delete_widget(whoGroup_);
+            Fl::delete_widget(whatGroup_);
             CreateWhoList();
             CreateWhatList();
             break;
@@ -255,11 +250,11 @@ void Vindow::OnEvent(Event* e)
             switch(e->source)
             {
                 case Event::WHO:
-                    delete whoGroup_;
+                    Fl::delete_widget(whoGroup_);
                     CreateWhoList();
                     break;
                 case Event::WHAT:
-                    delete whoGroup_;
+                    Fl::delete_widget(whoGroup_);
                     CreateWhoList();
                     break;
             }
@@ -268,11 +263,11 @@ void Vindow::OnEvent(Event* e)
             switch(e->source)
             {
                 case Event::WHO:
-                    delete whoGroup_;
+                    Fl::delete_widget(whoGroup_);
                     CreateWhoList();
                     break;
                 case Event::WHAT:
-                    delete whoGroup_;
+                    Fl::delete_widget(whoGroup_);
                     CreateWhoList();
                     break;
             }
@@ -280,46 +275,112 @@ void Vindow::OnEvent(Event* e)
     }
 }
 
-void Vindow::SetLayout(Layout lyt)
+void Vindow::SetLayout(Layout lyt, const char* name)
 {
+    SelectButton(name);
     layout_ = lyt;
 
-    // TODO cleanup
-    mainGroup_->clear();
+    if(mainGroup_) Fl::delete_widget(mainGroup_);
+    mainGroup_ = nullptr;
+
+    mainGroup_ = new Fl_Group(whoGroup_->w(), container_->y(), container_->w() - whoGroup_->w(), container_->h());
+    mainGroup_->box(FL_DOWN_BOX);
+    container_->add(mainGroup_);
 
     // set new layout
     switch(lyt)
     {
     case Layout::OUTPUT:
         {
-            mainGroup_->begin();
-              fl_font(FL_HELVETICA, 14);
-              auto* label = new Fl_Box(
-                      mainGroup_->x() + 5,
-                      mainGroup_->y() + 5,
-                      fl_width("Editing OUTPUT"),
-                      fl_height(),
-                      "Editing OUTPUT");
-              fl_font(label->labelfont(), label->labelsize());
-              label->size(fl_width("Editing OUTPUT"), fl_height());
-              label->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
-              mainGroup_->add(label);
+            fl_font(FL_HELVETICA, 14);
+            auto* label = new Fl_Box(
+                    mainGroup_->x() + 5,
+                    mainGroup_->y() + 5,
+                    fl_width("Editing OUTPUT"),
+                    fl_height(),
+                    "Editing OUTPUT");
+            fl_font(label->labelfont(), label->labelsize());
+            label->size(fl_width("Editing OUTPUT"), fl_height());
+            label->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
+            mainGroup_->add(label);
 
-              auto* editor = new MatrixEditor(
-                      label->x(),
-                      label->y() + label->h(),
-                      mainGroup_->w() - 10,
-                      mainGroup_->h() - label->h() - 10,
-                      model_->output.columns.begin(),
-                      model_->output.columns.end());
+            auto* editor = new MatrixEditor(
+                    label->x(),
+                    label->y() + label->h(),
+                    mainGroup_->w() - 10,
+                    mainGroup_->h() - label->h() - 10,
+                    model_->output.columns.begin(),
+                    model_->output.columns.end());
 
-              mainGroup_->add(editor);
-              mainGroup_->resizable(editor);
-            mainGroup_->end();
+            mainGroup_->add(editor);
+            mainGroup_->resizable(editor);
         }
         break;
     case Layout::WHO:
-    case Layout::WHAT:
+        {
+        }
         break;
+    case Layout::WHAT:
+        {
+            const int THIRD = (mainGroup_->w()) / 3 + 5,
+                      TWOTHIRD = mainGroup_->w() - THIRD - 5;
+
+            auto* whatlbl = new Fl_Input(
+                mainGroup_->x() + THIRD,
+                mainGroup_->y() + 5,
+                TWOTHIRD,
+                25,
+                "WHAT");
+            whatlbl->value(name);
+            mainGroup_->add(whatlbl);
+            auto* bpmlbl = new Fl_Input(
+                mainGroup_->x() + THIRD,
+                whatlbl->y() + whatlbl->h() + 5,
+                TWOTHIRD,
+                25,
+                "bpm");
+            mainGroup_->add(bpmlbl);
+
+            auto* editor = new MatrixEditor(
+                    mainGroup_->x() + 5,
+                    bpmlbl->y() + bpmlbl->h() + 5,
+                    mainGroup_->w() - 10,
+                    mainGroup_->h() - whatlbl->h() - 5 - bpmlbl->h() - 5 - 10,
+                    model_->output.columns.begin(),
+                    model_->output.columns.end());
+
+            mainGroup_->add(editor);
+            mainGroup_->resizable(editor);
+
+        }
+        break;
+    }
+
+    mainGroup_->end();
+}
+
+void Vindow::SelectButton(const char* reactivate1)
+{
+    auto* whoGroup = dynamic_cast<Fl_Group*>(whoGroup_->child(1)),
+        * whatGroup = dynamic_cast<Fl_Group*>(whatGroup_->child(1));
+    const char* reactivate = (reactivate1 && *reactivate1)
+        ? reactivate1
+        : "OUTPUT"
+        ;
+    assert(whoGroup);
+    assert(whatGroup);
+    for(size_t i = 0; i < whoGroup->children(); ++i) {
+        auto* b = dynamic_cast<Fl_Button*>(whoGroup->child(i));
+        if(b) {
+            b->value(0);
+            if(strcmp(b->label(), reactivate) == 0) b->value(1);
+        }
+    }
+    for(size_t i = 0; i < whatGroup->children(); ++i) {
+        auto* b = dynamic_cast<Fl_Button*>(whatGroup->child(i));
+        if(b) {
+            b->value(0);
+            if(strcmp(b->label(), reactivate) == 0) b->value(1);
+        }
     }
 }

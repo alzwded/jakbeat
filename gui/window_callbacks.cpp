@@ -120,23 +120,20 @@ void Vindow::WhatClicked(Fl_Widget* w, void* p)
 {
     Vindow* me = (Vindow*)p;
     const char* label = w->label();
-    fl_alert("WHAT %s selected", label);
-    me->SetLayout(Layout::WHAT);
+    me->SetLayout(Layout::WHAT, label);
 }
 
 void Vindow::WhoClicked(Fl_Widget* w, void* p)
 {
     Vindow* me = (Vindow*)p;
     const char* label = w->label();
-    fl_alert("WHO %s selected", label);
-    me->SetLayout(Layout::WHO);
+    me->SetLayout(Layout::WHO, label);
 }
 
-void Vindow::OutputClicked(Fl_Widget*, void* p)
+void Vindow::OutputClicked(Fl_Widget* w, void* p)
 {
     Vindow* me = (Vindow*)p;
     me->SetLayout(Layout::OUTPUT);
-    fl_alert("OUTPUT mode enabled");
 }
 
 void Vindow::WindowCallback(Fl_Widget* w, void* p)
