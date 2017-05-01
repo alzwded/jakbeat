@@ -29,9 +29,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FL/Fl.H>
 
 #include <algorithm>
+#include <vector>
 #include <cassert>
 
-Schema drumSchemas[] = {
+std::vector<Schema> drumSchemas {
     /* Basic Drum */
     {
         "Mono",
@@ -46,8 +47,8 @@ Schema drumSchemas[] = {
         {
             { "path", Schema::STRING },
             { "volume", Schema::NUMBER },
-            { "stereo", Schema::READ_ONLY_STRING, {
-                                                      { "pan", Schema::STUB },
+            { "stereo", Schema::STUB, {
+                                                      { "pan", Schema::READ_ONLY_STRING },
                                                   }},
             { "params", Schema::SUBSCHEMA, {
                                                { "pan", Schema::NUMBER },
@@ -60,8 +61,8 @@ Schema drumSchemas[] = {
         {
             { "path", Schema::STRING },
             { "volume", Schema::NUMBER },
-            { "stereo", Schema::READ_ONLY_STRING, {
-                                                      { "chorus", Schema::STUB },
+            { "stereo", Schema::STUB, {
+                                                      { "chorus", Schema::READ_ONLY_STRING },
                                                   }},
             { "params", Schema::SUBSCHEMA, {
                                                { "pan", Schema::NUMBER },
@@ -74,7 +75,7 @@ Schema drumSchemas[] = {
     },
 };
 
-Schema whatSchemas[] = {
+std::vector<Schema> whatSchemas {
     {
         "Standard",
         {
@@ -103,7 +104,7 @@ bool is_any_model_dirty()
 
 void create_window(std::shared_ptr<Model> m)
 {
-    windows.emplace_back(m);
+    windows.emplace_back(m, drumSchemas, whatSchemas);
     assert(m);
     assert(windows.back().GetModel());
     windows.back().show();
@@ -137,8 +138,19 @@ int main(int argc, char* argv[])
                     { "volume", "100" },
                 }
             });
+    m->whos.push_back({
+                "snare",
+                &drumSchemas[1],
+                {
+                    { "path", "snare.wav" },
+                    { "volume", "100" },
+                    { "stereo", "chorus" },
+                    { "pan", "-10" },
+                }
+            });
     m->whats.push_back({
                 "A1",
+                "120",
                 &whatSchemas[0],
                 m->columns.begin(),
                 m->columns.begin()

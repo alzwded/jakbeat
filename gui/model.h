@@ -76,6 +76,7 @@ struct WhoEntry
 struct WhatEntry
 {
     std::string name;
+    std::string bpm;
     Schema const* schema;
     column_p_t start, end;
 };

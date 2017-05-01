@@ -31,7 +31,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl_Int_Input.H>
 #include <FL/Fl_Input.H>
+#include <FL/Fl_Input_Choice.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Tile.H>
@@ -42,15 +44,119 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define WHO_GROUP_BUTTON_START 1u
 #define WHAT_GROUP_BUTTON_START 1u
 
-Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
+static int AddControlsFromSchema(
+        std::function<const char*(const char*)> getter,
+        decltype(Schema::attributes)::const_iterator first,
+        decltype(Schema::attributes)::const_iterator last,
+        int x, int y, int w, int h)
+{
+    if(first == last) return y + h + 5;
+
+    auto&& att = *first;
+    switch(att.type)
+    {
+    case Schema::STUB:
+        return AddControlsFromSchema(
+                getter,
+                ++first, last,
+                x, y, w, h);
+    case Schema::STRING:
+        {
+            auto* inp = new Fl_Input(
+                    x,
+                    y,
+                    w,
+                    h,
+                    att.name);
+            inp->value(getter(att.name));
+        }
+        break;
+    case Schema::READ_ONLY_STRING:
+        {
+            auto* inp = new Fl_Input(
+                    x,
+                    y,
+                    w,
+                    h,
+                    att.name);
+            inp->readonly(true);
+            inp->value(getter(att.name));
+        }
+        break;
+    case Schema::NUMBER:
+        {
+            auto* inp = new Fl_Int_Input(
+                    x,
+                    y,
+                    w,
+                    h,
+                    att.name);
+            inp->value(getter(att.name));
+        }
+        break;
+    case Schema::SUBSCHEMA:
+        {
+            int total = att.children.size() * h + (att.children.size() - 1) * 5 + 2*Fl::box_dy(FL_DOWN_BOX);
+
+            auto* title = new Fl_Box(
+                    x - fl_width(att.name),
+                    y,
+                    fl_width(att.name),
+                    h,
+                    att.name);
+            title->align(FL_ALIGN_INSIDE|FL_ALIGN_RIGHT);
+            auto* b = new Fl_Group(x, y, w, total);
+            b->box(FL_DOWN_BOX);
+            b->begin();
+              int wholeW = b->w() - Fl::box_dw(FL_DOWN_BOX);
+#if 0
+              int newX = b->x() + 5 + wholeW / 3;
+              int newW = wholeW * 2 / 3;
+#else
+              int newX = b->x() + 100;
+              int newW = wholeW - 100;
+#endif
+              int at = AddControlsFromSchema(
+                      getter,
+                      att.children.begin(),
+                      att.children.end(),
+                      newX,
+                      b->y() + Fl::box_dy(FL_DOWN_BOX),
+                      newW,
+                      h);
+              auto* dummy = new Fl_Box(newX, at, newW, h);
+              b->resizable(dummy);
+            b->end();
+            return AddControlsFromSchema(
+                    getter,
+                    ++first, last,
+                    x, at, w, h);
+        }
+        break;
+    }
+    ++first;
+    return AddControlsFromSchema(getter, first, last, x, y + h + 5, w, h);
+}
+
+Vindow::Vindow(
+        std::shared_ptr<Model> m,
+        std::vector<Schema> const& drumSchemas,
+        std::vector<Schema> const& whatSchemas,
+        const char* t,
+        int w,
+        int h)
     : Fl_Double_Window(w, h, t)
     , View()
     , model_(m)
+    , drumSchemas_(drumSchemas)
+    , whatSchemas_(whatSchemas)
     , menu_(nullptr)
     , mainGroup_(nullptr)
 {
     assert(model_);
     model_->views.push_back(this);
+
+    size_range(200, 200);
 
     // init menu
     Fl_Menu_Item menuitems[] = {
@@ -290,6 +396,14 @@ void Vindow::SetLayout(Layout lyt, const char* name)
     mainGroup_->box(FL_DOWN_BOX);
     container_->add(mainGroup_);
 
+#if 0
+            const int THIRD = (mainGroup_->w()) / 3 + 5,
+                      TWOTHIRD = mainGroup_->w() - THIRD - 5;
+#else
+    const int THIRD = 100,
+              TWOTHIRD = mainGroup_->w() - THIRD - 5;
+#endif
+
     // set new layout
     switch(lyt)
     {
@@ -321,40 +435,97 @@ void Vindow::SetLayout(Layout lyt, const char* name)
         break;
     case Layout::WHO:
         {
+            auto* wholbl = new Fl_Input(
+                    mainGroup_->x() + THIRD,
+                    mainGroup_->y() + 5,
+                    TWOTHIRD,
+                    25,
+                    "WHO");
+            wholbl->value(name);
+            mainGroup_->add(wholbl);
+
+            auto* schemas = new Fl_Input_Choice(
+                    mainGroup_->x() + THIRD,
+                    wholbl->y() + wholbl->h() + 5,
+                    TWOTHIRD,
+                    25,
+                    "Type");
+            for(auto&& s : drumSchemas_) {
+                schemas->add(s.name);
+            }
+
+            auto found = std::find_if(model_->whos.begin(), model_->whos.end(), [name](WhoEntry& e) -> bool {
+                        return e.name == name;
+                    });
+            if(found == model_->whos.end()) {
+                fl_alert("Failed to find %s...", name);
+                break;
+            }
+            auto& who = *found;
+
+            schemas->value(who.schema->name);
+
+            std::function<const char*(const char*)> getter = [&who](const char* key) -> const char* {
+                auto found = std::find_if(who.params.begin(), who.params.end(), [key](WhoEntry::Params::const_reference e) -> bool {
+                            return e.first == key;
+                        });
+                if(found == who.params.end()) return "";
+                return found->second.c_str();
+            };
+
+            auto at = AddControlsFromSchema(
+                    getter,
+                    who.schema->attributes.begin(),
+                    who.schema->attributes.end(),
+                    schemas->x(),
+                    schemas->y() + schemas->h() + 5,
+                    TWOTHIRD,
+                    25);
+
+            auto* dummy = new Fl_Box(schemas->x(), at, mainGroup_->w(), 25);
+            mainGroup_->resizable(dummy);
         }
         break;
     case Layout::WHAT:
         {
-            const int THIRD = (mainGroup_->w()) / 3 + 5,
-                      TWOTHIRD = mainGroup_->w() - THIRD - 5;
-
             auto* whatlbl = new Fl_Input(
-                mainGroup_->x() + THIRD,
-                mainGroup_->y() + 5,
-                TWOTHIRD,
-                25,
-                "WHAT");
+                    mainGroup_->x() + THIRD,
+                    mainGroup_->y() + 5,
+                    TWOTHIRD,
+                    25,
+                    "WHAT");
             whatlbl->value(name);
             mainGroup_->add(whatlbl);
-            auto* bpmlbl = new Fl_Input(
-                mainGroup_->x() + THIRD,
-                whatlbl->y() + whatlbl->h() + 5,
-                TWOTHIRD,
-                25,
-                "bpm");
+
+            auto* bpmlbl = new Fl_Int_Input(
+                    mainGroup_->x() + THIRD,
+                    whatlbl->y() + whatlbl->h() + 5,
+                    TWOTHIRD,
+                    25,
+                    "bpm");
+            auto foundWhat = std::find_if(model_->whats.begin(), model_->whats.end(), [name](WhatEntry& e) -> bool {
+                        return e.name == name;
+                    });
+            if(foundWhat == model_->whats.end()) {
+                fl_alert("Failed to find %s...", name);
+                break;
+            }
+            auto&& what = *foundWhat;
+            bpmlbl->value(what.bpm.c_str());
             mainGroup_->add(bpmlbl);
 
             auto* editor = new MatrixEditor(
-                    mainGroup_->x() + 5,
+                    //mainGroup_->x() + 5,
+                    mainGroup_->x() + THIRD,
                     bpmlbl->y() + bpmlbl->h() + 5,
-                    mainGroup_->w() - 10,
+                    //mainGroup_->w() - 10,
+                    TWOTHIRD,
                     mainGroup_->h() - whatlbl->h() - 5 - bpmlbl->h() - 5 - 10,
-                    model_->output.columns.begin(),
-                    model_->output.columns.end());
+                    what.start,
+                    what.end);
 
             mainGroup_->add(editor);
             mainGroup_->resizable(editor);
-
         }
         break;
     }

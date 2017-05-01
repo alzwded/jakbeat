@@ -40,7 +40,13 @@ struct Vindow
 : public Fl_Double_Window
 , public View
 {
-    Vindow(std::shared_ptr<Model> m, int w = 600, int h = 400, const char* t = "jakbeat-gui");
+    Vindow(
+            std::shared_ptr<Model> m,
+            std::vector<Schema> const& drumSchemas,
+            std::vector<Schema> const& whatSchemas,
+            const char* t = "jakbeat-gui",
+            int w = 600,
+            int h = 400);
     ~Vindow() override;
     void OnEvent(Event*) override;
 
@@ -97,6 +103,8 @@ private:
 
 private:
     std::shared_ptr<Model> model_;
+    std::vector<Schema> const& drumSchemas_;
+    std::vector<Schema> const& whatSchemas_;
     Layout layout_;
 
 private:
