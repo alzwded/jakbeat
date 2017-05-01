@@ -1,0 +1,37 @@
+[ ] File/New
+[ ] File/Open & Reload
+[ ] File/Save & Save As
+[X] File/Exit
+
+[ ] Edit/Undo
+[ ] Edit/Cut & Copy & Paste (general)
+[ ] Edit/Cut & Copy & Paste (editor)
+[ ] Edit/Overwrite
+[ ] Edit/Insert Rest & Blank
+[ ] Edit/Clear Columns
+[ ] Edit/Delete Columns
+[ ] Deactivate menu items when appropriate
+
+[ ] Edit/Add WHAT Section
+[ ] Edit/Add WHO Section
+[ ] Edit/Delete Section
+
+[X] Window/New
+[X] Window/Close
+[X] Window/Close All
+[X] Dirty Flag
+
+[X] Help/About
+[ ] Help/Help
+
+[X] WHO/WHO
+[ ] WHO/stereo
+[ ] WHO/params
+
+[ ] WHAT/WHAT
+[ ] WHAT/bpm
+[ ] WHAT/editor
+
+[ ] OUTPUT/editor
+
+[ ] editor
