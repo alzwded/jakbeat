@@ -156,8 +156,6 @@ Vindow::Vindow(
     assert(model_);
     model_->views.push_back(this);
 
-    size_range(200, 200);
-
     // init menu
     Fl_Menu_Item menuitems[] = {
         { "&File",
@@ -224,10 +222,13 @@ Vindow::Vindow(
     // callback
     callback(WindowCallback, this);
 
+    // window init
+    constexpr int dx = 150;
+    size_range(2 * dx, 2 * dx);
+
     // init common components
     container_ =  new Fl_Tile(0, mb->h(), w, h - mb->h());
       // create something strange from FLTK test code...
-      constexpr int dx = 150;
       auto* limit = new Fl_Box(container_->x() + dx, container_->y() + dx, container_->w() - 2*dx, container_->h() - 2*dx);
       container_->resizable(limit);
 
