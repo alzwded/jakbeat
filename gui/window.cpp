@@ -25,6 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "window.h"
+#include "matrix_editor.h"
 
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
@@ -114,7 +115,7 @@ Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
     // init common components
     container_ =  new Fl_Tile(0, mb->h(), w, h - mb->h());
       // create something strange from FLTK test code...
-      constexpr int dx = 100;
+      constexpr int dx = 150;
       auto* limit = new Fl_Box(container_->x() + dx, container_->y() + dx, container_->w() - 2*dx, container_->h() - 2*dx);
       container_->resizable(limit);
 
@@ -134,6 +135,8 @@ Vindow::Vindow(std::shared_ptr<Model> m, int w, int h, const char* t)
     // init self
     border(true);
     resizable(container_);
+
+    SetLayout(Layout::OUTPUT);
 
     end();
 }
@@ -280,4 +283,43 @@ void Vindow::OnEvent(Event* e)
 void Vindow::SetLayout(Layout lyt)
 {
     layout_ = lyt;
+
+    // TODO cleanup
+    mainGroup_->clear();
+
+    // set new layout
+    switch(lyt)
+    {
+    case Layout::OUTPUT:
+        {
+            mainGroup_->begin();
+              fl_font(FL_HELVETICA, 14);
+              auto* label = new Fl_Box(
+                      mainGroup_->x() + 5,
+                      mainGroup_->y() + 5,
+                      fl_width("Editing OUTPUT"),
+                      fl_height(),
+                      "Editing OUTPUT");
+              fl_font(label->labelfont(), label->labelsize());
+              label->size(fl_width("Editing OUTPUT"), fl_height());
+              label->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
+              mainGroup_->add(label);
+
+              auto* editor = new MatrixEditor(
+                      label->x(),
+                      label->y() + label->h(),
+                      mainGroup_->w() - 10,
+                      mainGroup_->h() - label->h() - 10,
+                      model_->output.columns.begin(),
+                      model_->output.columns.end());
+
+              mainGroup_->add(editor);
+              mainGroup_->resizable(editor);
+            mainGroup_->end();
+        }
+        break;
+    case Layout::WHO:
+    case Layout::WHAT:
+        break;
+    }
 }
