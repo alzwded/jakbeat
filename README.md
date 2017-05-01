@@ -15,10 +15,20 @@ If you want to run the `test.drm` example, get some kick and snare samples from 
 Building
 ========
 
+Win32
+-----
+
 The build was tested with MSVC 12.0 (that would be Visual Studio 2013).
 
 The project depends on lemon (included in the sources) and SDL 2.0 which you need to get (put it in \vendor).
 
 Then, just `nmake` in the root directory and you should end up with `jakbeat.exe` which reads input from STDIN.
 
-The code should run on linux as well, but there's no makefile at this time.
+Linux
+-----
+
+There's [this makefile](Makefile.gcc) that can be used to build on linux.
+
+Tested with gcc 6.3, but should work with any gcc that supports `--std=gnu++14`.
+
+It depends on libSDL2 and its headers which are expected to be in installed in the standard paths.
