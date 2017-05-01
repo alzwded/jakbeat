@@ -467,7 +467,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     wholbl->y() + wholbl->h() + 5,
                     TWOTHIRD,
                     25,
-                    "Type");
+                    "stereo");
             schemas->input()->readonly(true);
             for(auto&& s : drumSchemas_) {
                 schemas->add(s.name);
