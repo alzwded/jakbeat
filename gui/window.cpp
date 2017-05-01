@@ -468,6 +468,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     TWOTHIRD,
                     25,
                     "Type");
+            schemas->input()->readonly(true);
             for(auto&& s : drumSchemas_) {
                 schemas->add(s.name);
             }
