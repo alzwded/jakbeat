@@ -40,6 +40,7 @@ void Control::SetWhosName(evData oldName, std::string name)
         return;
     }
     found->name = name;
+    model_->dirty = true;
     Event e = {
         Event::WHO,
         Event::NAME_CHANGED,
