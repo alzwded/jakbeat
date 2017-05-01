@@ -151,11 +151,13 @@ void Vindow::WhoNameChanged(Fl_Widget* w, void* p)
     const char* newName = inp->value();
     const char* oldName = me->active_.c_str();
 
+    assert(newName);
     if(std::any_of(me->model_->whos.begin(), me->model_->whos.end(), [newName](WhoEntry const& e) -> bool {
                     return e.name == newName;
-                }))
+                })
+            || *newName == '\0')
     {
-        fl_alert("Name needs to be unique");
+        fl_alert("Name needs to be unique and not null");
         inp->value(oldName);
         //Fl::focus(inp); // doesn't work because e.g. the tab key is
                           // handled later...
