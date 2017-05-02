@@ -86,6 +86,31 @@ void Control::SetWhosParam(Control::evData id, std::string key, std::string valu
             });
 }
 
+void Control::SetWhosSchema(Control::evData id, Schema const* schema)
+{
+    auto foundEntry = std::find_if(model_->whos.begin(), model_->whos.end(), [id](WhoEntry& e) -> bool {
+                return e.name == id;
+            });
+    if(foundEntry == model_->whos.end()) {
+        fprintf(stderr, "Failed to find %s...", id.c_str());
+        return;
+    }
+
+    foundEntry->schema = schema;
+
+    model_->dirty = true;
+    Event e = {
+        Event::WHO,
+        Event::CHANGED,
+        id,
+        " schema",
+        source_
+    };
+    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
+                v->OnEvent(&e);
+            });
+}
+
 void Control::SetWhatsName(Control::evData id, std::string name)
 {
     auto found = std::find_if(model_->whats.begin(), model_->whats.end(), [id](WhatEntry& e) -> bool {

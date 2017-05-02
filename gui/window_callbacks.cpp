@@ -3,6 +3,7 @@
 
 #include <FL/fl_ask.H>
 #include <FL/Fl_Input.H>
+#include <FL/Fl_Input_Choice.H>
 
 #include <cassert>
 #include <algorithm>
@@ -192,6 +193,20 @@ void Vindow::WhatNameChanged(Fl_Widget* w, void* p)
 
     Control ctrl(me->model_, me);
     ctrl.SetWhatsName(oldName, newName);
+}
+
+void Vindow::SchemaChanged(Fl_Widget* w, void* p)
+{
+    auto* inp = (Fl_Input_Choice*)w;
+    auto* me = (Vindow*)p;
+
+    auto&& who = me->active_;
+    int idx = inp->menubutton()->value();
+    assert(idx >= 0 && idx < me->drumSchemas_.size());
+    Schema const* schema = &me->drumSchemas_[idx];
+
+    Control ctrl(me->model_, me);
+    ctrl.SetWhosSchema(who, schema);
 }
 
 void Vindow::ParamChanged(Fl_Widget* w, void* p)

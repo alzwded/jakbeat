@@ -411,7 +411,9 @@ void Vindow::OnEvent(Event* e)
         case Event::CHANGED:
             {
                 if(active_.compare(e->targetId) == 0) {
-                    if(e->sourceView != static_cast<View*>(this)) {
+                    if(e->sourceView != static_cast<View*>(this)
+                            || e->changed == " schema")
+                    {
                         SetLayout(Layout::WHO, e->targetId.c_str());
                     }
                 }
@@ -488,6 +490,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     25,
                     "stereo");
             schemas->input()->readonly(true);
+            schemas->callback(SchemaChanged, this);
             for(auto&& s : drumSchemas_) {
                 schemas->add(s.name);
             }

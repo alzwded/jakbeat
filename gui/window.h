@@ -87,6 +87,7 @@ private:
     static void OutputClicked(Fl_Widget*, void*);
 
     static void WhoNameChanged(Fl_Widget*, void*);
+    static void SchemaChanged(Fl_Widget*, void*);
     static void ParamChanged(Fl_Widget*, void*);
     static void WhatNameChanged(Fl_Widget*, void*);
 
