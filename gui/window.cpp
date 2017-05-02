@@ -367,10 +367,18 @@ void Vindow::OnEvent(Event* e)
                 case Event::WHO:
                     Fl::delete_widget(whoGroup_);
                     CreateWhoList();
+                    if(active_.compare(e->targetId) == 0) {
+                        SetLayout(Layout::OUTPUT);
+                        SelectButton("OUTPUT");
+                    }
                     break;
                 case Event::WHAT:
-                    Fl::delete_widget(whoGroup_);
-                    CreateWhoList();
+                    Fl::delete_widget(whatGroup_);
+                    CreateWhatList();
+                    if(active_.compare(e->targetId) == 0) {
+                        SetLayout(Layout::OUTPUT);
+                        SelectButton("OUTPUT");
+                    }
                     break;
             }
             break;
