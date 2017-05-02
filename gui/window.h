@@ -87,6 +87,7 @@ private:
     static void OutputClicked(Fl_Widget*, void*);
 
     static void WhoNameChanged(Fl_Widget*, void*);
+    static void WhatNameChanged(Fl_Widget*, void*);
 
 private:
     enum class Layout

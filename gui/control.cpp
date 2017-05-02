@@ -52,3 +52,27 @@ void Control::SetWhosName(evData oldName, std::string name)
                 v->OnEvent(&e);
             });
 }
+
+void Control::SetWhatsName(Control::evData id, std::string name)
+{
+    auto found = std::find_if(model_->whats.begin(), model_->whats.end(), [id](WhatEntry& e) -> bool {
+                return e.name == id;
+            });
+    if(found == model_->whats.end())
+    {
+        fprintf(stderr, "Failed to find %s...", id);
+        return;
+    }
+    found->name = name;
+    model_->dirty = true;
+    Event e = {
+        Event::WHAT,
+        Event::NAME_CHANGED,
+        id,
+        name.c_str(),
+        source_
+    };
+    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
+                v->OnEvent(&e);
+            });
+}

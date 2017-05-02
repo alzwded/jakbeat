@@ -168,3 +168,29 @@ void Vindow::WhoNameChanged(Fl_Widget* w, void* p)
     ctrl.SetWhosName(oldName, newName);
 }
 
+void Vindow::WhatNameChanged(Fl_Widget* w, void* p)
+{
+    auto* inp = (Fl_Input*)w;
+    auto* me = (Vindow*)p;
+
+    const char* newName = inp->value();
+    const char* oldName = me->active_.c_str();
+
+    assert(newName);
+    if(std::any_of(me->model_->whos.begin(), me->model_->whos.end(), [newName](WhoEntry const& e) -> bool {
+                    return e.name == newName;
+                })
+            || *newName == '\0'
+            || strcmp(newName, "OUTPUT") == 0)
+    {
+        fl_alert("Name needs to be unique and not null");
+        inp->value(oldName);
+        //Fl::focus(inp); // doesn't work because e.g. the tab key is
+                          // handled later...
+        return;
+    }
+
+    Control ctrl(me->model_, me);
+    ctrl.SetWhatsName(oldName, newName);
+}
+

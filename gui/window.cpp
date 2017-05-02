@@ -378,9 +378,6 @@ void Vindow::OnEvent(Event* e)
                     CreateWhoList();
                     if(active_.compare(e->targetId) == 0)
                     {
-#if 0
-                        SetLayout(Layout::WHO, e->changed.c_str());
-#else
                         if(e->sourceView == static_cast<View*>(this))
                         {
                             SelectButton(e->changed.c_str());
@@ -389,12 +386,22 @@ void Vindow::OnEvent(Event* e)
                         {
                             SetLayout(Layout::WHO, e->changed.c_str());
                         }
-#endif
                     }
                     break;
                 case Event::WHAT:
                     Fl::delete_widget(whoGroup_);
                     CreateWhoList();
+                    if(active_.compare(e->targetId) == 0)
+                    {
+                        if(e->sourceView == static_cast<View*>(this))
+                        {
+                            SelectButton(e->changed.c_str());
+                        }
+                        else
+                        {
+                            SetLayout(Layout::WHAT, e->changed.c_str());
+                        }
+                    }
                     break;
             }
             break;
@@ -514,6 +521,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     25,
                     "WHAT");
             whatlbl->value(name);
+            whatlbl->callback(WhatNameChanged, this);
             mainGroup_->add(whatlbl);
 
             auto* bpmlbl = new Fl_Int_Input(
