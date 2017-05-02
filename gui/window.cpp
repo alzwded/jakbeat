@@ -310,6 +310,10 @@ void Vindow::CreateWhatList()
         int i = 1;
         for(auto&& what : model_->whats) {
           int w = fl_width(what.name.c_str()) + 0.5 + 2*Fl::box_dw(FL_UP_BOX);
+          printf("%s.len = %f, total = %d\n",
+                  what.name.c_str(),
+                  fl_width(what.name.c_str()),
+                  w);
           auto* b = new Fl_Button(
                   scroll->x() + Fl::box_dx(scroll->box()),
                   scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
@@ -389,8 +393,8 @@ void Vindow::OnEvent(Event* e)
                     }
                     break;
                 case Event::WHAT:
-                    Fl::delete_widget(whoGroup_);
-                    CreateWhoList();
+                    Fl::delete_widget(whatGroup_);
+                    CreateWhatList();
                     if(active_.compare(e->targetId) == 0)
                     {
                         if(e->sourceView == static_cast<View*>(this))
