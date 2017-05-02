@@ -376,7 +376,7 @@ void Vindow::OnEvent(Event* e)
                 case Event::WHO:
                     Fl::delete_widget(whoGroup_);
                     CreateWhoList();
-                    if(active_.compare(e->original) == 0)
+                    if(active_.compare(e->targetId) == 0)
                     {
 #if 0
                         SetLayout(Layout::WHO, e->changed.c_str());
