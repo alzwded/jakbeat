@@ -178,7 +178,7 @@ void Vindow::WhatNameChanged(Fl_Widget* w, void* p)
     const char* oldName = me->active_.c_str();
 
     assert(newName);
-    if(std::any_of(me->model_->whos.begin(), me->model_->whos.end(), [newName](WhoEntry const& e) -> bool {
+    if(std::any_of(me->model_->whats.begin(), me->model_->whats.end(), [newName](WhatEntry const& e) -> bool {
                     return e.name == newName;
                 })
             || *newName == '\0'
@@ -193,6 +193,18 @@ void Vindow::WhatNameChanged(Fl_Widget* w, void* p)
 
     Control ctrl(me->model_, me);
     ctrl.SetWhatsName(oldName, newName);
+}
+
+void Vindow::WhatBpmChanged(Fl_Widget* w, void* p)
+{
+    auto* inp = dynamic_cast<Fl_Input*>(w);
+    auto* me = (Vindow*)p;
+
+    auto&& what = me->active_;
+    auto bpm = inp->value();
+
+    Control ctrl(me->model_, me);
+    ctrl.SetWhatsBpm(what, bpm);
 }
 
 void Vindow::SchemaChanged(Fl_Widget* w, void* p)
@@ -211,7 +223,7 @@ void Vindow::SchemaChanged(Fl_Widget* w, void* p)
 
 void Vindow::ParamChanged(Fl_Widget* w, void* p)
 {
-    auto* inp = (Fl_Input*)w;
+    auto* inp = dynamic_cast<Fl_Input*>(w);
     auto* me = (Vindow*)p;
 
     auto&& who = me->active_;

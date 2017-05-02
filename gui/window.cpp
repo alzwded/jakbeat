@@ -387,9 +387,11 @@ void Vindow::OnEvent(Event* e)
                 case Event::WHO:
                     Fl::delete_widget(whoGroup_);
                     CreateWhoList();
-                    if(active_.compare(e->targetId) == 0) {
+                    if(active_.compare(e->targetId) == 0
+                            && layout_ == Layout::WHO)
+                    {
                         if(e->sourceView == static_cast<View*>(this)) {
-                            SelectButton(e->changed.c_str());
+                            SelectButton(e->changed.c_str(), Layout::WHO);
                         } else {
                             SetLayout(Layout::WHO, e->changed.c_str());
                         }
@@ -398,9 +400,11 @@ void Vindow::OnEvent(Event* e)
                 case Event::WHAT:
                     Fl::delete_widget(whatGroup_);
                     CreateWhatList();
-                    if(active_.compare(e->targetId) == 0) {
+                    if(active_.compare(e->targetId) == 0
+                            && layout_ == Layout::WHAT)
+                    {
                         if(e->sourceView == static_cast<View*>(this)) {
-                            SelectButton(e->changed.c_str());
+                            SelectButton(e->changed.c_str(), Layout::WHAT);
                         } else {
                             SetLayout(Layout::WHAT, e->changed.c_str());
                         }
@@ -410,11 +414,21 @@ void Vindow::OnEvent(Event* e)
             break;
         case Event::CHANGED:
             {
-                if(active_.compare(e->targetId) == 0) {
+                Layout lyt = layout_;
+                switch(e->source)
+                {
+                case Event::WHO: lyt = Layout::WHO; break;
+                case Event::WHAT: lyt = Layout::WHAT; break;
+                case Event::OUTPUT: lyt = Layout::OUTPUT; break;
+                }
+
+                if(active_.compare(e->targetId) == 0
+                        && layout_ == lyt)
+                {
                     if(e->sourceView != static_cast<View*>(this)
                             || e->changed == " schema")
                     {
-                        SetLayout(Layout::WHO, e->targetId.c_str());
+                        SetLayout(lyt, e->targetId.c_str());
                     }
                 }
             }
@@ -424,7 +438,7 @@ void Vindow::OnEvent(Event* e)
 
 void Vindow::SetLayout(Layout lyt, const char* name)
 {
-    SelectButton(name);
+    SelectButton(name, lyt);
     layout_ = lyt;
 
     if(mainGroup_) Fl::delete_widget(mainGroup_);
@@ -545,6 +559,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     TWOTHIRD,
                     25,
                     "bpm");
+            bpmlbl->callback(WhatBpmChanged, this);
             auto foundWhat = std::find_if(model_->whats.begin(), model_->whats.end(), [name](WhatEntry& e) -> bool {
                         return e.name == name;
                     });
@@ -575,7 +590,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
     mainGroup_->end();
 }
 
-void Vindow::SelectButton(const char* reactivate1)
+void Vindow::SelectButton(const char* reactivate1, Layout lyt)
 {
     auto* whoGroup = dynamic_cast<Fl_Group*>(whoGroup_->child(WHO_GROUP_BUTTON_START)),
         * whatGroup = dynamic_cast<Fl_Group*>(whatGroup_->child(WHAT_GROUP_BUTTON_START));
@@ -590,14 +605,18 @@ void Vindow::SelectButton(const char* reactivate1)
         auto* b = dynamic_cast<Fl_Button*>(whoGroup->child(i));
         if(b) {
             b->value(0);
-            if(strcmp(b->label(), reactivate) == 0) b->value(1);
+            if(strcmp(b->label(), reactivate) == 0
+                    && lyt != Layout::WHAT)
+                b->value(1);
         }
     }
     for(size_t i = 0; i < whatGroup->children(); ++i) {
         auto* b = dynamic_cast<Fl_Button*>(whatGroup->child(i));
         if(b) {
             b->value(0);
-            if(strcmp(b->label(), reactivate) == 0) b->value(1);
+            if(strcmp(b->label(), reactivate) == 0
+                    && lyt != Layout::WHO)
+                b->value(1);
         }
     }
 }

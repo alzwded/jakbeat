@@ -90,6 +90,7 @@ private:
     static void SchemaChanged(Fl_Widget*, void*);
     static void ParamChanged(Fl_Widget*, void*);
     static void WhatNameChanged(Fl_Widget*, void*);
+    static void WhatBpmChanged(Fl_Widget*, void*);
 
 private:
     enum class Layout
@@ -109,7 +110,7 @@ private:
         decltype(Schema::attributes)::const_iterator last,
         int x, int y, int w, int h);
 
-    void SelectButton(const char* reactivate = nullptr);
+    void SelectButton(const char* reactivate = nullptr, Layout lyt = Layout::OUTPUT);
 
 private:
     std::shared_ptr<Model> model_;

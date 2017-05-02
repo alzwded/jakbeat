@@ -134,3 +134,27 @@ void Control::SetWhatsName(Control::evData id, std::string name)
                 v->OnEvent(&e);
             });
 }
+
+void Control::SetWhatsBpm(Control::evData id, std::string bpm)
+{
+    auto found = std::find_if(model_->whats.begin(), model_->whats.end(), [id](WhatEntry& e) -> bool {
+                return e.name == id;
+            });
+    if(found == model_->whats.end())
+    {
+        fprintf(stderr, "Failed to find %s...", id.c_str());
+        return;
+    }
+    found->bpm = bpm;
+    model_->dirty = true;
+    Event e = {
+        Event::WHAT,
+        Event::CHANGED,
+        id,
+        "bpm",
+        source_
+    };
+    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
+                v->OnEvent(&e);
+            });
+}
