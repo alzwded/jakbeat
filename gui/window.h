@@ -87,6 +87,7 @@ private:
     static void OutputClicked(Fl_Widget*, void*);
 
     static void WhoNameChanged(Fl_Widget*, void*);
+    static void ParamChanged(Fl_Widget*, void*);
     static void WhatNameChanged(Fl_Widget*, void*);
 
 private:
@@ -101,6 +102,11 @@ private:
 
     void CreateWhoList();
     void CreateWhatList();
+    int AddControlsFromSchema(
+        std::function<const char*(const char*)> getter,
+        decltype(Schema::attributes)::const_iterator first,
+        decltype(Schema::attributes)::const_iterator last,
+        int x, int y, int w, int h);
 
     void SelectButton(const char* reactivate = nullptr);
 

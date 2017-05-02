@@ -44,100 +44,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define WHO_GROUP_BUTTON_START 1u
 #define WHAT_GROUP_BUTTON_START 1u
 
-static int AddControlsFromSchema(
-        std::function<const char*(const char*)> getter,
-        decltype(Schema::attributes)::const_iterator first,
-        decltype(Schema::attributes)::const_iterator last,
-        int x, int y, int w, int h)
-{
-    if(first == last) return y + h + 5;
-
-    auto&& att = *first;
-    switch(att.type)
-    {
-    case Schema::STUB:
-        return AddControlsFromSchema(
-                getter,
-                ++first, last,
-                x, y, w, h);
-    case Schema::STRING:
-        {
-            auto* inp = new Fl_Input(
-                    x,
-                    y,
-                    w,
-                    h,
-                    att.name);
-            inp->value(getter(att.name));
-        }
-        break;
-    case Schema::READ_ONLY_STRING:
-        {
-            auto* inp = new Fl_Input(
-                    x,
-                    y,
-                    w,
-                    h,
-                    att.name);
-            inp->readonly(true);
-            inp->value(getter(att.name));
-        }
-        break;
-    case Schema::NUMBER:
-        {
-            auto* inp = new Fl_Int_Input(
-                    x,
-                    y,
-                    w,
-                    h,
-                    att.name);
-            inp->value(getter(att.name));
-        }
-        break;
-    case Schema::SUBSCHEMA:
-        {
-            int total = att.children.size() * h + (att.children.size() - 1) * 5 + 2*Fl::box_dy(FL_DOWN_BOX);
-
-            auto* title = new Fl_Box(
-                    x - fl_width(att.name),
-                    y,
-                    fl_width(att.name),
-                    h,
-                    att.name);
-            title->align(FL_ALIGN_INSIDE|FL_ALIGN_RIGHT);
-            auto* b = new Fl_Group(x, y, w, total);
-            b->box(FL_DOWN_BOX);
-            b->begin();
-              int wholeW = b->w() - Fl::box_dw(FL_DOWN_BOX);
-#if 0
-              int newX = b->x() + 5 + wholeW / 3;
-              int newW = wholeW * 2 / 3;
-#else
-              int newX = b->x() + 100;
-              int newW = wholeW - 100;
-#endif
-              int at = AddControlsFromSchema(
-                      getter,
-                      att.children.begin(),
-                      att.children.end(),
-                      newX,
-                      b->y() + Fl::box_dy(FL_DOWN_BOX),
-                      newW,
-                      h);
-              auto* dummy = new Fl_Box(newX, at, newW, h);
-              b->resizable(dummy);
-            b->end();
-            return AddControlsFromSchema(
-                    getter,
-                    ++first, last,
-                    x, at, w, h);
-        }
-        break;
-    }
-    ++first;
-    return AddControlsFromSchema(getter, first, last, x, y + h + 5, w, h);
-}
-
 Vindow::Vindow(
         std::shared_ptr<Model> m,
         std::vector<Schema> const& drumSchemas,
@@ -248,6 +154,103 @@ Vindow::Vindow(
     end();
 }
 
+int Vindow::AddControlsFromSchema(
+        std::function<const char*(const char*)> getter,
+        decltype(Schema::attributes)::const_iterator first,
+        decltype(Schema::attributes)::const_iterator last,
+        int x, int y, int w, int h)
+{
+    if(first == last) return y + h + 5;
+
+    auto&& att = *first;
+    switch(att.type)
+    {
+    case Schema::STUB:
+        return AddControlsFromSchema(
+                getter,
+                ++first, last,
+                x, y, w, h);
+    case Schema::STRING:
+        {
+            auto* inp = new Fl_Input(
+                    x,
+                    y,
+                    w,
+                    h,
+                    att.name);
+            inp->value(getter(att.name));
+            inp->callback(ParamChanged, this);
+        }
+        break;
+    case Schema::READ_ONLY_STRING:
+        {
+            auto* inp = new Fl_Input(
+                    x,
+                    y,
+                    w,
+                    h,
+                    att.name);
+            inp->readonly(true);
+            inp->value(getter(att.name));
+            inp->callback(ParamChanged, this);
+        }
+        break;
+    case Schema::NUMBER:
+        {
+            auto* inp = new Fl_Int_Input(
+                    x,
+                    y,
+                    w,
+                    h,
+                    att.name);
+            inp->value(getter(att.name));
+            inp->callback(ParamChanged, this);
+        }
+        break;
+    case Schema::SUBSCHEMA:
+        {
+            int total = att.children.size() * h + (att.children.size() - 1) * 5 + 2*Fl::box_dy(FL_DOWN_BOX);
+
+            auto* title = new Fl_Box(
+                    x - fl_width(att.name),
+                    y,
+                    fl_width(att.name),
+                    h,
+                    att.name);
+            title->align(FL_ALIGN_INSIDE|FL_ALIGN_RIGHT);
+            auto* b = new Fl_Group(x, y, w, total);
+            b->box(FL_DOWN_BOX);
+            b->begin();
+              int wholeW = b->w() - Fl::box_dw(FL_DOWN_BOX);
+#if 0
+              int newX = b->x() + 5 + wholeW / 3;
+              int newW = wholeW * 2 / 3;
+#else
+              int newX = b->x() + 100;
+              int newW = wholeW - 100;
+#endif
+              int at = AddControlsFromSchema(
+                      getter,
+                      att.children.begin(),
+                      att.children.end(),
+                      newX,
+                      b->y() + Fl::box_dy(FL_DOWN_BOX),
+                      newW,
+                      h);
+              auto* dummy = new Fl_Box(newX, at, newW, h);
+              b->resizable(dummy);
+            b->end();
+            return AddControlsFromSchema(
+                    getter,
+                    ++first, last,
+                    x, at, w, h);
+        }
+        break;
+    }
+    ++first;
+    return AddControlsFromSchema(getter, first, last, x, y + h + 5, w, h);
+}
+
 void Vindow::CreateWhoList()
 {
       whoGroup_ = new Fl_Group(container_->x(), container_->y(), container_->w() / 4, container_->h() / 2);
@@ -310,10 +313,6 @@ void Vindow::CreateWhatList()
         int i = 1;
         for(auto&& what : model_->whats) {
           int w = fl_width(what.name.c_str()) + 0.5 + 2*Fl::box_dw(FL_UP_BOX);
-          printf("%s.len = %f, total = %d\n",
-                  what.name.c_str(),
-                  fl_width(what.name.c_str()),
-                  w);
           auto* b = new Fl_Button(
                   scroll->x() + Fl::box_dx(scroll->box()),
                   scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
@@ -388,14 +387,10 @@ void Vindow::OnEvent(Event* e)
                 case Event::WHO:
                     Fl::delete_widget(whoGroup_);
                     CreateWhoList();
-                    if(active_.compare(e->targetId) == 0)
-                    {
-                        if(e->sourceView == static_cast<View*>(this))
-                        {
+                    if(active_.compare(e->targetId) == 0) {
+                        if(e->sourceView == static_cast<View*>(this)) {
                             SelectButton(e->changed.c_str());
-                        }
-                        else
-                        {
+                        } else {
                             SetLayout(Layout::WHO, e->changed.c_str());
                         }
                     }
@@ -403,18 +398,23 @@ void Vindow::OnEvent(Event* e)
                 case Event::WHAT:
                     Fl::delete_widget(whatGroup_);
                     CreateWhatList();
-                    if(active_.compare(e->targetId) == 0)
-                    {
-                        if(e->sourceView == static_cast<View*>(this))
-                        {
+                    if(active_.compare(e->targetId) == 0) {
+                        if(e->sourceView == static_cast<View*>(this)) {
                             SelectButton(e->changed.c_str());
-                        }
-                        else
-                        {
+                        } else {
                             SetLayout(Layout::WHAT, e->changed.c_str());
                         }
                     }
                     break;
+            }
+            break;
+        case Event::CHANGED:
+            {
+                if(active_.compare(e->targetId) == 0) {
+                    if(e->sourceView != static_cast<View*>(this)) {
+                        SetLayout(Layout::WHO, e->targetId.c_str());
+                    }
+                }
             }
             break;
     }

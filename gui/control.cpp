@@ -36,7 +36,7 @@ void Control::SetWhosName(evData oldName, std::string name)
             });
     if(found == model_->whos.end())
     {
-        fprintf(stderr, "Failed to find %s...", oldName);
+        fprintf(stderr, "Failed to find %s...", oldName.c_str());
         return;
     }
     found->name = name;
@@ -53,6 +53,39 @@ void Control::SetWhosName(evData oldName, std::string name)
             });
 }
 
+void Control::SetWhosParam(Control::evData id, std::string key, std::string value)
+{
+    auto foundEntry = std::find_if(model_->whos.begin(), model_->whos.end(), [id](WhoEntry& e) -> bool {
+                return e.name == id;
+            });
+    if(foundEntry == model_->whos.end()) {
+        fprintf(stderr, "Failed to find %s...", id.c_str());
+        return;
+    }
+    auto&& params = foundEntry->params;
+
+    auto found = std::find_if(params.begin(), params.end(), [key](WhoEntry::Params::reference p) -> bool {
+                return p.first == key;
+            });
+    if(found == params.end()) {
+        params.emplace_back(key, value);
+    } else {
+        found->second = value;
+    }
+
+    model_->dirty = true;
+    Event e = {
+        Event::WHO,
+        Event::CHANGED,
+        id,
+        key,
+        source_
+    };
+    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
+                v->OnEvent(&e);
+            });
+}
+
 void Control::SetWhatsName(Control::evData id, std::string name)
 {
     auto found = std::find_if(model_->whats.begin(), model_->whats.end(), [id](WhatEntry& e) -> bool {
@@ -60,7 +93,7 @@ void Control::SetWhatsName(Control::evData id, std::string name)
             });
     if(found == model_->whats.end())
     {
-        fprintf(stderr, "Failed to find %s...", id);
+        fprintf(stderr, "Failed to find %s...", id.c_str());
         return;
     }
     found->name = name;

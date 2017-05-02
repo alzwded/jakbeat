@@ -194,3 +194,15 @@ void Vindow::WhatNameChanged(Fl_Widget* w, void* p)
     ctrl.SetWhatsName(oldName, newName);
 }
 
+void Vindow::ParamChanged(Fl_Widget* w, void* p)
+{
+    auto* inp = (Fl_Input*)w;
+    auto* me = (Vindow*)p;
+
+    auto&& who = me->active_;
+    const char* param = inp->label();
+    const char* value = inp->value();
+
+    Control ctrl(me->model_, me);
+    ctrl.SetWhosParam(who, param, value);
+}

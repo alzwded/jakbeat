@@ -43,13 +43,13 @@ public:
         , source_(source)
     {}
 
-    typedef const char* evData;
+    typedef std::string evData;
 
     int AddWho();
     int AddWhat();
     void SetWhosName(evData id, std::string name);
     void SetWhosSchema(evData id, Schema const* schema);
-    void SetWhosParams(evData id, WhoEntry::Params params);
+    void SetWhosParam(evData id, std::string key, std::string value);
     void SetWho(evData id, std::string name, Schema const* schema, WhoEntry::Params params);
     void SetWhatsName(evData id, std::string name);
     void DeleteWho(evData id);

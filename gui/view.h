@@ -43,9 +43,7 @@ struct Event
     {
         CREATED,
         NAME_CHANGED,
-        SCHEMA_CHANGED,
-        PARAMS_CHANGED,
-        DATA_CHANGED,
+        CHANGED,
         DELETED,
         SAVED,
         RELOADED
