@@ -104,19 +104,26 @@ MatrixEditor::~MatrixEditor()
 
 void MatrixEditor::draw()
 {
-    fl_draw_box(FL_DOWN_BOX, x(), y(), w(), h(), FL_BACKGROUND2_COLOR);
+    fl_draw_box(FL_DOWN_BOX, this->x(), this->y(), this->w(), this->h(), FL_BACKGROUND2_COLOR);
 
     fl_font(FL_SCREEN_BOLD, 18);
     auto selectionColor = active_
         ? FL_SELECTION_COLOR
         : FL_INACTIVE_COLOR
         ;
-    fl_draw_box(FL_FLAT_BOX, x() + Fl::box_dx(FL_DOWN_BOX), y() + Fl::box_dy(FL_DOWN_BOX), fl_width('X'), fl_height(), selectionColor);
+    int  cx = fl_width('X'),
+         cy = fl_height(),
+         x = this->x() + Fl::box_dx(FL_DOWN_BOX),
+         y = this->y() + Fl::box_dy(FL_DOWN_BOX),
+         w = sb2->x() - this->x(),
+         h = sb1->y() - this->y();
+
+    fl_draw_box(FL_FLAT_BOX, x, y, cx, cy, selectionColor);
     fl_color(fl_contrast(FL_FOREGROUND_COLOR, selectionColor));
-    fl_draw("X", x() + Fl::box_dx(FL_DOWN_BOX), y() + Fl::box_dy(FL_DOWN_BOX), fl_width("X"), fl_height(), 0, nullptr, false);
-    //fl_draw_box(FL_FLAT_BOX, x() + Fl::box_dx(FL_DOWN_BOX) + fl_width("X"), y() + Fl::box_dy(FL_DOWN_BOX), fl_width("X"), fl_height(), FL_BACKGROUND2_COLOR);
+    fl_draw("X", x, y, cx, cy, 0, nullptr, false);
+    //fl_draw_box(FL_FLAT_BOX, x + cx, y, cx, cy, FL_BACKGROUND2_COLOR);
     fl_color(fl_contrast(FL_FOREGROUND_COLOR, FL_BACKGROUND2_COLOR));
-    fl_draw("Y", x() + Fl::box_dx(FL_DOWN_BOX) + fl_width("X"), y() + Fl::box_dy(FL_DOWN_BOX), fl_width("Y"), fl_height(), 0, nullptr, false);
+    fl_draw("Y", x + cx, y, cx, cy, 0, nullptr, false);
 
     fl_draw_box(FL_FLAT_BOX, sb1->x() + sb1->w(), sb2->y() + sb2->h(), Fl::scrollbar_size(), Fl::scrollbar_size(), FL_BACKGROUND_COLOR);
 
