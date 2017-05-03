@@ -75,20 +75,26 @@ MatrixEditor::MatrixEditor(
 #endif
 {
     begin();
+    int dx = Fl::box_dx(FL_DOWN_BOX),
+        dy = Fl::box_dy(FL_DOWN_BOX),
+        dw = Fl::box_dw(FL_DOWN_BOX),
+        dh = Fl::box_dh(FL_DOWN_BOX);
+
     sb1 = new Fl_Scrollbar(
-            x,
-            y + h - Fl::scrollbar_size(),
-            w - Fl::scrollbar_size(),
+            x + dx,
+            y + dy + h - dh - Fl::scrollbar_size(),
+            w - dw - Fl::scrollbar_size(),
             Fl::scrollbar_size()
          );
     sb1->type(FL_HORIZONTAL);
     sb2 = new Fl_Scrollbar(
-            x + w - Fl::scrollbar_size(),
-            y,
+            x + dx + w - dw - Fl::scrollbar_size(),
+            y + dy,
             Fl::scrollbar_size(),
-            h - Fl::scrollbar_size()
+            h - dh - Fl::scrollbar_size()
          );
-    auto* b = new Fl_Box(x, y, w - Fl::scrollbar_size(), h - Fl::scrollbar_size());
+    //auto* b = new Fl_Box(x, y, w - Fl::scrollbar_size(), h - Fl::scrollbar_size());
+    auto* b = new Fl_Box(sb1->x(), sb2->y(), sb1->w(), sb2->h());
     resizable(b);
     this->end();
 }
@@ -112,7 +118,8 @@ void MatrixEditor::draw()
     fl_color(fl_contrast(FL_FOREGROUND_COLOR, FL_BACKGROUND2_COLOR));
     fl_draw("Y", x() + Fl::box_dx(FL_DOWN_BOX) + fl_width("X"), y() + Fl::box_dy(FL_DOWN_BOX), fl_width("Y"), fl_height(), 0, nullptr, false);
 
-    fl_draw_box(FL_FLAT_BOX, x() + w() - Fl::scrollbar_size(), y() + h() - Fl::scrollbar_size(), Fl::scrollbar_size() - Fl::box_dx(FL_DOWN_BOX), Fl::scrollbar_size() - Fl::box_dx(FL_DOWN_BOX), FL_BACKGROUND_COLOR);
+    fl_draw_box(FL_FLAT_BOX, sb1->x() + sb1->w(), sb2->y() + sb2->h(), Fl::scrollbar_size(), Fl::scrollbar_size(), FL_BACKGROUND_COLOR);
+
     Fl_Widget* s = sb1;
     s->damage(damage());
     s->draw();
