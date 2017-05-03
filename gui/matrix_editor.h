@@ -28,10 +28,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "model.h"
 #include <FL/Fl_Widget.H>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Scrollbar.H>
 
 class MatrixEditor
-: public Fl_Widget
+: public Fl_Group
 {
+    typedef Fl_Group BASE;
 public:
     MatrixEditor(
             int x,
@@ -39,17 +42,16 @@ public:
             int w,
             int h,
             column_p_t start,
-            column_p_t end)
-        : Fl_Widget(x, y, w, h)
-        , start_(start)
-        , end_(end)
-    {}
-    ~MatrixEditor() override = default;
+            column_p_t end);
+    ~MatrixEditor() override;
 
     void draw() override;
+    int handle(int) override;
 
 private:
     column_p_t start_, end_;
+    bool active_;
+    Fl_Scrollbar* sb1,* sb2;
 };
 
 #endif

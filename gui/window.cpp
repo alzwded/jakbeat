@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cassert>
 #include <algorithm>
+#include <type_traits>
 
 #define WHO_GROUP_BUTTON_START 1u
 #define WHAT_GROUP_BUTTON_START 1u
@@ -59,6 +60,8 @@ Vindow::Vindow(
     , active_("OUTPUT")
     , menu_(nullptr)
     , mainGroup_(nullptr)
+    , whoGroup_(nullptr)
+    , whatGroup_(nullptr)
 {
     assert(model_);
     model_->views.push_back(this);
@@ -134,7 +137,8 @@ Vindow::Vindow(
     size_range(2 * dx, 2 * dx);
 
     // init common components
-    container_ =  new Fl_Tile(0, mb->h(), w, h - mb->h());
+    typedef std::remove_pointer<decltype(container_)>::type container_t;
+    container_ =  new container_t(0, mb->h(), w, h - mb->h());
       // create something strange from FLTK test code...
       auto* limit = new Fl_Box(container_->x() + dx, container_->y() + dx, container_->w() - 2*dx, container_->h() - 2*dx);
       container_->resizable(limit);
@@ -253,7 +257,20 @@ int Vindow::AddControlsFromSchema(
 
 void Vindow::CreateWhoList()
 {
-      whoGroup_ = new Fl_Group(container_->x(), container_->y(), container_->w() / 4, container_->h() / 2);
+    int x = container_->x(),
+        y = container_->y(),
+        w = container_->w() / 4,
+        h = container_->h() / 2;
+    if(whoGroup_) {
+        x = whoGroup_->x();
+        y = whoGroup_->y();
+        w = whoGroup_->w();
+        h = whoGroup_->h();
+        Fl::delete_widget(whoGroup_);
+    }
+
+    container_->begin();
+      whoGroup_ = new Fl_Group(x, y, w, h);
       container_->add(whoGroup_);
       whoGroup_->box(FL_DOWN_BOX);
         fl_font(FL_HELVETICA, 14);
@@ -284,11 +301,25 @@ void Vindow::CreateWhoList()
         scroll->end();
         whoGroup_->resizable(scroll);
       whoGroup_->end();
+    container_->end();
 }
 
 void Vindow::CreateWhatList()
 {
-      whatGroup_ = new Fl_Group(container_->x(), whoGroup_->y() + whoGroup_->h(), container_->w() / 4, container_->h() / 2);
+    assert(whoGroup_);
+    int x = container_->x(),
+        y = container_->y() + whoGroup_->h(),
+        w = container_->w() / 4,
+        h = container_->h() - whoGroup_->h();
+    if(whatGroup_) {
+        x = whatGroup_->x();
+        y = whatGroup_->y();
+        w = whatGroup_->w();
+        h = whatGroup_->h();
+        Fl::delete_widget(whatGroup_);
+    }
+    container_->begin();
+      whatGroup_ = new Fl_Group(x, y, w, h);
       container_->add(whatGroup_);
       whatGroup_->box(FL_DOWN_BOX);
         fl_font(FL_HELVETICA, 14);
@@ -326,6 +357,7 @@ void Vindow::CreateWhatList()
         scroll->end();
         whatGroup_->resizable(scroll);
       whatGroup_->end();
+    container_->end();
 }
 
 Vindow::~Vindow()
@@ -347,8 +379,6 @@ void Vindow::OnEvent(Event* e)
     switch(e->type)
     {
         case Event::RELOADED:
-            Fl::delete_widget(whoGroup_);
-            Fl::delete_widget(whatGroup_);
             CreateWhoList();
             CreateWhatList();
             break;
@@ -356,7 +386,6 @@ void Vindow::OnEvent(Event* e)
             switch(e->source)
             {
                 case Event::WHO:
-                    Fl::delete_widget(whoGroup_);
                     CreateWhoList();
                     if(active_.compare(e->targetId) == 0) {
                         SetLayout(Layout::OUTPUT);
@@ -364,7 +393,6 @@ void Vindow::OnEvent(Event* e)
                     }
                     break;
                 case Event::WHAT:
-                    Fl::delete_widget(whatGroup_);
                     CreateWhatList();
                     if(active_.compare(e->targetId) == 0) {
                         SetLayout(Layout::OUTPUT);
@@ -377,7 +405,6 @@ void Vindow::OnEvent(Event* e)
             switch(e->source)
             {
                 case Event::WHO:
-                    Fl::delete_widget(whoGroup_);
                     CreateWhoList();
                     if(active_.compare(e->targetId) == 0
                             && layout_ == Layout::WHO)
@@ -390,7 +417,6 @@ void Vindow::OnEvent(Event* e)
                     }
                     break;
                 case Event::WHAT:
-                    Fl::delete_widget(whatGroup_);
                     CreateWhatList();
                     if(active_.compare(e->targetId) == 0
                             && layout_ == Layout::WHAT)
@@ -426,6 +452,7 @@ void Vindow::OnEvent(Event* e)
             }
             break;
     }
+    container_->redraw();
 }
 
 void Vindow::SetLayout(Layout lyt, const char* name)
