@@ -39,64 +39,34 @@ MatrixEditor::MatrixEditor(
         int y,
         int w,
         int h,
-        column_p_t start,
-        column_p_t end)
+        column_p_t first,
+        column_p_t last)
     : BASE(x, y, w, h)
-    , start_(start)
-    , end_(end)
+    , first_(first)
+    , last_(last)
     , active_(false)
-#if 0
-    , sb1(new Fl_Scrollbar(
-            x,
-            y + h - Fl::scrollbar_size(),
-            w - Fl::scrollbar_size(),
-            Fl::scrollbar_size()
-         ))
-    , sb2(new Fl_Scrollbar(
-            x + w - Fl::scrollbar_size(),
-            y,
-            Fl::scrollbar_size(),
-            h - Fl::scrollbar_size()
-         ))
-#endif
-#if 0
-    , sb1(
-            x + Fl::box_dw(FL_DOWN_BOX),
-            y - Fl::box_dy(FL_DOWN_BOX) + h - Fl::scrollbar_size(),
-            w - Fl::box_dw(FL_DOWN_BOX),
-            Fl::scrollbar_size()
-         )
-    , sb2(
-            x - Fl::box_dw(FL_DOWN_BOX) + w - Fl::scrollbar_size(),
-            y + Fl::box_dh(FL_DOWN_BOX),
-            Fl::scrollbar_size(),
-            h - Fl::box_dh(FL_DOWN_BOX)
-         )
-#endif
 {
-    begin();
     int dx = Fl::box_dx(FL_DOWN_BOX),
         dy = Fl::box_dy(FL_DOWN_BOX),
         dw = Fl::box_dw(FL_DOWN_BOX),
         dh = Fl::box_dh(FL_DOWN_BOX);
 
-    sb1 = new Fl_Scrollbar(
-            x + dx,
-            y + dy + h - dh - Fl::scrollbar_size(),
-            w - dw - Fl::scrollbar_size(),
-            Fl::scrollbar_size()
-         );
-    sb1->type(FL_HORIZONTAL);
-    sb2 = new Fl_Scrollbar(
-            x + dx + w - dw - Fl::scrollbar_size(),
-            y + dy,
-            Fl::scrollbar_size(),
-            h - dh - Fl::scrollbar_size()
-         );
-    //auto* b = new Fl_Box(x, y, w - Fl::scrollbar_size(), h - Fl::scrollbar_size());
-    auto* b = new Fl_Box(sb1->x(), sb2->y(), sb1->w(), sb2->h());
-    resizable(b);
-    this->end();
+    begin();
+      sb1 = new Fl_Scrollbar(
+              x + dx,
+              y + dy + h - dh - Fl::scrollbar_size(),
+              w - dw - Fl::scrollbar_size(),
+              Fl::scrollbar_size()
+           );
+      sb1->type(FL_HORIZONTAL);
+      sb2 = new Fl_Scrollbar(
+              x + dx + w - dw - Fl::scrollbar_size(),
+              y + dy,
+              Fl::scrollbar_size(),
+              h - dh - Fl::scrollbar_size()
+           );
+      resizable(new Fl_Box(sb1->x(), sb2->y(), sb1->w(), sb2->h()));
+    end();
 }
 
 MatrixEditor::~MatrixEditor()

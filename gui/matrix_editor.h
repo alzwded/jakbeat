@@ -41,15 +41,15 @@ public:
             int y,
             int w,
             int h,
-            column_p_t start,
-            column_p_t end);
+            column_p_t first,
+            column_p_t last);
     ~MatrixEditor() override;
 
     void draw() override;
     int handle(int) override;
 
 private:
-    column_p_t start_, end_;
+    column_p_t first_, last_;
     bool active_;
     Fl_Scrollbar* sb1,* sb2;
 };
