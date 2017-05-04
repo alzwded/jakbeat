@@ -38,6 +38,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cwchar>
 #include <cwctype>
 
+#define MYFONT \
+    fl_font(FL_COURIER_BOLD, 16)
+
 namespace {
     struct CellDrawer
     {
@@ -95,7 +98,7 @@ MatrixEditor::MatrixEditor(
         dh = Fl::box_dh(FL_DOWN_BOX);
 
     begin();
-      fl_font(FL_SCREEN_BOLD, 18);
+      MYFONT;
       sb1 = new Fl_Scrollbar(
               x + dx,
               y + dy + h - dh - Fl::scrollbar_size(),
@@ -103,11 +106,12 @@ MatrixEditor::MatrixEditor(
               Fl::scrollbar_size()
            );
       sb1->type(FL_HORIZONTAL);
-      auto sb1full = std::min<ptrdiff_t>(1, std::distance(first, last));
+      auto sb1full = std::max<ptrdiff_t>(1, std::distance(first, last));
       auto sb1window = std::min(
               sb1full,
               (decltype(sb1full))std::ceil(sb1->w() / fl_width("X")));
-      auto sb1start = std::max<int>(sb1full, mx_);
+      windowx_ = sb1window;
+      auto sb1start = std::min<int>(sb1full, mx_);
       sb1->value(sb1start, sb1window, 1, sb1full);
       l("sb1 bounds: %d %ld %d %ld\n", sb1start, sb1window, 1, sb1full);
       sb2 = new Fl_Scrollbar(
@@ -123,6 +127,7 @@ MatrixEditor::MatrixEditor(
       auto sb2window = std::min(
               sb2full,
               (size_t)std::ceil(sb2->h() / fl_height()));
+      windowy_ = sb2window;
       auto sb2start = std::min<int>(sb2full, my_);
       l("sb2 bounds: %d %ld %d %ld\n", sb2start, sb2window, 1, sb2full);
       sb2->value(sb2start, sb2window, 1, sb2full);
@@ -135,8 +140,8 @@ MatrixEditor::~MatrixEditor()
 
 bool MatrixEditor::IsSelected(int i, int j) const
 {
-    return cursorx_ == i
-        && cursory_ == j
+    return cursory_ == i
+        && cursorx_ == j
         ;
 }
 
@@ -147,7 +152,7 @@ void MatrixEditor::draw()
 
     l("active_=%d\n", active_);
 
-    fl_font(FL_SCREEN_BOLD, 18);
+    MYFONT;
     auto selectionColor = active_
         ? FL_SELECTION_COLOR
         : FL_INACTIVE_COLOR
@@ -162,7 +167,7 @@ void MatrixEditor::draw()
     CellDrawer cd(x, y, cx, cy, FL_FOREGROUND_COLOR, FL_BACKGROUND2_COLOR, selectionColor);
 
     auto xFull = std::distance(first_, last_);
-    auto xWindow = (int)std::ceil(sb1->w() / fl_width('X'));
+    auto xWindow = windowx_;
     assert(mx_ - 1 <= xFull);
     auto it = first_;
     std::advance(it, mx_ - 1);
@@ -175,8 +180,8 @@ void MatrixEditor::draw()
         ? it->rows.size()
         : 0
         ;
-    size_t yWindow = (size_t)std::ceil(sb2->h() / fl_height());
-    l("size=%ld, ywindow=%ld\n", size, yWindow);
+    size_t yWindow = windowy_;
+    l("size=%ld, ywindow=%ld, xwindow=%d\n", size, yWindow, xWindow);
     int j = 0;
     for(; it != it_end; ++it, ++j) {
         size_t i = my_ - 1;
@@ -187,9 +192,10 @@ void MatrixEditor::draw()
                 ;
         };
         for(; condition(i); ++i, ++ri) {
-            l("i=%ld, j=%d, c=%c\n", i, j, **ri);
+            l("%ld,%d:%c ", i, j, **ri);
             cd.draw(i, j, IsSelected(i, j), **ri);
         }
+        l("\n");
     }
 
 #if 0
@@ -249,23 +255,57 @@ FL_FOCUS_:  // code
             return 1;
         case FL_KEYBOARD:
             {
+                LOGGER(l);
                 int toDel = 0;
-                if(!Fl::compose(toDel)) break;
+                if(!Fl::compose(toDel)) {
+                    l("Not composed: %04X\n", Fl::event_key());
+                    switch(Fl::event_key())
+                    {
+                    case FL_Right:
+                        cursorx_ = std::min(cursorx_ + 1, windowx_ - 1);
+                        l("move right @%d,%d\n", cursory_, cursorx_);
+                        redraw();
+                        return 1;
+                    case FL_Left:
+                        cursorx_ = std::max(cursorx_ - 1, 0);
+                        l("move left @%d,%d\n", cursory_, cursorx_);
+                        redraw();
+                        return 1;
+                    case FL_Down:
+                        cursory_ = std::min(cursory_ + 1, windowy_ - 1);
+                        l("move down @%d,%d\n", cursory_, cursorx_);
+                        redraw();
+                        return 1;
+                    case FL_Up:
+                        cursory_ = std::max(cursory_ - 1, 0);
+                        l("move up @%d,%d\n", cursory_, cursorx_);
+                        redraw();
+                        return 1;
+                    }
+                    l("to parent!\n");
+                    break;
+                }
+                l("composed\n");
                 if(toDel) {
                     // delete toDel characters to the left
                     // and insert Fl::event_text(), Fl::event_length()
-                    fprintf(stderr, "don't know how to delete %d chars to the left\n", toDel);
+                    l("don't know how to delete %d chars to the left\n", toDel);
                 }
-                if(Fl::event_state(FL_META|FL_CONTROL|FL_ALT)) break;
+                if(Fl::event_state(FL_META|FL_CONTROL|FL_ALT)) {
+                    l("modifier pressed, passing to parent\n");
+                    break;
+                }
+
                 wchar_t wcs[4];
                 size_t len = mbstowcs(wcs, Fl::event_text(), 2);
                 if(len > 1) {
-                    fprintf(stderr, "%ls is more than one character, not supported\n", wcs);
+                    l("%ls is more than one character, not supported\n", wcs);
                     break;
                 }
                 if(len <= 0
                         || !iswprint(wcs[0])
                         || wcs[0] == L'\t') {
+                    l("non printable, to parent\n");
                     break;
                 }
                 fprintf(stderr, "Pushed %ls in editor\n", wcs);

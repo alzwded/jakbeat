@@ -61,6 +61,7 @@ private:
     Fl_Scrollbar* sb1,* sb2;
     int mx_, my_;
     int cursorx_, cursory_;
+    int windowx_, windowy_;
 };
 
 #endif
