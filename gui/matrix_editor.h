@@ -43,8 +43,8 @@ public:
             int h,
             column_p_t first,
             column_p_t last,
-            int mx = 1,
-            int my = 1);
+            int cursorx = 1,
+            int cursory = 1);
     ~MatrixEditor() override;
 
     void draw() override;
@@ -53,10 +53,14 @@ public:
     int my() const { return my_; }
 
 private:
+    bool IsSelected(int, int) const;
+
+private:
     column_p_t first_, last_;
     bool active_;
     Fl_Scrollbar* sb1,* sb2;
     int mx_, my_;
+    int cursorx_, cursory_;
 };
 
 #endif

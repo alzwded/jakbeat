@@ -77,14 +77,16 @@ MatrixEditor::MatrixEditor(
         int h,
         column_p_t first,
         column_p_t last,
-        int mx,
-        int my)
+        int cursorx,
+        int cursory)
     : BASE(x, y, w, h)
     , first_(first)
     , last_(last)
     , active_(false)
-    , mx_(mx)
-    , my_(my)
+    , mx_(1)
+    , my_(1)
+    , cursorx_(cursorx - 1)
+    , cursory_(cursory - 1)
 {
     LOGGER(l);
     int dx = Fl::box_dx(FL_DOWN_BOX),
@@ -121,7 +123,7 @@ MatrixEditor::MatrixEditor(
       auto sb2window = std::min(
               sb2full,
               (size_t)std::ceil(sb2->h() / fl_height()));
-      auto sb2start = std::min<int>(sb2full, my);
+      auto sb2start = std::min<int>(sb2full, my_);
       l("sb2 bounds: %d %ld %d %ld\n", sb2start, sb2window, 1, sb2full);
       sb2->value(sb2start, sb2window, 1, sb2full);
       resizable(new Fl_Box(sb1->x(), sb2->y(), sb1->w(), sb2->h()));
@@ -130,6 +132,13 @@ MatrixEditor::MatrixEditor(
 
 MatrixEditor::~MatrixEditor()
 {}
+
+bool MatrixEditor::IsSelected(int i, int j) const
+{
+    return cursorx_ == i
+        && cursory_ == j
+        ;
+}
 
 void MatrixEditor::draw()
 {
@@ -179,7 +188,7 @@ void MatrixEditor::draw()
         };
         for(; condition(i); ++i, ++ri) {
             l("i=%ld, j=%d, c=%c\n", i, j, **ri);
-            cd.draw(i, j, false, **ri);
+            cd.draw(i, j, IsSelected(i, j), **ri);
         }
     }
 
