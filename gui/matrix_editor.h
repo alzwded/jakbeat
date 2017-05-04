@@ -42,16 +42,21 @@ public:
             int w,
             int h,
             column_p_t first,
-            column_p_t last);
+            column_p_t last,
+            int mx = 1,
+            int my = 1);
     ~MatrixEditor() override;
 
     void draw() override;
     int handle(int) override;
+    int mx() const { return mx_; }
+    int my() const { return my_; }
 
 private:
     column_p_t first_, last_;
     bool active_;
     Fl_Scrollbar* sb1,* sb2;
+    int mx_, my_;
 };
 
 #endif

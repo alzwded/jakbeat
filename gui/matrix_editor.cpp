@@ -30,9 +30,42 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FL/fl_draw.H>
 #include <FL/Fl_Scrollbar.H>
 
+#include <cmath>
 #include <cstdlib>
 #include <cwchar>
 #include <cwctype>
+
+namespace {
+    struct CellDrawer
+    {
+        int x, y, cx, cy;
+        Fl_Color colors[2][2];
+
+        CellDrawer(
+                int x_, int y_,
+                int cx_, int cy_,
+                Fl_Color fg_, Fl_Color bg_, Fl_Color sl_)
+            : x(x_)
+            , y(y_)
+            , cx(cx_)
+            , cy(cy_)
+        {
+            colors[false][0] = bg_;
+            colors[false][1] = fl_contrast(fg_, bg_);
+            colors[true][0] = sl_;
+            colors[true][1] = fl_contrast(fg_, sl_);
+        }
+
+        void draw(int i, int j, bool selected, char c)
+        {
+            fl_draw_box(FL_FLAT_BOX, x + j * cx, y + i * cy, cx, cy, colors[selected][0]);
+            fl_color(colors[selected][1]);
+            char str[2] = { c, '\0' };
+            fl_draw(str, x + j * cx, y + i * cy, cx, cy, 0, nullptr, false);
+        }
+
+    };
+} // namespace
 
 MatrixEditor::MatrixEditor(
         int x,
@@ -40,11 +73,15 @@ MatrixEditor::MatrixEditor(
         int w,
         int h,
         column_p_t first,
-        column_p_t last)
+        column_p_t last,
+        int mx,
+        int my)
     : BASE(x, y, w, h)
     , first_(first)
     , last_(last)
     , active_(false)
+    , mx_(mx)
+    , my_(my)
 {
     int dx = Fl::box_dx(FL_DOWN_BOX),
         dy = Fl::box_dy(FL_DOWN_BOX),
@@ -52,6 +89,7 @@ MatrixEditor::MatrixEditor(
         dh = Fl::box_dh(FL_DOWN_BOX);
 
     begin();
+      fl_font(FL_SCREEN_BOLD, 18);
       sb1 = new Fl_Scrollbar(
               x + dx,
               y + dy + h - dh - Fl::scrollbar_size(),
@@ -59,12 +97,27 @@ MatrixEditor::MatrixEditor(
               Fl::scrollbar_size()
            );
       sb1->type(FL_HORIZONTAL);
+      auto sb1full = std::min<ptrdiff_t>(1, std::distance(first, last));
+      auto sb1window = std::min(
+              sb1full,
+              (decltype(sb1full))std::ceil(sb1->w() / fl_width("X")));
+      auto sb1start = std::max<int>(sb1full, mx);
+      sb1->value(sb1start, sb1window, 1, sb1full);
       sb2 = new Fl_Scrollbar(
               x + dx + w - dw - Fl::scrollbar_size(),
               y + dy,
               Fl::scrollbar_size(),
               h - dh - Fl::scrollbar_size()
            );
+      auto sb2full = (first_ != last_)
+          ? first_->rows.size()
+          : (size_t)1
+          ;
+      auto sb2window = std::min(
+              sb2full,
+              (size_t)std::ceil(sb2->h() / fl_height()));
+      auto sb2start = std::max<int>(sb2full, my);
+      sb2->value(sb2start, sb2window, 1, sb2full);
       resizable(new Fl_Box(sb1->x(), sb2->y(), sb1->w(), sb2->h()));
     end();
 }
@@ -88,12 +141,12 @@ void MatrixEditor::draw()
          w = sb2->x() - this->x(),
          h = sb1->y() - this->y();
 
-    fl_draw_box(FL_FLAT_BOX, x, y, cx, cy, selectionColor);
-    fl_color(fl_contrast(FL_FOREGROUND_COLOR, selectionColor));
-    fl_draw("X", x, y, cx, cy, 0, nullptr, false);
-    //fl_draw_box(FL_FLAT_BOX, x + cx, y, cx, cy, FL_BACKGROUND2_COLOR);
-    fl_color(fl_contrast(FL_FOREGROUND_COLOR, FL_BACKGROUND2_COLOR));
-    fl_draw("Y", x + cx, y, cx, cy, 0, nullptr, false);
+    CellDrawer cd(x, y, cx, cy, FL_FOREGROUND_COLOR, FL_BACKGROUND2_COLOR, selectionColor);
+
+    cd.draw(0, 0, false, 'X');
+    cd.draw(0, 1, false, 'Y');
+    cd.draw(0, 2, true, 'Z');
+    cd.draw(1, 2, true, ' ');
 
     fl_draw_box(FL_FLAT_BOX, sb1->x() + sb1->w(), sb2->y() + sb2->h(), Fl::scrollbar_size(), Fl::scrollbar_size(), FL_BACKGROUND_COLOR);
 
