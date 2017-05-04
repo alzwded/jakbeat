@@ -218,16 +218,32 @@ int MatrixEditor::handle(int ev)
             {
                 int px = Fl::event_x(),
                     py = Fl::event_y();
-                if(px < x() + Fl::scrollbar_size()
-                        || px >= x() + w() - Fl::scrollbar_size()
-                        || py < y() + Fl::scrollbar_size()
-                        || py >= y() + h() - Fl::scrollbar_size())
+                if(px < x() + Fl::box_dx(FL_DOWN_BOX)
+                        || px >= x() + w() - Fl::scrollbar_size() - Fl::box_dw(FL_DOWN_BOX)
+                        || py < y() + Fl::box_dy(FL_DOWN_BOX)
+                        || py >= y() + h() - Fl::scrollbar_size() - Fl::box_dh(FL_DOWN_BOX))
                     break;
                 int btn = Fl::event_button();
                 Fl::focus(this);
+
+                px -= sb1->x();
+                py -= sb2->y();
+                MYFONT;
+                int cx = fl_width("X");
+                int cy = fl_height();
+                int j = px / cx;
+                int i = py / cy;
+                LOGGER(l);
+                l("Click at %d,%d, adjusted:%d,%d; cell size %d,%d; world: %d,%d\n", Fl::event_x(), Fl::event_y(), px, py, cx, cy, i, j);
+                if(i < windowx_
+                        && j < windowy_)
+                {
+                    l("cursor now at %d,%d\n", i, j);
+                    cursorx_ = j;
+                    cursory_ = i;
+                }
+                
                 goto FL_FOCUS_;
-                // code
-                return 1;
             }
         case FL_DRAG:
             break;
