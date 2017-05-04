@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "matrix_editor.h"
+#include "logger.h"
+
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/fl_draw.H>
@@ -84,6 +86,7 @@ MatrixEditor::MatrixEditor(
     , mx_(mx)
     , my_(my)
 {
+    LOGGER(l);
     int dx = Fl::box_dx(FL_DOWN_BOX),
         dy = Fl::box_dy(FL_DOWN_BOX),
         dw = Fl::box_dw(FL_DOWN_BOX),
@@ -104,6 +107,7 @@ MatrixEditor::MatrixEditor(
               (decltype(sb1full))std::ceil(sb1->w() / fl_width("X")));
       auto sb1start = std::max<int>(sb1full, mx_);
       sb1->value(sb1start, sb1window, 1, sb1full);
+      l("sb1 bounds: %d %ld %d %ld\n", sb1start, sb1window, 1, sb1full);
       sb2 = new Fl_Scrollbar(
               x + dx + w - dw - Fl::scrollbar_size(),
               y + dy,
@@ -118,7 +122,7 @@ MatrixEditor::MatrixEditor(
               sb2full,
               (size_t)std::ceil(sb2->h() / fl_height()));
       auto sb2start = std::min<int>(sb2full, my);
-      printf("%d, %ld, 1, %ld\n", sb2start, sb2window, sb2full);
+      l("sb2 bounds: %d %ld %d %ld\n", sb2start, sb2window, 1, sb2full);
       sb2->value(sb2start, sb2window, 1, sb2full);
       resizable(new Fl_Box(sb1->x(), sb2->y(), sb1->w(), sb2->h()));
     end();
@@ -129,8 +133,10 @@ MatrixEditor::~MatrixEditor()
 
 void MatrixEditor::draw()
 {
-    fprintf(stderr, "MatrixEditor::draw\n");
+    LOGGER(l);
     fl_draw_box(FL_DOWN_BOX, this->x(), this->y(), this->w(), this->h(), FL_BACKGROUND2_COLOR);
+
+    l("active_=%d\n", active_);
 
     fl_font(FL_SCREEN_BOLD, 18);
     auto selectionColor = active_
@@ -161,7 +167,7 @@ void MatrixEditor::draw()
         : 0
         ;
     size_t yWindow = (size_t)std::ceil(sb2->h() / fl_height());
-    fprintf(stderr, "  size=%ld, yWindow=%ld\n", size, yWindow);
+    l("size=%ld, ywindow=%ld\n", size, yWindow);
     int j = 0;
     for(; it != it_end; ++it, ++j) {
         size_t i = my_ - 1;
@@ -172,7 +178,7 @@ void MatrixEditor::draw()
                 ;
         };
         for(; condition(i); ++i, ++ri) {
-            fprintf(stderr, "  i=%ld, j=%d, c=%c\n", i, j, **ri);
+            l("i=%ld, j=%d, c=%c\n", i, j, **ri);
             cd.draw(i, j, false, **ri);
         }
     }
@@ -186,13 +192,14 @@ void MatrixEditor::draw()
 
     fl_draw_box(FL_FLAT_BOX, sb1->x() + sb1->w(), sb2->y() + sb2->h(), Fl::scrollbar_size(), Fl::scrollbar_size(), FL_BACKGROUND_COLOR);
 
+    l("drawing scrollbars\n");
+
     Fl_Widget* s = sb1;
     s->damage(damage());
     s->draw();
     s = sb2;
     s->damage(damage());
     s->draw();
-    fprintf(stderr, "end MatrixEditor::draw()\n");
 }
 
 int MatrixEditor::handle(int ev)

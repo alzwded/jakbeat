@@ -26,6 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "window.h"
 #include "matrix_editor.h"
+#include "logger.h"
 
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>

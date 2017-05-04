@@ -25,6 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "model.h"
 #include "window.h"
+#include "logger.h"
 
 #include <FL/Fl.H>
 
@@ -129,7 +130,6 @@ int main(int argc, char* argv[])
     Fl::scheme("gtk+");
 #if 1
     /* test code */
-
     std::shared_ptr<Model> m(new Model());
     m->whos.push_back({
                 "kick",
@@ -167,12 +167,14 @@ int main(int argc, char* argv[])
     m->output.rows.push_back({'.', '!', '.'});
     m->output.rows.push_back({'/', ':', '/'});
     for(int i = 0; i < 3; ++i) {
+        LOGGER(l);
+        l("building column[%d]\n", i);
         Column c;
         auto rit = m->output.rows.begin();
         for(int j = 0; j < 3; ++j, ++rit) {
             auto it = rit->begin();
             std::advance(it, i);
-            printf("adding %c at %ld,%ld\n", *it, m->output.columns.size(), c.rows.size());
+            l("adding %c at %ld,%ld\n", *it, m->output.columns.size(), c.rows.size());
             c.rows.push_back(it);
         }
         m->output.columns.push_back(c);

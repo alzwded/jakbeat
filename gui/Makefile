@@ -10,7 +10,7 @@ LD = g++ -o
 LDFLAGS = `fltk-config --ldflags`
 
 JAKBEATDEPENDS = parser.o tokenizer.o
-MYOBJS = gui.o file.o window.o window_callbacks.o matrix_editor.o control.o
+MYOBJS = gui.o file.o window.o window_callbacks.o matrix_editor.o control.o logger.o
 OBJS = $(MYOBJS) $(JAKBEATDEPENDS)
 HEADERS = $(shell echo *.h)
 
