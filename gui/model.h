@@ -53,8 +53,8 @@ struct Schema
 };
 
 typedef std::list<char> row_t;
+typedef row_t::iterator row_p_t;
 typedef std::list<row_t> rows_t;
-typedef rows_t::iterator row_p_t;
 
 struct Column
 {
