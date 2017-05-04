@@ -198,13 +198,6 @@ void MatrixEditor::draw()
         l("\n");
     }
 
-#if 0
-    cd.draw(0, 0, false, 'X');
-    cd.draw(0, 1, false, 'Y');
-    cd.draw(0, 2, true, 'Z');
-    cd.draw(1, 2, true, ' ');
-#endif
-
     fl_draw_box(FL_FLAT_BOX, sb1->x() + sb1->w(), sb2->y() + sb2->h(), Fl::scrollbar_size(), Fl::scrollbar_size(), FL_BACKGROUND_COLOR);
 
     l("drawing scrollbars\n");

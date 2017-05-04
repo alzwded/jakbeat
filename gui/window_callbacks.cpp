@@ -160,8 +160,8 @@ void Vindow::WhoNameChanged(Fl_Widget* w, void* p)
     {
         fl_alert("Name needs to be unique and not null");
         inp->value(oldName);
-        //Fl::focus(inp); // doesn't work because e.g. the tab key is
-                          // handled later...
+        // Fl::focus(inp); // doesn't work because e.g. the tab key is
+                           // handled later...
         return;
     }
 
@@ -186,8 +186,8 @@ void Vindow::WhatNameChanged(Fl_Widget* w, void* p)
     {
         fl_alert("Name needs to be unique and not null");
         inp->value(oldName);
-        //Fl::focus(inp); // doesn't work because e.g. the tab key is
-                          // handled later...
+        // Fl::focus(inp); // doesn't work because e.g. the tab key is
+                           // handled later...
         return;
     }
 

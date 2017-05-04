@@ -227,13 +227,8 @@ int Vindow::AddControlsFromSchema(
             b->box(FL_DOWN_BOX);
             b->begin();
               int wholeW = b->w() - Fl::box_dw(FL_DOWN_BOX);
-#if 0
-              int newX = b->x() + 5 + wholeW / 3;
-              int newW = wholeW * 2 / 3;
-#else
               int newX = b->x() + 100;
               int newW = wholeW - 100;
-#endif
               int at = AddControlsFromSchema(
                       getter,
                       att.children.begin(),
@@ -468,13 +463,8 @@ void Vindow::SetLayout(Layout lyt, const char* name)
     mainGroup_->box(FL_DOWN_BOX);
     container_->add(mainGroup_);
 
-#if 0
-            const int THIRD = (mainGroup_->w()) / 3 + 5,
-                      TWOTHIRD = mainGroup_->w() - THIRD - 5;
-#else
     const int THIRD = 100,
               TWOTHIRD = mainGroup_->w() - THIRD - 5;
-#endif
 
     // set new layout
     switch(lyt)
@@ -592,10 +582,8 @@ void Vindow::SetLayout(Layout lyt, const char* name)
             mainGroup_->add(bpmlbl);
 
             auto* editor = new MatrixEditor(
-                    //mainGroup_->x() + 5,
                     mainGroup_->x() + THIRD,
                     bpmlbl->y() + bpmlbl->h() + 5,
-                    //mainGroup_->w() - 10,
                     TWOTHIRD,
                     mainGroup_->h() - whatlbl->h() - 5 - bpmlbl->h() - 5 - 10,
                     what.start,
