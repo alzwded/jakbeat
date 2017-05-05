@@ -25,9 +25,28 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "control.h"
+#include "logger.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
+
+#define FIND_WHAT(id) \
+    auto found = FindWhat(id); \
+    if(found == model_->whats.end()) return;
+
+auto Control::FindWhat(evData id) -> decltype(model_->whats)::iterator
+{
+    LOGGER(l);
+    auto found = std::find_if(model_->whats.begin(), model_->whats.end(), [id](WhatEntry& e) -> bool {
+                return e.name == id;
+            });
+    if(found == model_->whats.end())
+    {
+        l("Failed to find %s...", id.c_str());
+    }
+    return found;
+}
 
 void Control::SetWhosName(evData oldName, std::string name)
 {
@@ -137,14 +156,7 @@ void Control::SetWhatsName(Control::evData id, std::string name)
 
 void Control::SetWhatsBpm(Control::evData id, std::string bpm)
 {
-    auto found = std::find_if(model_->whats.begin(), model_->whats.end(), [id](WhatEntry& e) -> bool {
-                return e.name == id;
-            });
-    if(found == model_->whats.end())
-    {
-        fprintf(stderr, "Failed to find %s...", id.c_str());
-        return;
-    }
+    FIND_WHAT(id);
     found->bpm = bpm;
     model_->dirty = true;
     Event e = {
@@ -157,4 +169,47 @@ void Control::SetWhatsBpm(Control::evData id, std::string bpm)
     std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
                 v->OnEvent(&e);
             });
+}
+
+void Control::InsertColumn(evData id, column_p_t before, char c)
+{
+    if(id.empty()
+            || id == "OUTPUT")
+    {
+        Column col;
+        auto size = model_->output.rows.size();
+        auto rit = model_->output.rows.begin();
+        if(before != model_->output.columns.end()) {
+            for(auto it = before->rows.begin(); it != before->rows.end(); ++it, ++rit) {
+                col.rows.push_back(rit->insert(*it, c));
+            }
+        } else {
+            for(; rit != model_->output.rows.end(); ++rit) {
+                col.rows.push_back(rit->insert(rit->end(), c));
+            }
+        }
+        model_->columns.insert(before, col);
+        Event e = {
+            Event::OUTPUT,
+            Event::CHANGED,
+            id,
+            "",
+            source_
+        };
+        std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
+                    v->OnEvent(&e);
+                });
+        return;
+    }
+
+    FIND_WHAT(id);
+    assert(before != model_->columns.end());
+
+    Column col;
+    auto size = before->rows.size();
+    auto rit = model_->rows.begin();
+    for(auto it = before->rows.begin(); it != before->rows.end(); ++it, ++rit) {
+        col.rows.push_back(rit->insert(*it, c));
+    }
+    model_->columns.insert(before, col);
 }

@@ -135,9 +135,6 @@ MatrixEditor::MatrixEditor(
     end();
 }
 
-MatrixEditor::~MatrixEditor()
-{}
-
 bool MatrixEditor::IsSelected(int i, int j) const
 {
     return cursory_ == i
@@ -150,7 +147,7 @@ void MatrixEditor::draw()
     LOGGER(l);
     fl_draw_box(FL_DOWN_BOX, this->x(), this->y(), this->w(), this->h(), FL_BACKGROUND2_COLOR);
 
-    l("active_=%d\n", active_);
+    l("active_=%d, ci=%d,cj=%d\n", active_, cursorx_, cursory_);
 
     MYFONT;
     auto selectionColor = active_
@@ -182,6 +179,10 @@ void MatrixEditor::draw()
         ;
     size_t yWindow = windowy_;
     l("size=%ld, ywindow=%ld, xwindow=%d\n", size, yWindow, xWindow);
+
+    // pre-draw cursor in case of blank
+    cd.draw(cursory_, cursorx_, true, ' ');
+
     int j = 0;
     for(; it != it_end; ++it, ++j) {
         size_t i = my_ - 1;
@@ -267,7 +268,7 @@ FL_FOCUS_:  // code
                 LOGGER(l);
                 int toDel = 0;
                 if(!Fl::compose(toDel)) {
-                    l("Not composed: %04X\n", Fl::event_key());
+                    l("Not composed: %04X\n", (int)Fl::event_key());
                     switch(Fl::event_key())
                     {
                     case FL_Right:

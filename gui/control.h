@@ -56,10 +56,13 @@ public:
     void DeleteWho(evData id);
     void DeleteWhat(evData id);
 
-    void InsertColumn(column_p_t before, char c = ' ');
+    void InsertColumn(evData id, column_p_t before, char c = ' ');
     void DeleteColumn(column_p_t column);
     void SetCell(column_p_t column, int row, char c);
     void SetOutputCell(column_p_t before, int row);
+
+private:
+    auto FindWhat(evData id) -> decltype(model_->whats)::iterator;
 };
 
 #endif

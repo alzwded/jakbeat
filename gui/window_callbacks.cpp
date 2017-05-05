@@ -53,8 +53,13 @@ void Vindow::EditOverwrite(Fl_Widget*, void*)
 void Vindow::EditInsertRest(Fl_Widget*, void*)
 {}
 
-void Vindow::EditInsertBlank(Fl_Widget*, void*)
-{}
+void Vindow::EditInsertBlank(Fl_Widget*, void* p)
+{
+    auto me = (Vindow*)p;
+    Control ctrl(me->model_, me);
+    // TODO update editor...
+    ctrl.InsertColumn(me->active_, me->model_->output.columns.end(), ' ');
+}
 
 void Vindow::EditClearColumns(Fl_Widget*, void*)
 {}
