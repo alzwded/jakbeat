@@ -57,12 +57,13 @@ public:
     void DeleteWhat(evData id);
 
     void InsertColumn(evData id, column_p_t before, char c = ' ');
+    void SetCell(evData id, column_p_t column, int row, char c);
     void DeleteColumn(column_p_t column);
-    void SetCell(column_p_t column, int row, char c);
-    void SetOutputCell(column_p_t before, int row);
 
 private:
     auto FindWhat(evData id) -> decltype(model_->whats)::iterator;
+    Event::Source InsertColumnPrivate(evData id, column_p_t before, char c = ' ');
+    void Fire(Event* ev);
 };
 
 #endif

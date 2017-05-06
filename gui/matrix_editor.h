@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MATRIX_EDITOR_H
 
 #include "model.h"
+#include "control.h"
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Scrollbar.H>
@@ -37,10 +38,12 @@ class MatrixEditor
     typedef Fl_Group BASE;
 public:
     MatrixEditor(
+            Control ctrl,
             int x,
             int y,
             int w,
             int h,
+            std::string target,
             columns_t& columns,
             int nrows,
             int mx = 0,
@@ -53,12 +56,15 @@ public:
     int mx() const;
     int my() const;
     void Update(int nrows);
+    void Update() { Update(nrows_); }
 
 private:
     bool IsSelected(int, int) const;
     static void Scrolled(Fl_Widget*, void*);
 
 private:
+    Control ctrl_;
+    std::string target_;
     columns_t& columns_;
     int nrows_;
     bool active_;

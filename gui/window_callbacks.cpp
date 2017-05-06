@@ -48,9 +48,6 @@ void Vindow::EditCopy(Fl_Widget*, void*)
 void Vindow::EditPaste(Fl_Widget*, void*)
 {}
 
-void Vindow::EditOverwrite(Fl_Widget*, void*)
-{}
-
 void Vindow::EditInsertRest(Fl_Widget*, void* p)
 {
     LOGGER(l);

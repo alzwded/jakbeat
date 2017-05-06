@@ -6,7 +6,6 @@
 [ ] Edit/Undo
 [ ] Edit/Cut & Copy & Paste (general)
 [ ] Edit/Cut & Copy & Paste (editor)
-[ ] Edit/Overwrite
 [x] Edit/Insert Rest & Blank
 [ ] Edit/Clear Columns
 [ ] Edit/Delete Columns
@@ -36,5 +35,5 @@
 
 [X] editor->cursor
 [X] editor->scrolling
-[ ] editor->typing
+[X] editor->typing
 [X] editor->updating

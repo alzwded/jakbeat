@@ -68,7 +68,6 @@ private:
     static void EditCut(Fl_Widget*, void*);
     static void EditCopy(Fl_Widget*, void*);
     static void EditPaste(Fl_Widget*, void*);
-    static void EditOverwrite(Fl_Widget*, void*);
     static void EditInsertRest(Fl_Widget*, void*);
     static void EditInsertBlank(Fl_Widget*, void*);
     static void EditClearColumns(Fl_Widget*, void*);
