@@ -430,3 +430,14 @@ void MatrixEditor::resize(int x, int y, int w, int h)
     BASE::resize(x, y, w, h);
     Update(nrows_);
 }
+
+void MatrixEditor::SetTarget(std::string target)
+{
+    LOGGER(l);
+    if(target.empty()) {
+        l("empty target provided!\n");
+        return;
+    }
+    l("new target: %s\n", target.c_str());
+    target_ = std::move(target);
+}

@@ -417,6 +417,7 @@ void Vindow::OnEvent(Event* e)
                     if(active_.compare(e->targetId) == 0
                             && layout_ == Layout::WHAT)
                     {
+                        if(editor_) editor_->SetTarget(e->changed.c_str());
                         if(e->sourceView == static_cast<View*>(this)) {
                             SelectButton(e->changed.c_str(), Layout::WHAT);
                         } else {

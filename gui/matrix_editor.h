@@ -57,6 +57,7 @@ public:
     int my() const;
     void Update(int nrows);
     void Update() { Update(nrows_); }
+    void SetTarget(std::string target);
 
 private:
     bool IsSelected(int, int) const;
