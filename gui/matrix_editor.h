@@ -49,6 +49,7 @@ public:
 
     void draw() override;
     int handle(int) override;
+    void resize(int, int, int, int) override;
     int mx() const;
     int my() const;
     void Update(int nrows);

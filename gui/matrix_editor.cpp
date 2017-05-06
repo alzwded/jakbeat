@@ -232,10 +232,18 @@ int MatrixEditor::handle(int ev)
                 {
                     l("cursor now at %d,%d\n", i, j);
                     l("model point now at %d,%d\n", i - cursory_, j - cursorx_);
-                    mx_ += j - cursorx_;
-                    my_ += i - cursory_;
-                    cursorx_ = j;
-                    cursory_ = i;
+                    if(mx_ + j - cursorx_ >= 0
+                            && mx_ + j - cursorx_ <= columns_.size())
+                    {
+                        mx_ += j - cursorx_;
+                        cursorx_ = j;
+                    }
+                    if(my_ + i - cursory_ >= 0
+                            && my_ + i - cursory_ < nrows_)
+                    {
+                        my_ += i - cursory_;
+                        cursory_ = i;
+                    }
                 }
                 
                 goto FL_FOCUS_;
@@ -401,8 +409,14 @@ void MatrixEditor::Scrolled(Fl_Widget*, void* p)
     auto* me = (MatrixEditor*)p;
     l("scrolled %d,%d\n", me->sb1->value(), me->sb2->value());
     while(me->mx_ < me->sb1->value()) ++me->mx_;
-    while(me->mx_ > me->sb1->value() + me->windowx_) --me->mx_;
+    while(me->mx_ >= me->sb1->value() + me->windowx_) --me->mx_;
     while(me->my_ < me->sb2->value()) ++me->my_;
-    while(me->my_ > me->sb2->value() + me->windowy_) --me->my_;
+    while(me->my_ >= me->sb2->value() + me->windowy_) --me->my_;
     me->Update(me->nrows_);
+}
+
+void MatrixEditor::resize(int x, int y, int w, int h)
+{
+    BASE::resize(x, y, w, h);
+    Update(nrows_);
 }
