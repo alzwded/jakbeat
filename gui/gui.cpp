@@ -49,8 +49,8 @@ std::vector<Schema> drumSchemas {
             { "path", Schema::STRING },
             { "volume", Schema::NUMBER },
             { "stereo", Schema::STUB, {
-                                                      { "pan", Schema::READ_ONLY_STRING },
-                                                  }},
+                                          { "pan", Schema::READ_ONLY_STRING },
+                                      }},
             { "params", Schema::SUBSCHEMA, {
                                                { "pan", Schema::NUMBER },
                                            }},
@@ -63,8 +63,8 @@ std::vector<Schema> drumSchemas {
             { "path", Schema::STRING },
             { "volume", Schema::NUMBER },
             { "stereo", Schema::STUB, {
-                                                      { "chorus", Schema::READ_ONLY_STRING },
-                                                  }},
+                                          { "chorus", Schema::READ_ONLY_STRING },
+                                      }},
             { "params", Schema::SUBSCHEMA, {
                                                { "pan", Schema::NUMBER },
                                                { "delay", Schema::NUMBER },
