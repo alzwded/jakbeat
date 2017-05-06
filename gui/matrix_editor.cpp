@@ -80,16 +80,16 @@ MatrixEditor::MatrixEditor(
         int h,
         columns_t& columns,
         int nrows,
-        int cursorx,
-        int cursory)
+        int mx,
+        int my)
     : BASE(x, y, w, h)
     , columns_(columns)
     , nrows_(nrows)
     , active_(false)
-    , mx_(0)
-    , my_(0)
-    , cursorx_(cursorx - 1)
-    , cursory_(cursory - 1)
+    , mx_(mx)
+    , my_(my)
+    , cursorx_(mx)
+    , cursory_(my)
     , sb1(nullptr)
     , sb2(nullptr)
 {
@@ -107,6 +107,7 @@ MatrixEditor::MatrixEditor(
               w - dw - Fl::scrollbar_size(),
               Fl::scrollbar_size()
            );
+      sb1->value(0, 1, 0, 1);
       sb1->type(FL_HORIZONTAL);
       sb2 = new Fl_Scrollbar(
               x + dx + w - dw - Fl::scrollbar_size(),
@@ -114,6 +115,7 @@ MatrixEditor::MatrixEditor(
               Fl::scrollbar_size(),
               h - dh - Fl::scrollbar_size()
            );
+      sb2->value(0, 1, 0, 1);
       resizable(new Fl_Box(sb1->x(), sb2->y(), sb1->w(), sb2->h()));
     end();
 
@@ -153,9 +155,9 @@ void MatrixEditor::draw()
 
     auto xFull = columns_.size();
     auto xWindow = windowx_;
-    assert(mx_ <= xFull);
+    assert(sb1->value() <= xFull);
     auto it = columns_.begin();
-    std::advance(it, mx_ );
+    std::advance(it, sb1->value());
     auto it_end = it;
     int count = xWindow;
     while(count && it_end != columns_.end())
@@ -170,11 +172,11 @@ void MatrixEditor::draw()
 
     int j = 0;
     for(; it != it_end; ++it, ++j) {
-        size_t i = my_;
+        size_t i = sb2->value();
         auto ri = it->begin();
         auto condition = [=](size_t i) -> bool {
             return i < size
-                && i < yWindow + my_
+                && i < yWindow + sb2->value()
                 ;
         };
         for(; condition(i); ++i, ++ri) {
@@ -220,11 +222,14 @@ int MatrixEditor::handle(int ev)
                 int j = px / cx;
                 int i = py / cy;
                 LOGGER(l);
-                l("Click at %d,%d, adjusted:%d,%d; cell size %d,%d; world: %d,%d\n", Fl::event_x(), Fl::event_y(), px, py, cx, cy, i, j);
-                if(i < windowx_
-                        && j < windowy_)
+                l("Click at %d,%d, adjusted:%d,%d; cell size %d,%d; world: %d,%d window: %d,%d\n", Fl::event_x(), Fl::event_y(), px, py, cx, cy, i, j, windowy_, windowx_);
+                if(i < windowy_
+                        && j <= windowx_)
                 {
                     l("cursor now at %d,%d\n", i, j);
+                    l("model point now at %d,%d\n", i - cursory_, j - cursorx_);
+                    mx_ += j - cursorx_;
+                    my_ += i - cursory_;
                     cursorx_ = j;
                     cursory_ = i;
                 }
@@ -257,22 +262,26 @@ FL_FOCUS_:  // code
                     switch(Fl::event_key())
                     {
                     case FL_Right:
-                        cursorx_ = std::min(cursorx_ + 1, windowx_ - 1);
+                        cursorx_ = std::min(cursorx_ + 1, windowx_);
+                        mx_ = std::min<int>(mx_ + 1, columns_.size());
                         l("move right @%d,%d\n", cursory_, cursorx_);
                         redraw();
                         return 1;
                     case FL_Left:
                         cursorx_ = std::max(cursorx_ - 1, 0);
+                        mx_ = std::max(mx_ - 1, 0);
                         l("move left @%d,%d\n", cursory_, cursorx_);
                         redraw();
                         return 1;
                     case FL_Down:
                         cursory_ = std::min(cursory_ + 1, windowy_ - 1);
+                        my_ = std::min(my_ + 1, nrows_);
                         l("move down @%d,%d\n", cursory_, cursorx_);
                         redraw();
                         return 1;
                     case FL_Up:
                         cursory_ = std::max(cursory_ - 1, 0);
+                        my_ = std::max(my_ - 1, 0);
                         l("move up @%d,%d\n", cursory_, cursorx_);
                         redraw();
                         return 1;
@@ -320,34 +329,54 @@ void MatrixEditor::Update(int nrows)
 {
     LOGGER(l);
     l("nrows=%d, columns=%d\n", nrows, columns_.size());
+    l("ci=%d, cj=%d\n", cursory_, cursorx_);
     nrows_ = nrows;
+    
+    mx_ = std::min<int>(mx_, columns_.size());
+    my_ = std::min<int>(my_, nrows);
 
     auto sb1full = std::max<size_t>(1, columns_.size());
     auto sb1window = std::min(
             sb1full,
             (decltype(sb1full))std::ceil(sb1->w() / fl_width("X")));
     windowx_ = sb1window;
-    auto sb1start = std::min<int>(sb1full, mx_);
-    sb1->value(sb1start, sb1window, 1, sb1full);
+    auto sb1start = sb1->value();
+    while(mx_ > sb1start + windowx_)
+        sb1start += windowx_;
+    while(mx_ < sb1start)
+        sb1start -= windowx_;
+    sb1start = std::min<int>(sb1full, sb1start);
+    sb1start = std::max<int>(sb1start, 0);
+    sb1->value(sb1start, sb1window, 0, sb1full);
+    cursorx_ = mx_ - sb1->value();
     l("sb1 bounds: %d %ld %d %ld\n", sb1start, sb1window, 1, sb1full);
+    l("ci=%d, cj=%d\n", cursory_, cursorx_);
     auto sb2full = std::max(1, nrows_);
     auto sb2window = std::min(
             sb2full,
             (int)std::ceil(sb2->h() / fl_height()));
     windowy_ = sb2window;
-    auto sb2start = std::min<int>(sb2full, my_);
+    auto sb2start = sb2->value();
+    while(my_ > sb2start + windowy_)
+        sb2start += windowy_;
+    while(my_ < sb2start)
+        sb2start -= windowy_;
+    sb2start = std::min<int>(sb2full, sb2start);
+    sb2start = std::max<int>(0, sb2start);
+    cursory_ = my_ - sb2->value();
     l("sb2 bounds: %d %ld %d %ld\n", sb2start, sb2window, 1, sb2full);
-    sb2->value(sb2start, sb2window, 1, sb2full);
+    l("ci=%d, cj=%d\n", cursory_, cursorx_);
+    sb2->value(sb2start, sb2window, 0, sb2full);
 
     redraw();
 }
 
 int MatrixEditor::mx() const
 {
-    return mx_ + cursorx_;
+    return mx_;
 }
 
 int MatrixEditor::my() const
 {
-    return my_ + cursory_;
+    return my_;
 }

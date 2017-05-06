@@ -35,6 +35,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     auto found = FindWhat(id); \
     if(found == model_->whats.end()) return;
 
+#define DIRTY() do{\
+    model_->dirty = true; \
+}while(0)
+
 auto Control::FindWhat(evData id) -> decltype(model_->whats)::iterator
 {
     LOGGER(l);
@@ -59,7 +63,7 @@ void Control::SetWhosName(evData oldName, std::string name)
         return;
     }
     found->name = name;
-    model_->dirty = true;
+    DIRTY();
     Event e = {
         Event::WHO,
         Event::NAME_CHANGED,
@@ -92,7 +96,7 @@ void Control::SetWhosParam(Control::evData id, std::string key, std::string valu
         found->second = value;
     }
 
-    model_->dirty = true;
+    DIRTY();
     Event e = {
         Event::WHO,
         Event::CHANGED,
@@ -117,7 +121,7 @@ void Control::SetWhosSchema(Control::evData id, Schema const* schema)
 
     foundEntry->schema = schema;
 
-    model_->dirty = true;
+    DIRTY();
     Event e = {
         Event::WHO,
         Event::CHANGED,
@@ -141,7 +145,7 @@ void Control::SetWhatsName(Control::evData id, std::string name)
         return;
     }
     found->name = name;
-    model_->dirty = true;
+    DIRTY();
     Event e = {
         Event::WHAT,
         Event::NAME_CHANGED,
@@ -158,7 +162,7 @@ void Control::SetWhatsBpm(Control::evData id, std::string bpm)
 {
     FIND_WHAT(id);
     found->bpm = bpm;
-    model_->dirty = true;
+    DIRTY();
     Event e = {
         Event::WHAT,
         Event::CHANGED,
@@ -179,6 +183,7 @@ void Control::InsertColumn(evData id, column_p_t before, char c)
         Column col;
         auto size = model_->whats.size();
         model_->output.insert(before, column_t(size, c));
+        DIRTY();
         Event e = {
             Event::OUTPUT,
             Event::CHANGED,
@@ -195,6 +200,7 @@ void Control::InsertColumn(evData id, column_p_t before, char c)
     FIND_WHAT(id);
 
     auto size = model_->whos.size();
+    DIRTY();
     found->columns.insert(before, column_t(size, c));
     Event e = {
         Event::WHAT,

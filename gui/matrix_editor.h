@@ -43,8 +43,8 @@ public:
             int h,
             columns_t& columns,
             int nrows,
-            int cursorx = 1,
-            int cursory = 1);
+            int mx = 0,
+            int my = 0);
     ~MatrixEditor() override;
 
     void draw() override;

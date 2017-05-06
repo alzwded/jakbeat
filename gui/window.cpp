@@ -421,6 +421,7 @@ void Vindow::OnEvent(Event* e)
                         if(e->sourceView == static_cast<View*>(this)) {
                             SelectButton(e->changed.c_str(), Layout::WHAT);
                         } else {
+                            SelectButton(e->changed.c_str(), Layout::WHAT);
                             SetLayout(Layout::WHAT, e->changed.c_str());
                         }
                     }
@@ -454,6 +455,16 @@ void Vindow::OnEvent(Event* e)
 
 void Vindow::SetLayout(Layout lyt, const char* name)
 {
+    LOGGER(l);
+    int mx = 0, my = 0;
+    if(editor_
+            && active_ == name)
+    {
+        l("keeping old coordinates: %d,%d\n", my, mx);
+        l("active=%s name=%s\n", active_.c_str(), name);
+        mx = editor_->mx();
+        my = editor_->my();
+    }
     SelectButton(name, lyt);
     layout_ = lyt;
     editor_ = nullptr;
@@ -491,7 +502,9 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     mainGroup_->w() - 10,
                     mainGroup_->h() - label->h() - 10,
                     model_->output,
-                    model_->whats.size());
+                    model_->whats.size(),
+                    mx,
+                    my);
             editor_ = editor;
 
             mainGroup_->add(editor);
@@ -590,7 +603,8 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     TWOTHIRD,
                     mainGroup_->h() - whatlbl->h() - 5 - bpmlbl->h() - 5 - 10,
                     what.columns,
-                    model_->whos.size());
+                    model_->whos.size(),
+                    mx, my);
             editor_ = editor;
 
             mainGroup_->add(editor);
