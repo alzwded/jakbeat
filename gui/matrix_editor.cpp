@@ -108,7 +108,9 @@ MatrixEditor::MatrixEditor(
               Fl::scrollbar_size()
            );
       sb1->value(0, 1, 0, 1);
+      sb1->callback(Scrolled, this);
       sb1->type(FL_HORIZONTAL);
+      sb1->linesize(1);
       sb2 = new Fl_Scrollbar(
               x + dx + w - dw - Fl::scrollbar_size(),
               y + dy,
@@ -116,6 +118,8 @@ MatrixEditor::MatrixEditor(
               h - dh - Fl::scrollbar_size()
            );
       sb2->value(0, 1, 0, 1);
+      sb2->callback(Scrolled, this);
+      sb2->linesize(1);
       resizable(new Fl_Box(sb1->x(), sb2->y(), sb1->w(), sb2->h()));
     end();
 
@@ -180,11 +184,11 @@ void MatrixEditor::draw()
                 ;
         };
         for(; condition(i); ++i, ++ri) {
-            l("%ld,%d:%c ", i, j, *ri);
+            l("%c", i, j, *ri);
             cd.draw(i, j, IsSelected(i, j), *ri);
         }
-        l("\n");
     }
+    l("\n");
 
     fl_draw_box(FL_FLAT_BOX, sb1->x() + sb1->w(), sb2->y() + sb2->h(), Fl::scrollbar_size(), Fl::scrollbar_size(), FL_BACKGROUND_COLOR);
 
@@ -265,24 +269,28 @@ FL_FOCUS_:  // code
                         cursorx_ = std::min(cursorx_ + 1, windowx_);
                         mx_ = std::min<int>(mx_ + 1, columns_.size());
                         l("move right @%d,%d\n", cursory_, cursorx_);
+                        Update(nrows_);
                         redraw();
                         return 1;
                     case FL_Left:
                         cursorx_ = std::max(cursorx_ - 1, 0);
                         mx_ = std::max(mx_ - 1, 0);
                         l("move left @%d,%d\n", cursory_, cursorx_);
+                        Update(nrows_);
                         redraw();
                         return 1;
                     case FL_Down:
                         cursory_ = std::min(cursory_ + 1, windowy_ - 1);
-                        my_ = std::min(my_ + 1, nrows_);
+                        my_ = std::min(my_ + 1, nrows_ - 1);
                         l("move down @%d,%d\n", cursory_, cursorx_);
+                        Update(nrows_);
                         redraw();
                         return 1;
                     case FL_Up:
                         cursory_ = std::max(cursory_ - 1, 0);
                         my_ = std::max(my_ - 1, 0);
                         l("move up @%d,%d\n", cursory_, cursorx_);
+                        Update(nrows_);
                         redraw();
                         return 1;
                     }
@@ -338,13 +346,13 @@ void MatrixEditor::Update(int nrows)
     auto sb1full = std::max<size_t>(1, columns_.size());
     auto sb1window = std::min(
             sb1full,
-            (decltype(sb1full))std::ceil(sb1->w() / fl_width("X")));
+            (decltype(sb1full))std::floor(sb1->w() / fl_width("X")));
     windowx_ = sb1window;
     auto sb1start = sb1->value();
-    while(mx_ > sb1start + windowx_)
-        sb1start += windowx_;
+    while(mx_ >= sb1start + windowx_)
+        sb1start += windowx_/2;
     while(mx_ < sb1start)
-        sb1start -= windowx_;
+        sb1start -= windowx_/2;
     sb1start = std::min<int>(sb1full, sb1start);
     sb1start = std::max<int>(sb1start, 0);
     sb1->value(sb1start, sb1window, 0, sb1full);
@@ -354,13 +362,13 @@ void MatrixEditor::Update(int nrows)
     auto sb2full = std::max(1, nrows_);
     auto sb2window = std::min(
             sb2full,
-            (int)std::ceil(sb2->h() / fl_height()));
+            (int)std::floor((sb2->h()-1) / fl_height()));
     windowy_ = sb2window;
     auto sb2start = sb2->value();
-    while(my_ > sb2start + windowy_)
-        sb2start += windowy_;
+    while(my_ >= sb2start + windowy_)
+        sb2start += windowy_/2;
     while(my_ < sb2start)
-        sb2start -= windowy_;
+        sb2start -= windowy_/2;
     sb2start = std::min<int>(sb2full, sb2start);
     sb2start = std::max<int>(0, sb2start);
     cursory_ = my_ - sb2->value();
@@ -379,4 +387,16 @@ int MatrixEditor::mx() const
 int MatrixEditor::my() const
 {
     return my_;
+}
+
+void MatrixEditor::Scrolled(Fl_Widget*, void* p)
+{
+    LOGGER(l);
+    auto* me = (MatrixEditor*)p;
+    l("scrolled %d,%d\n", me->sb1->value(), me->sb2->value());
+    while(me->mx_ < me->sb1->value()) ++me->mx_;
+    while(me->mx_ > me->sb1->value() + me->windowx_) --me->mx_;
+    while(me->my_ < me->sb2->value()) ++me->my_;
+    while(me->my_ > me->sb2->value() + me->windowy_) --me->my_;
+    me->Update(me->nrows_);
 }

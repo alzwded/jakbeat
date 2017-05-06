@@ -7,7 +7,7 @@
 [ ] Edit/Cut & Copy & Paste (general)
 [ ] Edit/Cut & Copy & Paste (editor)
 [ ] Edit/Overwrite
-[ ] Edit/Insert Rest & Blank
+[x] Edit/Insert Rest & Blank
 [ ] Edit/Clear Columns
 [ ] Edit/Delete Columns
 [ ] Deactivate menu items when appropriate
@@ -30,8 +30,11 @@
 
 [X] WHAT/WHAT
 [X] WHAT/bpm
-[ ] WHAT/editor
+[X] WHAT/editor
 
-[ ] OUTPUT/editor
+[X] OUTPUT/editor
 
-[ ] editor
+[X] editor->cursor
+[X] editor->scrolling
+[ ] editor->typing
+[X] editor->updating

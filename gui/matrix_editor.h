@@ -55,6 +55,7 @@ public:
 
 private:
     bool IsSelected(int, int) const;
+    static void Scrolled(Fl_Widget*, void*);
 
 private:
     columns_t& columns_;

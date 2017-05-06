@@ -174,6 +174,9 @@ int main(int argc, char* argv[])
                 }});
     m->output.push_back({{ '1' }});
     m->output.push_back({{ '1' }});
+    for(size_t i = 0; i < 80; ++i) {
+        m->output.push_back({{ '.' }});
+    }
     m->output.push_back({{ '1' }});
     create_window(m);
 
