@@ -78,18 +78,20 @@ MatrixEditor::MatrixEditor(
         int y,
         int w,
         int h,
-        column_p_t first,
-        column_p_t last,
+        columns_t& columns,
+        int nrows,
         int cursorx,
         int cursory)
     : BASE(x, y, w, h)
-    , first_(first)
-    , last_(last)
+    , columns_(columns)
+    , nrows_(nrows)
     , active_(false)
-    , mx_(1)
-    , my_(1)
+    , mx_(0)
+    , my_(0)
     , cursorx_(cursorx - 1)
     , cursory_(cursory - 1)
+    , sb1(nullptr)
+    , sb2(nullptr)
 {
     LOGGER(l);
     int dx = Fl::box_dx(FL_DOWN_BOX),
@@ -106,34 +108,20 @@ MatrixEditor::MatrixEditor(
               Fl::scrollbar_size()
            );
       sb1->type(FL_HORIZONTAL);
-      auto sb1full = std::max<ptrdiff_t>(1, std::distance(first, last));
-      auto sb1window = std::min(
-              sb1full,
-              (decltype(sb1full))std::ceil(sb1->w() / fl_width("X")));
-      windowx_ = sb1window;
-      auto sb1start = std::min<int>(sb1full, mx_);
-      sb1->value(sb1start, sb1window, 1, sb1full);
-      l("sb1 bounds: %d %ld %d %ld\n", sb1start, sb1window, 1, sb1full);
       sb2 = new Fl_Scrollbar(
               x + dx + w - dw - Fl::scrollbar_size(),
               y + dy,
               Fl::scrollbar_size(),
               h - dh - Fl::scrollbar_size()
            );
-      auto sb2full = (first_ != last_)
-          ? first_->rows.size()
-          : (size_t)1
-          ;
-      auto sb2window = std::min(
-              sb2full,
-              (size_t)std::ceil(sb2->h() / fl_height()));
-      windowy_ = sb2window;
-      auto sb2start = std::min<int>(sb2full, my_);
-      l("sb2 bounds: %d %ld %d %ld\n", sb2start, sb2window, 1, sb2full);
-      sb2->value(sb2start, sb2window, 1, sb2full);
       resizable(new Fl_Box(sb1->x(), sb2->y(), sb1->w(), sb2->h()));
     end();
+
+    Update(nrows);
 }
+
+MatrixEditor::~MatrixEditor()
+{}
 
 bool MatrixEditor::IsSelected(int i, int j) const
 {
@@ -163,20 +151,17 @@ void MatrixEditor::draw()
 
     CellDrawer cd(x, y, cx, cy, FL_FOREGROUND_COLOR, FL_BACKGROUND2_COLOR, selectionColor);
 
-    auto xFull = std::distance(first_, last_);
+    auto xFull = columns_.size();
     auto xWindow = windowx_;
-    assert(mx_ - 1 <= xFull);
-    auto it = first_;
-    std::advance(it, mx_ - 1);
+    assert(mx_ <= xFull);
+    auto it = columns_.begin();
+    std::advance(it, mx_ );
     auto it_end = it;
     int count = xWindow;
-    while(count && it_end != last_)
+    while(count && it_end != columns_.end())
         ++it_end, --count;
 
-    size_t size = (it != it_end)
-        ? it->rows.size()
-        : 0
-        ;
+    size_t size = nrows_;
     size_t yWindow = windowy_;
     l("size=%ld, ywindow=%ld, xwindow=%d\n", size, yWindow, xWindow);
 
@@ -185,16 +170,16 @@ void MatrixEditor::draw()
 
     int j = 0;
     for(; it != it_end; ++it, ++j) {
-        size_t i = my_ - 1;
-        auto ri = it->rows.begin();
+        size_t i = my_;
+        auto ri = it->begin();
         auto condition = [=](size_t i) -> bool {
             return i < size
-                && i < yWindow + my_ - 1
+                && i < yWindow + my_
                 ;
         };
         for(; condition(i); ++i, ++ri) {
-            l("%ld,%d:%c ", i, j, **ri);
-            cd.draw(i, j, IsSelected(i, j), **ri);
+            l("%ld,%d:%c ", i, j, *ri);
+            cd.draw(i, j, IsSelected(i, j), *ri);
         }
         l("\n");
     }
@@ -329,4 +314,40 @@ FL_FOCUS_:  // code
             return 1;
     }
     return BASE::handle(ev);
+}
+
+void MatrixEditor::Update(int nrows)
+{
+    LOGGER(l);
+    l("nrows=%d, columns=%d\n", nrows, columns_.size());
+    nrows_ = nrows;
+
+    auto sb1full = std::max<size_t>(1, columns_.size());
+    auto sb1window = std::min(
+            sb1full,
+            (decltype(sb1full))std::ceil(sb1->w() / fl_width("X")));
+    windowx_ = sb1window;
+    auto sb1start = std::min<int>(sb1full, mx_);
+    sb1->value(sb1start, sb1window, 1, sb1full);
+    l("sb1 bounds: %d %ld %d %ld\n", sb1start, sb1window, 1, sb1full);
+    auto sb2full = std::max(1, nrows_);
+    auto sb2window = std::min(
+            sb2full,
+            (int)std::ceil(sb2->h() / fl_height()));
+    windowy_ = sb2window;
+    auto sb2start = std::min<int>(sb2full, my_);
+    l("sb2 bounds: %d %ld %d %ld\n", sb2start, sb2window, 1, sb2full);
+    sb2->value(sb2start, sb2window, 1, sb2full);
+
+    redraw();
+}
+
+int MatrixEditor::mx() const
+{
+    return mx_ + cursorx_;
+}
+
+int MatrixEditor::my() const
+{
+    return my_ + cursory_;
 }

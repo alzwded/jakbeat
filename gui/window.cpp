@@ -63,6 +63,7 @@ Vindow::Vindow(
     , mainGroup_(nullptr)
     , whoGroup_(nullptr)
     , whatGroup_(nullptr)
+    , editor_(nullptr)
 {
     assert(model_);
     model_->views.push_back(this);
@@ -455,6 +456,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
 {
     SelectButton(name, lyt);
     layout_ = lyt;
+    editor_ = nullptr;
 
     if(mainGroup_) Fl::delete_widget(mainGroup_);
     mainGroup_ = nullptr;
@@ -488,8 +490,9 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     label->y() + label->h(),
                     mainGroup_->w() - 10,
                     mainGroup_->h() - label->h() - 10,
-                    model_->output.columns.begin(),
-                    model_->output.columns.end());
+                    model_->output,
+                    model_->whats.size());
+            editor_ = editor;
 
             mainGroup_->add(editor);
             mainGroup_->resizable(editor);
@@ -586,8 +589,9 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     bpmlbl->y() + bpmlbl->h() + 5,
                     TWOTHIRD,
                     mainGroup_->h() - whatlbl->h() - 5 - bpmlbl->h() - 5 - 10,
-                    what.start,
-                    what.end);
+                    what.columns,
+                    model_->whos.size());
+            editor_ = editor;
 
             mainGroup_->add(editor);
             mainGroup_->resizable(editor);

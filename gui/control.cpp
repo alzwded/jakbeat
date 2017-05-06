@@ -177,18 +177,8 @@ void Control::InsertColumn(evData id, column_p_t before, char c)
             || id == "OUTPUT")
     {
         Column col;
-        auto size = model_->output.rows.size();
-        auto rit = model_->output.rows.begin();
-        if(before != model_->output.columns.end()) {
-            for(auto it = before->rows.begin(); it != before->rows.end(); ++it, ++rit) {
-                col.rows.push_back(rit->insert(*it, c));
-            }
-        } else {
-            for(; rit != model_->output.rows.end(); ++rit) {
-                col.rows.push_back(rit->insert(rit->end(), c));
-            }
-        }
-        model_->columns.insert(before, col);
+        auto size = model_->whats.size();
+        model_->output.insert(before, column_t(size, c));
         Event e = {
             Event::OUTPUT,
             Event::CHANGED,
@@ -203,13 +193,17 @@ void Control::InsertColumn(evData id, column_p_t before, char c)
     }
 
     FIND_WHAT(id);
-    assert(before != model_->columns.end());
 
-    Column col;
-    auto size = before->rows.size();
-    auto rit = model_->rows.begin();
-    for(auto it = before->rows.begin(); it != before->rows.end(); ++it, ++rit) {
-        col.rows.push_back(rit->insert(*it, c));
-    }
-    model_->columns.insert(before, col);
+    auto size = model_->whos.size();
+    found->columns.insert(before, column_t(size, c));
+    Event e = {
+        Event::WHAT,
+        Event::CHANGED,
+        id,
+        "",
+        source_
+    };
+    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
+                v->OnEvent(&e);
+            });
 }

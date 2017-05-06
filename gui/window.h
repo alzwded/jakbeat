@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "view.h"
 #include "model.h"
+#include "matrix_editor.h"
 #include <FL/Fl.H>
 #include <Fl/Fl_Double_Window.H>
 #include <FL/Fl_Menu_Bar.H>
@@ -123,6 +124,7 @@ private:
     Fl_Menu_Bar* menu_;
     Fl_Group* mainGroup_, * whoGroup_, * whatGroup_;
     Fl_Tile* container_;
+    MatrixEditor* editor_;
 };
 
 #endif

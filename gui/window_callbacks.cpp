@@ -1,5 +1,6 @@
 #include "window.h"
 #include "control.h"
+#include "logger.h"
 
 #include <FL/fl_ask.H>
 #include <FL/Fl_Input.H>
@@ -55,10 +56,30 @@ void Vindow::EditInsertRest(Fl_Widget*, void*)
 
 void Vindow::EditInsertBlank(Fl_Widget*, void* p)
 {
+    LOGGER(l);
     auto me = (Vindow*)p;
+    assert(me->editor_);
     Control ctrl(me->model_, me);
-    // TODO update editor...
-    ctrl.InsertColumn(me->active_, me->model_->output.columns.end(), ' ');
+    if(me->layout_ == Vindow::Layout::OUTPUT) {
+        auto pos = me->model_->output.begin();
+        std::advance(pos, me->editor_->mx());
+        ctrl.InsertColumn(me->active_, pos, ' ');
+        assert(me->editor_);
+        me->editor_->Update(me->model_->whats.size());
+    } else if(me->layout_ == Vindow::Layout::WHAT) {
+        auto found = std::find_if(me->model_->whats.begin(), me->model_->whats.end(), [me](WhatEntry& what) -> bool {
+                    return what.name == me->active_;
+                });
+        if(found == me->model_->whats.end()) {
+            l("%s not found\n", me->active_);
+            return;
+        }
+        auto pos = found->columns.begin();
+        std::advance(pos, me->editor_->mx());
+        ctrl.InsertColumn(me->active_, pos, ' ');
+        assert(me->editor_);
+        me->editor_->Update(me->model_->whos.size());
+    }
 }
 
 void Vindow::EditClearColumns(Fl_Widget*, void*)

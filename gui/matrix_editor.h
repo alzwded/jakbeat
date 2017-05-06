@@ -41,22 +41,24 @@ public:
             int y,
             int w,
             int h,
-            column_p_t first,
-            column_p_t last,
+            columns_t& columns,
+            int nrows,
             int cursorx = 1,
             int cursory = 1);
     ~MatrixEditor() override;
 
     void draw() override;
     int handle(int) override;
-    int mx() const { return mx_; }
-    int my() const { return my_; }
+    int mx() const;
+    int my() const;
+    void Update(int nrows);
 
 private:
     bool IsSelected(int, int) const;
 
 private:
-    column_p_t first_, last_;
+    columns_t& columns_;
+    int nrows_;
     bool active_;
     Fl_Scrollbar* sb1,* sb2;
     int mx_, my_;

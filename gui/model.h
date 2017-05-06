@@ -52,17 +52,10 @@ struct Schema
     std::vector<Attribute> attributes;
 };
 
-typedef std::list<char> row_t;
-typedef row_t::iterator row_p_t;
-typedef std::list<row_t> rows_t;
-
-struct Column
-{
-    std::list<row_p_t> rows;
-};
-
-typedef Column column_t;
-typedef std::list<Column> columns_t;
+typedef char cell_t;
+typedef std::list<cell_t> column_t;
+typedef column_t Column;
+typedef std::list<column_t> columns_t;
 typedef columns_t::iterator column_p_t;
 
 struct WhoEntry
@@ -78,13 +71,7 @@ struct WhatEntry
     std::string name;
     std::string bpm;
     Schema const* schema;
-    column_p_t start, end;
-};
-
-struct Output
-{
     columns_t columns;
-    rows_t rows;
 };
 
 struct Model
@@ -93,9 +80,7 @@ struct Model
     std::list<View*> views;
     std::list<WhoEntry> whos;
     std::list<WhatEntry> whats;
-    Output output;
-    columns_t columns;
-    rows_t rows;
+    columns_t output;
 
     bool dirty = false;
 };

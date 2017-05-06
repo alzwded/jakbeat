@@ -163,30 +163,18 @@ int main(int argc, char* argv[])
                     { "depth", "30" },
                 }
             });
-    m->output.rows.push_back({'!', '.', '.'});
-    m->output.rows.push_back({'.', '!', '.'});
-    m->output.rows.push_back({'/', ':', '/'});
-    for(int i = 0; i < 3; ++i) {
-        LOGGER(l);
-        l("building column[%d]\n", i);
-        Column c;
-        auto rit = m->output.rows.begin();
-        for(int j = 0; j < 3; ++j, ++rit) {
-            auto it = rit->begin();
-            std::advance(it, i);
-            l("adding %c at %ld,%ld\n", *it, m->output.columns.size(), c.rows.size());
-            c.rows.push_back(it);
-        }
-        m->output.columns.push_back(c);
-    }
     m->whats.push_back({
                 "A1",
                 "120",
                 &whatSchemas[0],
-                m->columns.end(),
-                m->columns.end()
-            });
-    m->output.rows.emplace_back();
+                {
+                    { '!', '.', '/', },
+                    { '.', '!', ':', },
+                    { '.', '.', '/', },
+                }});
+    m->output.push_back({{ '1' }});
+    m->output.push_back({{ '1' }});
+    m->output.push_back({{ '1' }});
     create_window(m);
 
     return Fl::run();
