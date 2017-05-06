@@ -184,7 +184,7 @@ void MatrixEditor::draw()
                 ;
         };
         for(; condition(i); ++i, ++ri) {
-            l("%c", i, j, *ri);
+            l("%c", *ri);
             cd.draw(i, j, IsSelected(i, j), *ri);
         }
     }
@@ -344,9 +344,12 @@ void MatrixEditor::Update(int nrows)
     my_ = std::min<int>(my_, nrows);
 
     auto sb1full = std::max<size_t>(1, columns_.size());
+#if 0
     auto sb1window = std::min(
             sb1full,
             (decltype(sb1full))std::floor(sb1->w() / fl_width("X")));
+#endif
+    auto sb1window = (decltype(sb1full))std::floor(sb1->w() / fl_width("X"));
     windowx_ = sb1window;
     auto sb1start = sb1->value();
     while(mx_ >= sb1start + windowx_)
@@ -360,9 +363,12 @@ void MatrixEditor::Update(int nrows)
     l("sb1 bounds: %d %ld %d %ld\n", sb1start, sb1window, 1, sb1full);
     l("ci=%d, cj=%d\n", cursory_, cursorx_);
     auto sb2full = std::max(1, nrows_);
+#if 0
     auto sb2window = std::min(
             sb2full,
             (int)std::floor((sb2->h()-1) / fl_height()));
+#endif
+    auto sb2window = (int)std::floor((sb2->h()-1) / fl_height());
     windowy_ = sb2window;
     auto sb2start = sb2->value();
     while(my_ >= sb2start + windowy_)
