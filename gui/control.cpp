@@ -31,9 +31,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cassert>
 #include <cstdio>
 
-#define FIND_WHAT(id) \
+#define FIND_WHAT(id, then) \
     auto found = FindWhat(id); \
-    if(found == model_->whats.end()) return;
+    if(found == model_->whats.end()) then;
 
 #define DIRTY() do{\
     model_->dirty = true; \
@@ -160,7 +160,7 @@ void Control::SetWhatsName(Control::evData id, std::string name)
 
 void Control::SetWhatsBpm(Control::evData id, std::string bpm)
 {
-    FIND_WHAT(id);
+    FIND_WHAT(id, return);
     found->bpm = bpm;
     DIRTY();
     Event e = {
@@ -175,7 +175,7 @@ void Control::SetWhatsBpm(Control::evData id, std::string bpm)
             });
 }
 
-void Control::InsertColumn(evData id, column_p_t before, char c)
+Event::Source Control::InsertColumnPrivate(evData id, column_p_t before, char c)
 {
     if(id.empty()
             || id == "OUTPUT")
@@ -184,32 +184,82 @@ void Control::InsertColumn(evData id, column_p_t before, char c)
         auto size = model_->whats.size();
         model_->output.insert(before, column_t(size, c));
         DIRTY();
-        Event e = {
-            Event::OUTPUT,
-            Event::CHANGED,
-            id,
-            "",
-            source_
-        };
-        std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
-                    v->OnEvent(&e);
-                });
-        return;
+        return Event::OUTPUT;
     }
 
-    FIND_WHAT(id);
-
+    FIND_WHAT(id, return Event::WHAT);
     auto size = model_->whos.size();
-    DIRTY();
     found->columns.insert(before, column_t(size, c));
+    DIRTY();
+    return Event::WHAT;
+}
+
+void Control::InsertColumn(evData id, column_p_t before, char c)
+{
+    auto source = InsertColumnPrivate(id, before, c);
+    if(source == Event::GLOBAL) return;
     Event e = {
-        Event::WHAT,
+        source,
         Event::CHANGED,
         id,
         "",
         source_
     };
-    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
-                v->OnEvent(&e);
+    Fire(&e);
+}
+
+void Control::Fire(Event* ev)
+{
+    std::for_each(model_->views.begin(), model_->views.end(), [&ev](View* v) {
+                v->OnEvent(ev);
             });
+}
+
+void Control::SetCell(evData what, column_p_t before, int row, char c)
+{
+    if(what.empty()
+            || what == "OUTPUT")
+    {
+        if(before == model_->output.end())
+        {
+            (void) InsertColumnPrivate(what, before, ' ');
+            auto pos = model_->output.end();
+            std::advance(pos, -1);
+            return SetCell(what, pos, row, c);
+        }
+        auto pos = before->begin();
+        std::advance(pos, row);
+        *pos = c;
+        DIRTY();
+        Event e  = {
+            Event::OUTPUT,
+            Event::CHANGED,
+            what,
+            "",
+            source_
+        };
+        Fire(&e);
+        return;
+    }
+
+    FIND_WHAT(what, return);
+    if(before == found->columns.end())
+    {
+        (void) InsertColumnPrivate(what, before, (c != ' ') ? '.' : ' ');
+        auto pos = found->columns.end();
+        std::advance(pos, -1);
+        return SetCell(what, pos, row, c);
+    }
+    auto pos = before->begin();
+    std::advance(pos, row);
+    *pos = c;
+    DIRTY();
+    Event e  = {
+        Event::WHAT,
+        Event::CHANGED,
+        what,
+        "",
+        source_
+    };
+    Fire(&e);
 }

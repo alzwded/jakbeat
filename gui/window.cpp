@@ -94,16 +94,14 @@ Vindow::Vindow(
               FL_COMMAND + 'c', (Fl_Callback*)EditCopy },
           { "&Paste",
               FL_COMMAND + 'v', (Fl_Callback*)EditPaste, 0, FL_MENU_DIVIDER },
-          { "Over&write",
-              FL_Insert, (Fl_Callback*)EditOverwrite, 0, FL_MENU_TOGGLE },
           { "Insert &Rest",
-              0, (Fl_Callback*)EditInsertRest, this },
+              FL_COMMAND + '0', (Fl_Callback*)EditInsertRest, this },
           { "Insert &Blank",
-              0, (Fl_Callback*)EditInsertBlank, this },
+              FL_COMMAND + 'b', (Fl_Callback*)EditInsertBlank, this },
           { "C&lear Columns",
-              FL_COMMAND + 'b', (Fl_Callback*)EditClearColumns },
+              FL_Delete, (Fl_Callback*)EditClearColumns, this },
           { "&Delete Columns",
-              FL_Delete, (Fl_Callback*)EditDeleteColumns, 0, FL_MENU_DIVIDER },
+              FL_BackSpace, (Fl_Callback*)EditDeleteColumns, this, FL_MENU_DIVIDER },
           { "Add WH&AT Section",
               0, (Fl_Callback*)EditAddWhat },
           { "Add WH&O Section",
@@ -373,6 +371,7 @@ Vindow::~Vindow()
 
 void Vindow::OnEvent(Event* e)
 {
+    LOGGER(l);
     switch(e->type)
     {
         case Event::RELOADED:
@@ -445,6 +444,8 @@ void Vindow::OnEvent(Event* e)
                             || e->changed == " schema")
                     {
                         SetLayout(lyt, e->targetId.c_str());
+                    } else {
+                        if(editor_) editor_->Update();
                     }
                 }
             }
@@ -497,10 +498,12 @@ void Vindow::SetLayout(Layout lyt, const char* name)
             mainGroup_->add(label);
 
             auto* editor = new MatrixEditor(
+                    Control(model_, this),
                     label->x(),
                     label->y() + label->h(),
                     mainGroup_->w() - 10,
                     mainGroup_->h() - label->h() - 10,
+                    active_,
                     model_->output,
                     model_->whats.size(),
                     mx,
@@ -598,10 +601,12 @@ void Vindow::SetLayout(Layout lyt, const char* name)
             mainGroup_->add(bpmlbl);
 
             auto* editor = new MatrixEditor(
+                    Control(model_, this),
                     mainGroup_->x() + THIRD,
                     bpmlbl->y() + bpmlbl->h() + 5,
                     TWOTHIRD,
                     mainGroup_->h() - whatlbl->h() - 5 - bpmlbl->h() - 5 - 10,
+                    active_,
                     what.columns,
                     model_->whos.size(),
                     mx, my);

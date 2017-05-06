@@ -74,15 +74,19 @@ namespace {
 } // namespace
 
 MatrixEditor::MatrixEditor(
+        Control ctrl,
         int x,
         int y,
         int w,
         int h,
+        std::string target,
         columns_t& columns,
         int nrows,
         int mx,
         int my)
     : BASE(x, y, w, h)
+    , ctrl_(std::move(ctrl))
+    , target_(std::move(target))
     , columns_(columns)
     , nrows_(nrows)
     , active_(false)
@@ -328,7 +332,13 @@ FL_FOCUS_:  // code
                     l("non printable, to parent\n");
                     break;
                 }
-                fprintf(stderr, "Pushed %ls in editor\n", wcs);
+                l("Pushed %ls in editor at %d,%d\n", wcs, my_, mx_);
+
+                auto pos = columns_.begin();
+                std::advance(pos, mx_);
+                ++mx_;
+                l("Advanced to %d\n", mx_);
+                ctrl_.SetCell(target_, pos, my_, Fl::event_text()[0]);
             }
             return 1;
         case FL_PASTE:
