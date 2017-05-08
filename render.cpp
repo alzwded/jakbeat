@@ -35,10 +35,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include <iterator>
 #include <type_traits>
+#include <string_utils.h>
 
-std::map<std::string, std::vector<float>> LoadData(File& f)
+std::map<std::wstring, std::vector<float>> LoadData(File& f)
 {
-    std::map<std::string, std::vector<float>> data;
+    std::map<std::wstring, std::vector<float>> data;
     for(auto&& sample: f.samples) {
         auto& wav = data[sample.first];
         auto path = sample.second.path;
@@ -55,18 +56,18 @@ std::map<std::string, std::vector<float>> LoadData(File& f)
         desired.callback = nullptr;
         desired.userdata = nullptr;
         auto hr = SDL_LoadWAV(
-                path.c_str(),
+                W2MB(path).get(),
                 &desired,
                 &sdlWavData,
                 &len);
         if(hr == nullptr) {
-            fprintf(stderr, "SDL_LoadWAV failed: %s\n", SDL_GetError());
+            fwprintf(stderr, L"SDL_LoadWAV failed: %s\n", SDL_GetError());
             abort();
         }
         ASSERT(desired.freq == 44100 && (desired.format == AUDIO_F32SYS || desired.format == AUDIO_F32 || desired.format == AUDIO_F32LSB || desired.format == AUDIO_S16LSB) && desired.channels == 1,
-                "Expecting a mono sample at 44100Hz either in float32 format or signed 16bit little endian; got sample rate ", desired.freq,
-                ", channels ", desired.channels,
-                " and format code ", desired.format);
+                L"Expecting a mono sample at 44100Hz either in float32 format or signed 16bit little endian; got sample rate ", desired.freq,
+                L", channels ", desired.channels,
+                L" and format code ", desired.format);
         if(desired.format == AUDIO_S16LSB) {
             wav.resize(len / sizeof(int16_t));
             int16_t* shorts = (int16_t*)sdlWavData;
@@ -84,10 +85,10 @@ std::map<std::string, std::vector<float>> LoadData(File& f)
 
 #define RenderNew Render
 
-void RenderNew(File f, std::string filename)
+void RenderNew(File f, std::wstring filename)
 {
-    std::map<std::string, std::vector<float>> data = LoadData(f);
-    std::map<std::string, std::pair<std::vector<float>, std::vector<float>>> unmixed;
+    std::map<std::wstring, std::vector<float>> data = LoadData(f);
+    std::map<std::wstring, std::pair<std::vector<float>, std::vector<float>>> unmixed;
     size_t end = 0;
 
     for(auto&& track: f.samples) {
@@ -208,11 +209,11 @@ void RenderNew(File f, std::string filename)
         outWAV.push_back(right[i]);
     }
 
-    extern void wav_write_file(std::string const&, std::vector<float> const&, unsigned, unsigned);
+    extern void wav_write_file(std::wstring const&, std::vector<float> const&, unsigned, unsigned);
     wav_write_file(filename, outWAV, 44100, 2);
 }
 
-void RenderOld(File f, std::string filename)
+void RenderOld(File f, std::wstring filename)
 {
     auto&& data = LoadData(f);
     std::vector<float> outWAV;
@@ -249,6 +250,6 @@ void RenderOld(File f, std::string filename)
         }
     }
 
-    extern void wav_write_file(std::string const&, std::vector<float> const&, unsigned, unsigned);
+    extern void wav_write_file(std::wstring const&, std::vector<float> const&, unsigned, unsigned);
     wav_write_file(filename, outWAV, 44100, 1);
 }

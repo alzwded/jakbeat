@@ -14,7 +14,7 @@ endif
 
 CXXFLAGS = $(CFLAGS) --std=gnu++14
 
-OBJS = main.o parser.o tokenizer.o file.o render.o wave.o stereo.o
+OBJS = main.o parser.o tokenizer.o file.o render.o wave.o stereo.o string_utils.o
 
 jakbeat: $(OBJS)
 	$(LD) $(LDOPTS) $(OBJS) $(LIBS)

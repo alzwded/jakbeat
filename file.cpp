@@ -32,27 +32,27 @@ static void AddWho(File* f, Section* s)
 {
     for(auto&& o: s->options) {
         auto& sample = f->samples[o->name];
-        ASSERT(o->value->GetType() == IValue::LIST, "Expecting a list of parameters for sample declaration ", o->name);
+        ASSERT(o->value->GetType() == IValue::LIST, L"Expecting a list of parameters for sample declaration ", o->name);
         for(auto&& o2: ((List*)o->value)->values) {
-            ASSERT(o2->GetType() == IValue::OPTION, "Expecting key value pairs for ", o->name);
+            ASSERT(o2->GetType() == IValue::OPTION, L"Expecting key value pairs for ", o->name);
             Option* o = (Option*)o2;
-            if(o->name.compare("path") == 0) {
+            if(o->name.compare(L"path") == 0) {
                 auto&& val = o->value;
-                ASSERT(val->GetType() == IValue::SCALAR, "Expecting path to be a string");
+                ASSERT(val->GetType() == IValue::SCALAR, L"Expecting path to be a string");
                 sample.path = ((Scalar*)val)->value;
-            } else if(o->name.compare("volume") == 0) {
+            } else if(o->name.compare(L"volume") == 0) {
                 auto&& val = o->value;
-                ASSERT(val->GetType() == IValue::SCALAR, "Expecting volume to be a scalar");
-                sample.volume = atoi(((Scalar*)val)->value.c_str());
-            } else if(o->name.compare("stereo") == 0) {
+                ASSERT(val->GetType() == IValue::SCALAR, L"Expecting volume to be a scalar");
+                sample.volume = wcstol(((Scalar*)val)->value.c_str(), nullptr, 10);
+            } else if(o->name.compare(L"stereo") == 0) {
                 auto&& val = o->value;
-                ASSERT(val->GetType() == IValue::SCALAR, "Expecting stereo to be a scalar");
+                ASSERT(val->GetType() == IValue::SCALAR, L"Expecting stereo to be a scalar");
                 sample.effect->name = ((Scalar*)val)->value;
-            } else if(o->name.compare("params") == 0) {
+            } else if(o->name.compare(L"params") == 0) {
                 auto&& val = o->value;
                 sample.effect->params.reset(val->Clone());
             } else {
-                ASSERT(o->name == "volume" || o->name == "path" || o->name == "stereo" || o->name == "params", "Unknown parameter ", o->name);
+                ASSERT(o->name == L"volume" || o->name == L"path" || o->name == L"stereo" || o->name == L"params", L"Unknown parameter ", o->name);
             }
         }
     }
@@ -61,7 +61,7 @@ static void AddWho(File* f, Section* s)
 static void AddWhat(File* f, Section* s)
 {
     for(auto&& o: s->options) {
-        if(o->name.compare("Output") == 0) {
+        if(o->name.compare(L"Output") == 0) {
             IValue* v = o->value;
             switch(v->GetType()) {
                 case IValue::SCALAR:
@@ -70,23 +70,23 @@ static void AddWhat(File* f, Section* s)
                 case IValue::LIST:
                     {
                         for(auto&& o: ((List*)v)->values) {
-                            ASSERT(o->GetType() == IValue::SCALAR, "Expecting a list of options");
+                            ASSERT(o->GetType() == IValue::SCALAR, L"Expecting a list of options");
                             f->output.push_back(((Scalar*)o)->value);
                         }
                     }
             }
         } else {
             auto& phrase = f->phrases[o->name];
-            ASSERT(o->value->GetType() == IValue::LIST, "Expecting a list of options for ", o->name);
+            ASSERT(o->value->GetType() == IValue::LIST, L"Expecting a list of options for ", o->name);
             for(auto& o2: ((List*)o->value)->values) {
-                ASSERT(o2->GetType() == IValue::OPTION, "Expecting a list of options for ", o->name);
+                ASSERT(o2->GetType() == IValue::OPTION, L"Expecting a list of options for ", o->name);
                 auto o = (Option*)o2;
                 auto name = o->name;
-                if(name.compare("bpm") == 0) {
-                    ASSERT(o->value->GetType() == IValue::SCALAR, "Expecting bpm to be a scalar");
-                    phrase.bpm = atoi(((Scalar*)o->value)->value.c_str());
+                if(name.compare(L"bpm") == 0) {
+                    ASSERT(o->value->GetType() == IValue::SCALAR, L"Expecting bpm to be a scalar");
+                    phrase.bpm = wcstol(((Scalar*)o->value)->value.c_str(), nullptr, 10);
                 } else {
-                    ASSERT(name == "bpm", "Unknown parameter ", name);
+                    ASSERT(name == L"bpm", L"Unknown parameter ", name);
                 }
             }
         }
@@ -100,28 +100,28 @@ static void AddBeats(File* f, Section* s)
         auto& beats = phrase.beats[o->name];
         switch(o->value->GetType()) {
         case IValue::SCALAR:
-            for(char c: ((Scalar*)o->value)->value) {
+            for(auto c: ((Scalar*)o->value)->value) {
                 switch(c) {
-                case '.':
+                case L'.':
                     beats.push_back(File::Beat::REST);
                     break;
-                case '/':
-                case '-':
+                case L'/':
+                case L'-':
                     beats.push_back(File::Beat::HALF);
                     break;
-                case '!':
+                case L'!':
                     beats.push_back(File::Beat::FULL);
                     break;
-                case ':':    
+                case L':':    
                     beats.push_back(File::Beat::STOP);
                     break;
-                case 10:
-                case 13:
-                case '\t':
-                case ' ':
+                case L'\u000A':
+                case L'\u000D':
+                case L'\t':
+                case L' ':
                     break;
                 default:
-                    ASSERT(c == '.' || c == '-' || c == '/' || c == '!' || c == ':', "Unknown beat character ", c);
+                    ASSERT(c == L'.' || c == L'-' || c == L'/' || c == L'!' || c == L':', L"Unknown beat character ", c);
                     break;
                 }
             }
@@ -135,8 +135,8 @@ static void AddBeats(File* f, Section* s)
 
 void File::Add(Section* s)
 {
-    if(s->name.compare("WHO") == 0) AddWho(this, s);
-    else if(s->name.compare("WHAT") == 0) AddWhat(this, s);
+    if(s->name.compare(L"WHO") == 0) AddWho(this, s);
+    else if(s->name.compare(L"WHAT") == 0) AddWhat(this, s);
     else AddBeats(this, s); 
     delete s;
 }

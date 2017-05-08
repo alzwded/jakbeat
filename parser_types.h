@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <functional>
 #include <stereo.h>
+#include <string_utils.h>
 
 struct IValue
 {
@@ -66,28 +67,28 @@ struct Scalar : IValue
 {
     IValue* Clone() override { return new Scalar(value.c_str()); }
     IValue::Type GetType() const override { return IValue::SCALAR; }
-    std::string value;
-    Scalar(char* s)
+    std::wstring value;
+    Scalar(wchar_t* s)
     {
         value.assign(s);
         free(s);
     }
-    Scalar(char const* s) { value.assign(s); }
+    Scalar(wchar_t const* s) { value.assign(s); }
 };
 
 struct Option : IValue
 {
     IValue* Clone() override { return new Option(name.c_str(), value->Clone()); }
     IValue::Type GetType() const override { return IValue::OPTION; }
-    std::string name;
+    std::wstring name;
     IValue* value;
-    Option(char* name_, IValue* value_)
+    Option(wchar_t* name_, IValue* value_)
     {
         name.assign(name_);
         free(name_);
         value = value_;
     }
-    Option(char const* name_, IValue* value_)
+    Option(wchar_t const* name_, IValue* value_)
     {
         name.assign(name_);
         value = value_;
@@ -100,10 +101,10 @@ struct Option : IValue
 
 struct Section
 {
-    std::string name;
+    std::wstring name;
     std::vector<Option*> options;
 
-    void SetName(char* s)
+    void SetName(wchar_t* s)
     {
         name.assign(s);
         free(s);

@@ -548,7 +548,7 @@ void Vindow::SetLayout(Layout lyt, std::wstring const& name)
                         return e.name == name;
                     });
             if(found == model_->whos.end()) {
-                fl_alert("Failed to find %s...", name);
+                fl_alert("Failed to find %s...", W2MB(name).get());
                 break;
             }
             auto& who = *found;
@@ -599,7 +599,7 @@ void Vindow::SetLayout(Layout lyt, std::wstring const& name)
                         return e.name == name;
                     });
             if(foundWhat == model_->whats.end()) {
-                fl_alert("Failed to find %ls...", name);
+                fl_alert("Failed to find %s...", W2MB(name).get());
                 break;
             }
             auto&& what = *foundWhat;

@@ -1,6 +1,7 @@
 #include "string_utils.h"
 
 #include <cwchar>
+#include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include <string>
@@ -59,3 +60,10 @@ std::unique_ptr<char> W2MB(std::wstring const& in)
 
     return std::move(mbs);
 }
+
+#ifndef _MSC_VER
+FILE* wfopen(const wchar_t* path, const wchar_t* mode)
+{
+    return fopen(W2MB(path).get(), W2MB(mode).get());
+}
+#endif

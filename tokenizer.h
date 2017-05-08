@@ -25,6 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <cstdio>
 #include <string>
+#include <string_utils.h>
 
 #define TEOF (0)
 
@@ -32,8 +33,8 @@ struct Token
 {
     typedef int Type;
     Type type;
-    std::string value;
-    Token(Type type_, std::string value_ = "")
+    std::wstring value;
+    Token(Type type_, std::wstring value_ = L"")
         : type(type_), value(value_)
     {}
 };
@@ -41,7 +42,7 @@ struct Token
 struct Tokenizer
 {
     FILE* f;
-    char c;
+    wchar_t c;
 
     Tokenizer(FILE* f_);
 

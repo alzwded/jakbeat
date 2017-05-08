@@ -42,51 +42,52 @@ int tokenizer_lineno = 1;
 Tokenizer::Tokenizer(FILE* f_)
     : f(f_)
 {
-    if(feof(f)) c = EOF;
-    else c = fgetc(f);
+    if(feof(f)) c = WEOF;
+    else c = fgetwc(f);
 }
 
 Token Tokenizer::operator()()
 {
-    while(isspace(c) || c == 13 || c == 10)
+    while(iswspace(c) || c == L'\u000D' || c == L'\u000A')
     {
-        c = fgetc(f);
+        c = fgetwc(f);
         if(feof(f)) return {TEOF};
-        if(c == 10) tokenizer_lineno++;
+        if(c == L'\u000A') tokenizer_lineno++;
     }
-    if(c == '[') { c = fgetc(f); return {LSQUARE}; }
-    if(c == ']') { c = fgetc(f); return {RSQUARE}; }
-    if(c == '(') { c = fgetc(f); return {LPAREN}; }
-    if(c == ')') { c = fgetc(f); return {RPAREN}; }
-    if(c == '=') { c = fgetc(f); return {EQUALS}; }
+    if(c == L'[') { c = fgetwc(f); return {LSQUARE}; }
+    if(c == L']') { c = fgetwc(f); return {RSQUARE}; }
+    if(c == L'(') { c = fgetwc(f); return {LPAREN}; }
+    if(c == L')') { c = fgetwc(f); return {RPAREN}; }
+    if(c == L'=') { c = fgetwc(f); return {EQUALS}; }
 
-    std::stringstream ss;
-    std::function<bool(char)> conditions[] = {
-        [](char c) -> bool {
+    std::wstringstream ss;
+    std::function<bool(wchar_t)> conditions[] = {
+        [](wchar_t c) -> bool {
             return !(isspace(c)
-                    || c == 13
-                    || c == 10
-                    || c == '['
-                    || c == ']'
-                    || c == '('
-                    || c == ')'
-                    || c == '='
+                    || c == L'\u000A'
+                    || c == L'\u000D'
+                    || c == L'['
+                    || c == L']'
+                    || c == L'('
+                    || c == L')'
+                    || c == L'='
                     );
         },
-        [](char c) -> bool {
-            return c != '"';
+        [](wchar_t c) -> bool {
+            return c != L'"';
         },
     };
-    bool quoted = (c == '"');
+    bool quoted = (c == L'"');
     auto condition = conditions[quoted];
-    if(quoted) c = fgetc(f);
+    if(quoted) c = fgetwc(f);
     while(condition(c))
     {
         ss << c;
-        c = fgetc(f);
+        if(c == L'\u000A') tokenizer_lineno++;
+        c = fgetwc(f);
         if(feof(f)) break;
     }
-    if(quoted) c = fgetc(f);
+    if(quoted) c = fgetwc(f);
     //return {STRING, ss.str()}; // curly bracket form crashes msvc 18.00.21005.1
     return Token(STRING, ss.str());
 }

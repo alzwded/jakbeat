@@ -43,7 +43,7 @@ typedef void (*stereo_plugin_dispose_fn)(stereo_state_t);
 
 struct StereoInstance;
 
-StereoInstance* NewStereoInstance(std::string name, IValue* params);
+StereoInstance* NewStereoInstance(std::wstring name, IValue* params);
 
 struct StereoInstance {
     stereo_sample_t operator()(float sample) { return fn(state, sample); }
@@ -63,7 +63,7 @@ private:
           , state(state_)
     {}
 
-    friend StereoInstance* NewStereoInstance(std::string, IValue*);
+    friend StereoInstance* NewStereoInstance(std::wstring, IValue*);
 };
 
 #endif

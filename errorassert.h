@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <cstdlib>
 #include <string>
 #include <sstream>
+#include <cwchar>
 
 #ifdef _MSC_VER
 # define __func__ __FUNCTION__
@@ -25,17 +26,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endif
 
 template<typename T, typename... ARGS>
-std::string error_message(T head, ARGS... tail);
+std::wstring error_message(T head, ARGS... tail);
 
-inline std::string error_message(void)
+inline std::wstring error_message(void)
 {
-    return "";
+    return L"";
 }
 
 template<typename T, typename... Y>
-std::string error_message(T head, Y... tail)
+std::wstring error_message(T head, Y... tail)
 {
-    std::stringstream s;
+    std::wstringstream s;
     s << head << error_message(tail...);
     return s.str();
 }
@@ -43,11 +44,11 @@ std::string error_message(T head, Y... tail)
 template<typename... T>
 void error_assert(char const* file, int line, char const* func, char const* assertion, T... args)
 {
-    fprintf(stderr, "Assertion failed in %s:%d:%s: %s\n",
+    fwprintf(stderr, L"Assertion failed in %s:%d:%s: %s\n",
             file, line, func, assertion);
     auto msg = error_message(args...);
     if(!msg.empty()) {
-        fprintf(stderr, "%s\n", msg.c_str());
+        fwprintf(stderr, L"%ls\n", msg.c_str());
     }
 
     exit(2);

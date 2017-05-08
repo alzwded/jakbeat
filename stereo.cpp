@@ -59,14 +59,14 @@ static void pan_assign_params(pan_state* state, IValue* params)
     switch(params->GetType()) {
     case IValue::SCALAR:
         {
-            auto value = atoi(((Scalar*)params)->value.c_str());
+            auto value = wcstol(((Scalar*)params)->value.c_str(), nullptr, 10);
             state->pan = value;
         };
         break;
     case IValue::OPTION:
         {
             auto o = (Option*)params;
-            if(o->name.compare("pan") == 0) {
+            if(o->name.compare(L"pan") == 0) {
                 return pan_assign_params(state, o->value);
             }
         };
@@ -117,30 +117,30 @@ static void chorus_assign_params(chorus_state* state, IValue* params)
     case IValue::OPTION:
         {
             auto o = (Option*)params;
-            if(o->name.compare("delay") == 0) {
+            if(o->name.compare(L"delay") == 0) {
                 if(o->value->GetType() == IValue::SCALAR) {
-                    auto value = atoi(((Scalar*)o->value)->value.c_str());
+                    auto value = wcstol(((Scalar*)o->value)->value.c_str(), nullptr, 10);
                     state->delay = (int)(value/100.f * 2048.f);
                 }
-            } else if(o->name.compare("pan") == 0) {
+            } else if(o->name.compare(L"pan") == 0) {
                 if(o->value->GetType() == IValue::SCALAR) {
-                    auto value = atoi(((Scalar*)o->value)->value.c_str());
+                    auto value = wcstol(((Scalar*)o->value)->value.c_str(), nullptr, 10);
                     state->pan = value;
                 }
-            } else if(o->name.compare("amount") == 0) {
+            } else if(o->name.compare(L"amount") == 0) {
                 if(o->value->GetType() == IValue::SCALAR) {
-                    auto value = atoi(((Scalar*)o->value)->value.c_str());
+                    auto value = wcstol(((Scalar*)o->value)->value.c_str(), nullptr, 10);
                     state->amount = value/100.f;
                 }
-            } else if(o->name.compare("speed") == 0) {
+            } else if(o->name.compare(L"speed") == 0) {
                 if(o->value->GetType() == IValue::SCALAR) {
-                    auto value = atoi(((Scalar*)o->value)->value.c_str());
+                    auto value = wcstol(((Scalar*)o->value)->value.c_str(), nullptr, 10);
 
                     state->steps = 44100 / (value / 100.f * 20.f);
                 }
-            } else if(o->name.compare("depth") == 0) {
+            } else if(o->name.compare(L"depth") == 0) {
                 if(o->value->GetType() == IValue::SCALAR) {
-                    auto value = atoi(((Scalar*)o->value)->value.c_str());
+                    auto value = wcstol(((Scalar*)o->value)->value.c_str(), nullptr, 10);
 
                     state->steps = 44100 / (value / 100.f * 200.f);
                 }
@@ -208,12 +208,12 @@ static void chorus_dispose(stereo_state_t pstate)
 }
 
 // TODO dynamic loading
-static std::map<std::string, plugin_t> instanceMap{
-    { "pan", { pan_init, pan_fn, pan_dispose }},
-    { "chorus", { chorus_init, chorus_fn, chorus_dispose }}
+static std::map<std::wstring, plugin_t> instanceMap{
+    { L"pan", { pan_init, pan_fn, pan_dispose }},
+    { L"chorus", { chorus_init, chorus_fn, chorus_dispose }}
 };
 
-StereoInstance* NewStereoInstance(std::string name, IValue* params)
+StereoInstance* NewStereoInstance(std::wstring name, IValue* params)
 {
     auto&& found = instanceMap.find(name);
     if(found == instanceMap.end()) return new StereoInstance(new pan_state{0}, pan_fn, pan_dispose);

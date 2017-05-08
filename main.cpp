@@ -38,33 +38,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <file.h>
 #include <parser.h>
 #include <parser_types.h>
+#include <string_utils.h>
 
+#ifdef _MSC_VER
+int wmain(int argc, wchar_t* argv[])
+#else
 int main(int argc, char* argv[])
+#endif
 {
-    std::string fileName = "test.wav";
+    std::wstring fileName = L"test.wav";
     for(int i = 1; i < argc; ++i) {
+#ifdef _MSC_VER
+        if(wcscmp(argv[i], L"-v") == 0) {
+#else
         if(strcmp(argv[i], "-v") == 0) {
-            printf("jakbeat v%d\nCopyright Vlad Mesco 2016\n\n", VERSION);
+#endif
+            wprintf(L"jakbeat v%d\nCopyright Vlad Mesco 2016\n\n", VERSION);
             exit(0);
+#ifdef _MSC_VER
+        } else if(wcscmp(argv[i], L"-w") == 0) {
+#else
         } else if(strcmp(argv[i], "-w") == 0) {
+#endif
             ++i;
             ASSERT(i < argc);
+#ifdef _MSC_VER
             fileName.assign(argv[i]);
+#else
+            fileName = MB2W(argv[i]);
+#endif
         }
     }
 
     extern void* ParseAlloc(void* (*)(size_t));
-    extern void Parse(void*, int, char*, File*);
+    extern void Parse(void*, int, wchar_t*, File*);
     extern void ParseFree(void*, void (*)(void*));
-    extern void Render(File, std::string);
+    extern void Render(File, std::wstring);
 
     File f;
     Tokenizer tok(stdin);
     auto pParser = ParseAlloc(malloc);
     do {
         auto t = tok();
-        printf("%d %s\n", t.type, (t.type == STRING) ? t.value.c_str() : "");
-        char* s = strdup(t.value.c_str());
+        wprintf(L"%d %ls\n", t.type, (t.type == STRING) ? t.value.c_str() : L"");
+        wchar_t* s = wcsdup(t.value.c_str());
         Parse(pParser, t.type, s, &f);
         if(t.type == TEOF) break;
     } while(1);

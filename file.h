@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <stereo.h>
 #include <parser_types.h>
+#include <cwchar>
 
 struct File
 {
@@ -40,14 +41,14 @@ struct File
     struct Sample
     {
         struct Effect {
-            std::string name;
+            std::wstring name;
             std::shared_ptr<IValue> params;
             std::function<stereo_sample_t(float)> apply;
             std::function<StereoInstance*()> getInstance;
 
             Effect()
                 : params(nullptr)
-                  , name("")
+                  , name(L"")
             {
                 this->apply = [this](float mono) -> stereo_sample_t {
                     auto instance = std::shared_ptr<StereoInstance>(NewStereoInstance(name, params.get()));
@@ -66,7 +67,7 @@ struct File
         };
 
         int volume;
-        std::string path;
+        std::wstring path;
         std::shared_ptr<Effect> effect = decltype(effect)(new Effect()); // pointer because iterating over a map copies this whole thing (for some reason)
     };
 
@@ -77,12 +78,12 @@ struct File
     struct Phrase
     {
         int bpm = 120;
-        std::map<std::string, std::vector<Beat>> beats;
+        std::map<std::wstring, std::vector<Beat>> beats;
     };
 
-    std::map<std::string, Sample> samples;
-    std::map<std::string, Phrase> phrases;
-    std::vector<std::string> output;
+    std::map<std::wstring, Sample> samples;
+    std::map<std::wstring, Phrase> phrases;
+    std::vector<std::wstring> output;
 };
 
 #endif

@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 #include <stdexcept>
 #include <exception>
+#include <string_utils.h>
 
 #ifdef __GNUC__
 # pragma GCC diagnostic push
@@ -86,11 +87,11 @@ static void wav_write_samples(FILE* f, std::vector<float> const& samples)
     }
 }
 
-void wav_write_file(std::string const& filename, std::vector<float> const& samples, unsigned samples_per_second, unsigned numChannels)
+void wav_write_file(std::wstring const& filename, std::vector<float> const& samples, unsigned samples_per_second, unsigned numChannels)
 {
-    FILE* f = fopen(filename.c_str(), "wb");
+    FILE* f = wfopen(filename.c_str(), L"wb");
     if(!f) {
-        throw std::invalid_argument(std::string() + "Failed to open " + filename + " for writing");
+        throw std::invalid_argument(W2MB(std::wstring() + L"Failed to open " + filename + L" for writing").get());
     }
 
     try {
@@ -115,6 +116,6 @@ int main()
         thing.push_back(sin(3.14159f * 2.0 * 440.0 / 44100.0 * i));
     }
 
-    (void) wav_write_file("test.wav", thing, 44100);
+    (void) wav_write_file(L"test.wav", thing, 44100);
 }
 #endif

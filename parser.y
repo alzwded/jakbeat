@@ -35,18 +35,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 }
 
 %parse_accept {
-    fprintf(stderr, "Successfully parsed file.\n");
+    fwprintf(stderr, L"Successfully parsed file.\n");
 }
 %parse_failure {
-    fprintf(stderr, "Parse failure, last line read: %d\n", tokenizer_lineno);
+    fwprintf(stderr, L"Parse failure, last line read: %d\n", tokenizer_lineno);
 }
 %syntax_error {
-    fprintf(stderr, "Syntax error somewhere, last line read: %d\n", tokenizer_lineno);
+    fwprintf(stderr, L"Syntax error somewhere, last line read: %d\n", tokenizer_lineno);
     exit(2);
 }
 
 %extra_argument { File* FileHead }
-%token_type { char* }
+%token_type { wchar_t* }
 
 %type items { List* }
 %type item { IValue* }
@@ -54,7 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %type option { Option* }
 %type options { Section* }
 %type section { Section* }
-%type title { char* }
+%type title { wchar_t* }
 
 %start_symbol file
 
