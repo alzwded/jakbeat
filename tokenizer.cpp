@@ -50,9 +50,9 @@ Token Tokenizer::operator()()
 {
     while(iswspace(c) || c == L'\u000D' || c == L'\u000A')
     {
+        if(c == L'\u000A') tokenizer_lineno++;
         c = fgetwc(f);
         if(feof(f)) return {TEOF};
-        if(c == L'\u000A') tokenizer_lineno++;
     }
     if(c == L'[') { c = fgetwc(f); return {LSQUARE}; }
     if(c == L']') { c = fgetwc(f); return {RSQUARE}; }
@@ -82,8 +82,8 @@ Token Tokenizer::operator()()
     if(quoted) c = fgetwc(f);
     while(condition(c))
     {
-        ss << c;
         if(c == L'\u000A') tokenizer_lineno++;
+        ss << c;
         c = fgetwc(f);
         if(feof(f)) break;
     }
