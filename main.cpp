@@ -40,6 +40,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <parser_types.h>
 #include <string_utils.h>
 
+#define VERSIONQ(X) #X
+#define VERSION2(X) VERSIONQ(X)
+#define MYVERSION VERSION2(VERSION)
+
 #ifdef _MSC_VER
 int wmain(int argc, wchar_t* argv[])
 #else
@@ -53,7 +57,7 @@ int main(int argc, char* argv[])
 #else
         if(strcmp(argv[i], "-v") == 0) {
 #endif
-            wprintf(L"jakbeat v%d\nCopyright Vlad Mesco 2016\n\n", VERSION);
+            wprintf(L"jakbeat v%s\nCopyright Vlad Mesco 2016\n\n", MYVERSION);
             exit(0);
 #ifdef _MSC_VER
         } else if(wcscmp(argv[i], L"-w") == 0) {

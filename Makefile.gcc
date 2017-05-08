@@ -1,4 +1,4 @@
-VERSION = 1
+VERSION = 1.1
 CC = gcc
 CXX = g++
 LEMONROOT = vendor/lemon
@@ -6,7 +6,7 @@ LD = g++
 LDOPTS = -o jakbeat
 LIBS = -lSDL2
 
-ifeq ($(JAKBEAT_OPTS), "debug")
+ifeq ($(JAKBEAT_OPTS),debug)
 CFLAGS = -O0 -c -g -msse4 -DVERSION=$(VERSION) -I. -I/usr/include/SDL2 -Wno-multichar
 else
 CFLAGS = -O2 -c -msse4 -DVERSION=$(VERSION) -I. -I/usr/include/SDL2 -Wno-multichar
@@ -17,6 +17,8 @@ CXXFLAGS = $(CFLAGS) --std=gnu++14
 OBJS = main.o parser.o tokenizer.o file.o render.o wave.o stereo.o string_utils.o
 
 jakbeat: $(OBJS)
+	echo $(JAKBEAT_OPTS)
+	echo $(CXXFLAGS)
 	$(LD) $(LDOPTS) $(OBJS) $(LIBS)
 
 main.cpp tokenizer.cpp: parser.h
