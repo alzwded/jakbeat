@@ -26,6 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "control.h"
 #include "logger.h"
+#include "string_utils.h"
 
 #include <algorithm>
 #include <cassert>
@@ -47,19 +48,20 @@ auto Control::FindWhat(evData id) -> decltype(model_->whats)::iterator
             });
     if(found == model_->whats.end())
     {
-        l("Failed to find %s...", id.c_str());
+        l(L"Failed to find %ls...", id.c_str());
     }
     return found;
 }
 
-void Control::SetWhosName(evData oldName, std::string name)
+void Control::SetWhosName(evData oldName, std::wstring name)
 {
+    LOGGER(l);
     auto found = std::find_if(model_->whos.begin(), model_->whos.end(), [oldName](WhoEntry& e) -> bool {
                 return e.name == oldName;
             });
     if(found == model_->whos.end())
     {
-        fprintf(stderr, "Failed to find %s...", oldName.c_str());
+        l(L"Failed to find %ls...", oldName.c_str());
         return;
     }
     found->name = name;
@@ -76,13 +78,14 @@ void Control::SetWhosName(evData oldName, std::string name)
             });
 }
 
-void Control::SetWhosParam(Control::evData id, std::string key, std::string value)
+void Control::SetWhosParam(Control::evData id, std::wstring key, std::wstring value)
 {
+    LOGGER(l);
     auto foundEntry = std::find_if(model_->whos.begin(), model_->whos.end(), [id](WhoEntry& e) -> bool {
                 return e.name == id;
             });
     if(foundEntry == model_->whos.end()) {
-        fprintf(stderr, "Failed to find %s...", id.c_str());
+        l(L"Failed to find %ls...", id.c_str());
         return;
     }
     auto&& params = foundEntry->params;
@@ -111,11 +114,12 @@ void Control::SetWhosParam(Control::evData id, std::string key, std::string valu
 
 void Control::SetWhosSchema(Control::evData id, Schema const* schema)
 {
+    LOGGER(l);
     auto foundEntry = std::find_if(model_->whos.begin(), model_->whos.end(), [id](WhoEntry& e) -> bool {
                 return e.name == id;
             });
     if(foundEntry == model_->whos.end()) {
-        fprintf(stderr, "Failed to find %s...", id.c_str());
+        l(L"Failed to find %ls...", id.c_str());
         return;
     }
 
@@ -126,7 +130,7 @@ void Control::SetWhosSchema(Control::evData id, Schema const* schema)
         Event::WHO,
         Event::CHANGED,
         id,
-        " schema",
+        L" schema",
         source_
     };
     std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
@@ -134,14 +138,15 @@ void Control::SetWhosSchema(Control::evData id, Schema const* schema)
             });
 }
 
-void Control::SetWhatsName(Control::evData id, std::string name)
+void Control::SetWhatsName(Control::evData id, std::wstring name)
 {
+    LOGGER(l);
     auto found = std::find_if(model_->whats.begin(), model_->whats.end(), [id](WhatEntry& e) -> bool {
                 return e.name == id;
             });
     if(found == model_->whats.end())
     {
-        fprintf(stderr, "Failed to find %s...", id.c_str());
+        l(L"Failed to find %ls...", id.c_str());
         return;
     }
     found->name = name;
@@ -158,8 +163,9 @@ void Control::SetWhatsName(Control::evData id, std::string name)
             });
 }
 
-void Control::SetWhatsBpm(Control::evData id, std::string bpm)
+void Control::SetWhatsBpm(Control::evData id, std::wstring bpm)
 {
+    LOGGER(l);
     FIND_WHAT(id, return);
     found->bpm = bpm;
     DIRTY();
@@ -167,7 +173,7 @@ void Control::SetWhatsBpm(Control::evData id, std::string bpm)
         Event::WHAT,
         Event::CHANGED,
         id,
-        "bpm",
+        L"bpm",
         source_
     };
     std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
@@ -175,10 +181,11 @@ void Control::SetWhatsBpm(Control::evData id, std::string bpm)
             });
 }
 
-Event::Source Control::InsertColumnPrivate(evData id, column_p_t before, char c)
+Event::Source Control::InsertColumnPrivate(evData id, column_p_t before, wchar_t c)
 {
+    LOGGER(l);
     if(id.empty()
-            || id == "OUTPUT")
+            || id == L"OUTPUT")
     {
         Column col;
         auto size = model_->whats.size();
@@ -194,15 +201,16 @@ Event::Source Control::InsertColumnPrivate(evData id, column_p_t before, char c)
     return Event::WHAT;
 }
 
-void Control::InsertColumn(evData id, column_p_t before, char c)
+void Control::InsertColumn(evData id, column_p_t before, wchar_t c)
 {
+    LOGGER(l);
     auto source = InsertColumnPrivate(id, before, c);
     if(source == Event::GLOBAL) return;
     Event e = {
         source,
         Event::CHANGED,
         id,
-        "",
+        L"",
         source_
     };
     Fire(&e);
@@ -210,15 +218,17 @@ void Control::InsertColumn(evData id, column_p_t before, char c)
 
 void Control::Fire(Event* ev)
 {
+    LOGGER(l);
     std::for_each(model_->views.begin(), model_->views.end(), [&ev](View* v) {
                 v->OnEvent(ev);
             });
 }
 
-void Control::SetCell(evData what, column_p_t before, int row, char c)
+void Control::SetCell(evData what, column_p_t before, int row, wchar_t c)
 {
+    LOGGER(l);
     if(what.empty()
-            || what == "OUTPUT")
+            || what == L"OUTPUT")
     {
         if(before == model_->output.end())
         {
@@ -235,7 +245,7 @@ void Control::SetCell(evData what, column_p_t before, int row, char c)
             Event::OUTPUT,
             Event::CHANGED,
             what,
-            "",
+            L"",
             source_
         };
         Fire(&e);
@@ -258,7 +268,7 @@ void Control::SetCell(evData what, column_p_t before, int row, char c)
         Event::WHAT,
         Event::CHANGED,
         what,
-        "",
+        L"",
         source_
     };
     Fire(&e);

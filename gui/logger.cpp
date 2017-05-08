@@ -25,6 +25,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "logger.h"
+#include "string_utils.h"
 #include <cassert>
 #include <cstring>
 #include <cstdarg>
@@ -33,29 +34,37 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int Logger::level_ = 0;
 
 Logger::Logger(const char* name)
-    : name_(strdup(name ? name : "the unknown"))
+    : name_(MB2W(name ? name : "the unknown"))
 {
-    std::string padding((size_t)(level_ * 2), ' ');
-    fprintf(stderr, "%sEntering %s\n", padding.c_str(), name);
+    std::wstring padding((size_t)(level_ * 2), L' ');
+    fwprintf(stderr, L"%lsEntering %ls\n", padding.c_str(), name_.c_str());
+    ++level_;
+}
+
+Logger::Logger(const wchar_t* name)
+    : name_(name ? name : L"the unknown")
+{
+    std::wstring padding((size_t)(level_ * 2), L' ');
+    fwprintf(stderr, L"%lsEntering %ls\n", padding.c_str(), name_.c_str());
     ++level_;
 }
 
 Logger::~Logger()
 {
     --level_;
-    std::string padding((size_t)(level_ * 2), ' ');
-    fprintf(stderr, "%sLeaving %s\n", padding.c_str(), name_);
-    free(name_);
+    std::wstring padding((size_t)(level_ * 2), L' ');
+    fwprintf(stderr, L"%lsLeaving %ls\n", padding.c_str(), name_.c_str());
 }
 
-int Logger::operator()(const char* fmt, ...)
+int Logger::operator()(const wchar_t* fmt, ...)
 {
     va_list p;
     va_start(p, fmt);
-    std::string padding((size_t)(level_ * 2), ' ');
-    char* indented = (char*)malloc(padding.size() + strlen(fmt) + 1);
-    sprintf(indented, "%s%s", padding.c_str(), fmt);
-    int rval = vfprintf(stderr, indented, p);
+    std::wstring padding((size_t)(level_ * 2), L' ');
+    size_t indentedLen = (padding.size() + wcslen(fmt) + 1);
+    wchar_t* indented = (wchar_t*)malloc(indentedLen * sizeof(wchar_t));
+    swprintf(indented, indentedLen, L"%ls%ls", padding.c_str(), fmt);
+    int rval = vfwprintf(stderr, indented, p);
     free(indented);
     va_end(p);
     return rval;

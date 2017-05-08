@@ -26,6 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "matrix_editor.h"
 #include "logger.h"
+#include "string_utils.h"
 
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
@@ -62,12 +63,12 @@ namespace {
             colors[true][1] = fl_contrast(fg_, sl_);
         }
 
-        void draw(int i, int j, bool selected, char c)
+        void draw(int i, int j, bool selected, wchar_t c)
         {
             fl_draw_box(FL_FLAT_BOX, x + j * cx, y + i * cy, cx, cy, colors[selected][0]);
             fl_color(colors[selected][1]);
-            char str[2] = { c, '\0' };
-            fl_draw(str, x + j * cx, y + i * cy, cx, cy, 0, nullptr, false);
+            auto str = W2MB(std::wstring(1, c));
+            fl_draw(str.get(), x + j * cx, y + i * cy, cx, cy, 0, nullptr, false);
         }
 
     };
@@ -79,7 +80,7 @@ MatrixEditor::MatrixEditor(
         int y,
         int w,
         int h,
-        std::string target,
+        std::wstring target,
         columns_t& columns,
         int nrows,
         int mx,
@@ -145,7 +146,7 @@ void MatrixEditor::draw()
     LOGGER(l);
     fl_draw_box(FL_DOWN_BOX, this->x(), this->y(), this->w(), this->h(), FL_BACKGROUND2_COLOR);
 
-    l("active_=%d, ci=%d,cj=%d\n", active_, cursorx_, cursory_);
+    l(L"active_=%d, ci=%d,cj=%d\n", active_, cursorx_, cursory_);
 
     MYFONT;
     auto selectionColor = active_
@@ -173,7 +174,7 @@ void MatrixEditor::draw()
 
     size_t size = nrows_;
     size_t yWindow = windowy_;
-    l("size=%ld, ywindow=%ld, xwindow=%d\n", size, yWindow, xWindow);
+    l(L"size=%ld, ywindow=%ld, xwindow=%d\n", size, yWindow, xWindow);
 
     // pre-draw cursor in case of blank
     cd.draw(cursory_, cursorx_, true, ' ');
@@ -188,15 +189,15 @@ void MatrixEditor::draw()
                 ;
         };
         for(; condition(i); ++i, ++ri) {
-            l("%c", *ri);
+            l(L"%lc", *ri);
             cd.draw(i, j, IsSelected(i, j), *ri);
         }
     }
-    l("\n");
+    l(L"\n");
 
     fl_draw_box(FL_FLAT_BOX, sb1->x() + sb1->w(), sb2->y() + sb2->h(), Fl::scrollbar_size(), Fl::scrollbar_size(), FL_BACKGROUND_COLOR);
 
-    l("drawing scrollbars\n");
+    l(L"drawing scrollbars\n");
 
     Fl_Widget* s = sb1;
     s->damage(damage());
@@ -230,12 +231,12 @@ int MatrixEditor::handle(int ev)
                 int j = px / cx;
                 int i = py / cy;
                 LOGGER(l);
-                l("Click at %d,%d, adjusted:%d,%d; cell size %d,%d; world: %d,%d window: %d,%d\n", Fl::event_x(), Fl::event_y(), px, py, cx, cy, i, j, windowy_, windowx_);
+                l(L"Click at %d,%d, adjusted:%d,%d; cell size %d,%d; world: %d,%d window: %d,%d\n", Fl::event_x(), Fl::event_y(), px, py, cx, cy, i, j, windowy_, windowx_);
                 if(i < windowy_
                         && j <= windowx_)
                 {
-                    l("cursor now at %d,%d\n", i, j);
-                    l("model point now at %d,%d\n", i - cursory_, j - cursorx_);
+                    l(L"cursor now at %d,%d\n", i, j);
+                    l(L"model point now at %d,%d\n", i - cursory_, j - cursorx_);
                     if(mx_ + j - cursorx_ >= 0
                             && mx_ + j - cursorx_ <= columns_.size())
                     {
@@ -274,71 +275,71 @@ FL_FOCUS_:  // code
                 LOGGER(l);
                 int toDel = 0;
                 if(!Fl::compose(toDel)) {
-                    l("Not composed: %04X\n", (int)Fl::event_key());
+                    l(L"Not composed: %04X\n", (int)Fl::event_key());
                     switch(Fl::event_key())
                     {
                     case FL_Right:
                         cursorx_ = std::min(cursorx_ + 1, windowx_);
                         mx_ = std::min<int>(mx_ + 1, columns_.size());
-                        l("move right @%d,%d\n", cursory_, cursorx_);
+                        l(L"move right @%d,%d\n", cursory_, cursorx_);
                         Update(nrows_);
                         redraw();
                         return 1;
                     case FL_Left:
                         cursorx_ = std::max(cursorx_ - 1, 0);
                         mx_ = std::max(mx_ - 1, 0);
-                        l("move left @%d,%d\n", cursory_, cursorx_);
+                        l(L"move left @%d,%d\n", cursory_, cursorx_);
                         Update(nrows_);
                         redraw();
                         return 1;
                     case FL_Down:
                         cursory_ = std::min(cursory_ + 1, windowy_ - 1);
                         my_ = std::min(my_ + 1, nrows_ - 1);
-                        l("move down @%d,%d\n", cursory_, cursorx_);
+                        l(L"move down @%d,%d\n", cursory_, cursorx_);
                         Update(nrows_);
                         redraw();
                         return 1;
                     case FL_Up:
                         cursory_ = std::max(cursory_ - 1, 0);
                         my_ = std::max(my_ - 1, 0);
-                        l("move up @%d,%d\n", cursory_, cursorx_);
+                        l(L"move up @%d,%d\n", cursory_, cursorx_);
                         Update(nrows_);
                         redraw();
                         return 1;
                     }
-                    l("to parent!\n");
+                    l(L"to parent!\n");
                     break;
                 }
-                l("composed\n");
+                l(L"composed\n");
                 if(toDel) {
                     // delete toDel characters to the left
                     // and insert Fl::event_text(), Fl::event_length()
-                    l("don't know how to delete %d chars to the left\n", toDel);
+                    l(L"don't know how to delete %d chars to the left\n", toDel);
                 }
                 if(Fl::event_state(FL_META|FL_CONTROL|FL_ALT)) {
-                    l("modifier pressed, passing to parent\n");
+                    l(L"modifier pressed, passing to parent\n");
                     break;
                 }
 
                 wchar_t wcs[4];
                 size_t len = mbstowcs(wcs, Fl::event_text(), 2);
                 if(len > 1) {
-                    l("%ls is more than one character, not supported\n", wcs);
+                    l(L"%ls is more than one character, not supported\n", wcs);
                     break;
                 }
                 if(len <= 0
                         || !iswprint(wcs[0])
                         || wcs[0] == L'\t') {
-                    l("non printable, to parent\n");
+                    l(L"non printable, to parent\n");
                     break;
                 }
-                l("Pushed %ls in editor at %d,%d\n", wcs, my_, mx_);
+                l(L"Pushed %ls in editor at %d,%d\n", wcs, my_, mx_);
 
                 auto pos = columns_.begin();
                 std::advance(pos, mx_);
                 ++mx_;
-                l("Advanced to %d\n", mx_);
-                ctrl_.SetCell(target_, pos, my_, Fl::event_text()[0]);
+                l(L"Advanced to %d\n", mx_);
+                ctrl_.SetCell(target_, pos, my_, wcs[0]);
             }
             return 1;
         case FL_PASTE:
@@ -354,8 +355,8 @@ FL_FOCUS_:  // code
 void MatrixEditor::Update(int nrows)
 {
     LOGGER(l);
-    l("nrows=%d, columns=%d\n", nrows, columns_.size());
-    l("ci=%d, cj=%d\n", cursory_, cursorx_);
+    l(L"nrows=%d, columns=%d\n", nrows, columns_.size());
+    l(L"ci=%d, cj=%d\n", cursory_, cursorx_);
     nrows_ = nrows;
     
     mx_ = std::min<int>(mx_, columns_.size());
@@ -378,8 +379,8 @@ void MatrixEditor::Update(int nrows)
     sb1start = std::max<int>(sb1start, 0);
     sb1->value(sb1start, sb1window, 0, sb1full);
     cursorx_ = mx_ - sb1->value();
-    l("sb1 bounds: %d %ld %d %ld\n", sb1start, sb1window, 1, sb1full);
-    l("ci=%d, cj=%d\n", cursory_, cursorx_);
+    l(L"sb1 bounds: %d %ld %d %ld\n", sb1start, sb1window, 1, sb1full);
+    l(L"ci=%d, cj=%d\n", cursory_, cursorx_);
     auto sb2full = std::max(1, nrows_);
 #if 0
     auto sb2window = std::min(
@@ -396,8 +397,8 @@ void MatrixEditor::Update(int nrows)
     sb2start = std::min<int>(sb2full, sb2start);
     sb2start = std::max<int>(0, sb2start);
     cursory_ = my_ - sb2->value();
-    l("sb2 bounds: %d %ld %d %ld\n", sb2start, sb2window, 1, sb2full);
-    l("ci=%d, cj=%d\n", cursory_, cursorx_);
+    l(L"sb2 bounds: %d %ld %d %ld\n", sb2start, sb2window, 1, sb2full);
+    l(L"ci=%d, cj=%d\n", cursory_, cursorx_);
     sb2->value(sb2start, sb2window, 0, sb2full);
 
     redraw();
@@ -417,7 +418,7 @@ void MatrixEditor::Scrolled(Fl_Widget*, void* p)
 {
     LOGGER(l);
     auto* me = (MatrixEditor*)p;
-    l("scrolled %d,%d\n", me->sb1->value(), me->sb2->value());
+    l(L"scrolled %d,%d\n", me->sb1->value(), me->sb2->value());
     while(me->mx_ < me->sb1->value()) ++me->mx_;
     while(me->mx_ >= me->sb1->value() + me->windowx_) --me->mx_;
     while(me->my_ < me->sb2->value()) ++me->my_;
@@ -431,13 +432,13 @@ void MatrixEditor::resize(int x, int y, int w, int h)
     Update(nrows_);
 }
 
-void MatrixEditor::SetTarget(std::string target)
+void MatrixEditor::SetTarget(std::wstring target)
 {
     LOGGER(l);
     if(target.empty()) {
-        l("empty target provided!\n");
+        l(L"empty target provided!\n");
         return;
     }
-    l("new target: %s\n", target.c_str());
+    l(L"new target: %ls\n", target.c_str());
     target_ = std::move(target);
 }

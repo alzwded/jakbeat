@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CONTROL_H
 
 #include <memory>
+#include <cwchar>
 #include "model.h"
 #include "view.h"
 
@@ -43,26 +44,26 @@ public:
         , source_(source)
     {}
 
-    typedef std::string evData;
+    typedef std::wstring evData;
 
     int AddWho();
     int AddWhat();
-    void SetWhosName(evData id, std::string name);
+    void SetWhosName(evData id, std::wstring name);
     void SetWhosSchema(evData id, Schema const* schema);
-    void SetWhosParam(evData id, std::string key, std::string value);
-    void SetWho(evData id, std::string name, Schema const* schema, WhoEntry::Params params);
-    void SetWhatsName(evData id, std::string name);
-    void SetWhatsBpm(evData id, std::string name);
+    void SetWhosParam(evData id, std::wstring key, std::wstring value);
+    void SetWho(evData id, std::wstring name, Schema const* schema, WhoEntry::Params params);
+    void SetWhatsName(evData id, std::wstring name);
+    void SetWhatsBpm(evData id, std::wstring name);
     void DeleteWho(evData id);
     void DeleteWhat(evData id);
 
-    void InsertColumn(evData id, column_p_t before, char c = ' ');
-    void SetCell(evData id, column_p_t column, int row, char c);
+    void InsertColumn(evData id, column_p_t before, wchar_t c = ' ');
+    void SetCell(evData id, column_p_t column, int row, wchar_t c);
     void DeleteColumn(column_p_t column);
 
 private:
     auto FindWhat(evData id) -> decltype(model_->whats)::iterator;
-    Event::Source InsertColumnPrivate(evData id, column_p_t before, char c = ' ');
+    Event::Source InsertColumnPrivate(evData id, column_p_t before, wchar_t c = ' ');
     void Fire(Event* ev);
 };
 

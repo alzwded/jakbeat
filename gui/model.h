@@ -26,6 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef MODEL_H
 #define MODEL_H
 
+#include <cwchar>
 #include <string>
 #include <list>
 #include <memory>
@@ -44,15 +45,15 @@ struct Schema
     };
     struct Attribute
     {
-        const char* name;
+        const wchar_t* name;
         Type type;
         std::vector<Attribute> children;
     };
-    const char* name;
+    const wchar_t* name;
     std::vector<Attribute> attributes;
 };
 
-typedef char cell_t;
+typedef wchar_t cell_t;
 typedef std::list<cell_t> column_t;
 typedef column_t Column;
 typedef std::list<column_t> columns_t;
@@ -60,23 +61,23 @@ typedef columns_t::iterator column_p_t;
 
 struct WhoEntry
 {
-    std::string name;
+    std::wstring name;
     Schema const* schema;
-    typedef std::list<std::pair<std::string, std::string>> Params;
+    typedef std::list<std::pair<std::wstring, std::wstring>> Params;
     Params params;
 };
 
 struct WhatEntry
 {
-    std::string name;
-    std::string bpm;
+    std::wstring name;
+    std::wstring bpm;
     Schema const* schema;
     columns_t columns;
 };
 
 struct Model
 {
-    std::string path;
+    std::wstring path;
     std::list<View*> views;
     std::list<WhoEntry> whos;
     std::list<WhatEntry> whats;

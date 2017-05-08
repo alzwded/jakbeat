@@ -36,52 +36,52 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 std::vector<Schema> drumSchemas {
     /* Basic Drum */
     {
-        "Mono",
-        {
-            { "path", Schema::STRING },
-            { "volume", Schema::NUMBER },
-        },
+        L"Mono",
+            {
+                { L"path", Schema::STRING },
+                { L"volume", Schema::NUMBER },
+            },
     },
-    /* Stereo Drum */
-    {
-        "Stereo",
+        /* Stereo Drum */
         {
-            { "path", Schema::STRING },
-            { "volume", Schema::NUMBER },
-            { "stereo", Schema::STUB, {
-                                          { "pan", Schema::READ_ONLY_STRING },
-                                      }},
-            { "params", Schema::SUBSCHEMA, {
-                                               { "pan", Schema::NUMBER },
+            L"Stereo",
+            {
+                { L"path", Schema::STRING },
+                { L"volume", Schema::NUMBER },
+                { L"stereo", Schema::STUB, {
+                                               { L"pan", Schema::READ_ONLY_STRING },
                                            }},
+                { L"params", Schema::SUBSCHEMA, {
+                                                    { L"pan", Schema::NUMBER },
+                                                }},
+            },
         },
-    },
-    /* Chorus Drum */
-    {
-        "Chorus",
+        /* Chorus Drum */
         {
-            { "path", Schema::STRING },
-            { "volume", Schema::NUMBER },
-            { "stereo", Schema::STUB, {
-                                          { "chorus", Schema::READ_ONLY_STRING },
-                                      }},
-            { "params", Schema::SUBSCHEMA, {
-                                               { "pan", Schema::NUMBER },
-                                               { "delay", Schema::NUMBER },
-                                               { "amount", Schema::NUMBER },
-                                               { "speed", Schema::NUMBER },
-                                               { "depth", Schema::NUMBER },
+            L"Chorus",
+            {
+                { L"path", Schema::STRING },
+                { L"volume", Schema::NUMBER },
+                { L"stereo", Schema::STUB, {
+                                               { L"chorus", Schema::READ_ONLY_STRING },
                                            }},
+                { L"params", Schema::SUBSCHEMA, {
+                                                    { L"pan", Schema::NUMBER },
+                                                    { L"delay", Schema::NUMBER },
+                                                    { L"amount", Schema::NUMBER },
+                                                    { L"speed", Schema::NUMBER },
+                                                    { L"depth", Schema::NUMBER },
+                                                }},
+            },
         },
-    },
 };
 
 std::vector<Schema> whatSchemas {
     {
-        "Standard",
-        {
-            { "bpm", Schema::NUMBER },
-        },
+        L"Standard",
+            {
+                { L"bpm", Schema::NUMBER },
+            },
     },
 };
 
@@ -132,52 +132,52 @@ int main(int argc, char* argv[])
     /* test code */
     std::shared_ptr<Model> m(new Model());
     m->whos.push_back({
-                "kick",
+                L"kick",
                 &drumSchemas[0],
                 {
-                    { "path", "kick.wav" },
-                    { "volume", "100" },
+                    { L"path", L"kick.wav" },
+                    { L"volume", L"100" },
                 }
             });
     m->whos.push_back({
-                "snare",
+                L"snare",
                 &drumSchemas[1],
                 {
-                    { "path", "snare.wav" },
-                    { "volume", "100" },
-                    { "stereo", "chorus" },
-                    { "pan", "-10" },
+                    { L"path", L"snare.wav" },
+                    { L"volume", L"100" },
+                    { L"stereo", L"chorus" },
+                    { L"pan", L"-10" },
                 }
             });
     m->whos.push_back({
-                "hat",
+                L"hat",
                 &drumSchemas[2],
                 {
-                    { "path", "snare.wav" },
-                    { "volume", "100" },
-                    { "stereo", "chorus" },
-                    { "pan", "-10" },
-                    { "delay", "3" },
-                    { "amount", "60" },
-                    { "speed", "30" },
-                    { "depth", "30" },
+                    { L"path", L"snare.wav" },
+                    { L"volume", L"100" },
+                    { L"stereo", L"chorus" },
+                    { L"pan", L"-10" },
+                    { L"delay", L"3" },
+                    { L"amount", L"60" },
+                    { L"speed", L"30" },
+                    { L"depth", L"30" },
                 }
             });
     m->whats.push_back({
-                "A1",
-                "120",
+                L"A1",
+                L"120",
                 &whatSchemas[0],
                 {
-                    { '!', '.', '/', },
-                    { '.', '!', ':', },
-                    { '.', '.', '/', },
+                    { L'!', L'.', L'/', },
+                    { L'.', L'!', L':', },
+                    { L'.', L'.', L'/', },
                 }});
-    m->output.push_back({{ '1' }});
-    m->output.push_back({{ '1' }});
+    m->output.push_back({{ L'1' }});
+    m->output.push_back({{ L'1' }});
     for(size_t i = 0; i < 80; ++i) {
-        m->output.push_back({{ '.' }});
+        m->output.push_back({{ L'.' }});
     }
-    m->output.push_back({{ '1' }});
+    m->output.push_back({{ L'1' }});
     create_window(m);
 
     return Fl::run();

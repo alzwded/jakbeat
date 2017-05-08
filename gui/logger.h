@@ -28,15 +28,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LOGGER_H
 
 #include <string>
+#include <cwchar>
 
 struct Logger
 {
     Logger(const char* name);
+    Logger(const wchar_t* name);
     ~Logger();
-    int operator()(const char* fmt, ...);
+    int operator()(const wchar_t* fmt, ...);
 private:
     static int level_;
-    char* name_;
+    std::wstring name_;
 };
 
 #define LOGGERQ(X) X

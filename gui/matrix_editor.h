@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Scrollbar.H>
+#include <cwchar>
 
 class MatrixEditor
 : public Fl_Group
@@ -43,7 +44,7 @@ public:
             int y,
             int w,
             int h,
-            std::string target,
+            std::wstring target,
             columns_t& columns,
             int nrows,
             int mx = 0,
@@ -57,7 +58,7 @@ public:
     int my() const;
     void Update(int nrows);
     void Update() { Update(nrows_); }
-    void SetTarget(std::string target);
+    void SetTarget(std::wstring target);
 
 private:
     bool IsSelected(int, int) const;
@@ -65,7 +66,7 @@ private:
 
 private:
     Control ctrl_;
-    std::string target_;
+    std::wstring target_;
     columns_t& columns_;
     int nrows_;
     bool active_;

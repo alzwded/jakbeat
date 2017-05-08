@@ -52,3 +52,4 @@ gui/tokenizer.cpp
 *.txz
 *.tar
 *.zip
+*.sw*

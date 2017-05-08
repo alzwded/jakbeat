@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Fl/Fl_Double_Window.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Tile.H>
+#include <cwchar>
 
 // if you're wondering why it's called Vindow,
 // it's because a particular FL header has a typedef ... Window
@@ -45,7 +46,7 @@ struct Vindow
             std::shared_ptr<Model> m,
             std::vector<Schema> const& drumSchemas,
             std::vector<Schema> const& whatSchemas,
-            const char* t = "jakbeat-gui",
+            const wchar_t* t = L"jakbeat-gui",
             int w = 600,
             int h = 400);
     ~Vindow() override;
@@ -100,24 +101,24 @@ private:
         WHAT,
     };
 
-    void SetLayout(Layout, const char* = "");
+    void SetLayout(Layout, std::wstring const& = std::wstring(L""));
 
     void CreateWhoList();
     void CreateWhatList();
     int AddControlsFromSchema(
-        std::function<const char*(const char*)> getter,
+        std::function<std::string(const wchar_t*)> getter,
         decltype(Schema::attributes)::const_iterator first,
         decltype(Schema::attributes)::const_iterator last,
         int x, int y, int w, int h);
 
-    void SelectButton(const char* reactivate = nullptr, Layout lyt = Layout::OUTPUT);
+    void SelectButton(std::wstring const& reactivate = std::wstring(L""), Layout lyt = Layout::OUTPUT);
 
 private:
     std::shared_ptr<Model> model_;
     std::vector<Schema> const& drumSchemas_;
     std::vector<Schema> const& whatSchemas_;
     Layout layout_;
-    std::string active_;
+    std::wstring active_;
 
 private:
     Fl_Menu_Bar* menu_;

@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "window.h"
 #include "matrix_editor.h"
 #include "logger.h"
+#include "string_utils.h"
 
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
@@ -50,15 +51,15 @@ Vindow::Vindow(
         std::shared_ptr<Model> m,
         std::vector<Schema> const& drumSchemas,
         std::vector<Schema> const& whatSchemas,
-        const char* t,
+        const wchar_t* t,
         int w,
         int h)
-    : Fl_Double_Window(w, h, t)
+    : Fl_Double_Window(w, h)
     , View()
     , model_(m)
     , drumSchemas_(drumSchemas)
     , whatSchemas_(whatSchemas)
-    , active_("OUTPUT")
+    , active_(L"OUTPUT")
     , menu_(nullptr)
     , mainGroup_(nullptr)
     , whoGroup_(nullptr)
@@ -67,6 +68,7 @@ Vindow::Vindow(
 {
     assert(model_);
     model_->views.push_back(this);
+    copy_label(W2MB(t).get());
 
     // init menu
     Fl_Menu_Item menuitems[] = {
@@ -159,7 +161,7 @@ Vindow::Vindow(
 }
 
 int Vindow::AddControlsFromSchema(
-        std::function<const char*(const char*)> getter,
+        std::function<std::string(const wchar_t*)> getter,
         decltype(Schema::attributes)::const_iterator first,
         decltype(Schema::attributes)::const_iterator last,
         int x, int y, int w, int h)
@@ -180,9 +182,9 @@ int Vindow::AddControlsFromSchema(
                     x,
                     y,
                     w,
-                    h,
-                    att.name);
-            inp->value(getter(att.name));
+                    h);
+            inp->copy_label(W2MB(att.name).get());
+            inp->value(getter(att.name).c_str());
             inp->callback(ParamChanged, this);
         }
         break;
@@ -192,10 +194,10 @@ int Vindow::AddControlsFromSchema(
                     x,
                     y,
                     w,
-                    h,
-                    att.name);
+                    h);
+            inp->copy_label(W2MB(att.name).get());
             inp->readonly(true);
-            inp->value(getter(att.name));
+            inp->value(getter(att.name).c_str());
             inp->callback(ParamChanged, this);
         }
         break;
@@ -205,22 +207,23 @@ int Vindow::AddControlsFromSchema(
                     x,
                     y,
                     w,
-                    h,
-                    att.name);
-            inp->value(getter(att.name));
+                    h);
+            inp->copy_label(W2MB(att.name).get());
+            inp->value(getter(att.name).c_str());
             inp->callback(ParamChanged, this);
         }
         break;
     case Schema::SUBSCHEMA:
         {
             int total = att.children.size() * h + (att.children.size() - 1) * 5 + 2*Fl::box_dy(FL_DOWN_BOX);
+            auto attname = W2MB(att.name);
 
             auto* title = new Fl_Box(
-                    x - fl_width(att.name),
+                    x - fl_width(attname.get()),
                     y,
-                    fl_width(att.name),
-                    h,
-                    att.name);
+                    fl_width(attname.get()),
+                    h);
+            title->copy_label(attname.get());
             title->align(FL_ALIGN_INSIDE|FL_ALIGN_RIGHT);
             auto* b = new Fl_Group(x, y, w, total);
             b->box(FL_DOWN_BOX);
@@ -282,14 +285,14 @@ void Vindow::CreateWhoList()
 
         int i = 0;
         for(auto&& who : model_->whos) {
-          int w = fl_width(who.name.c_str()) + 0.5 + 2*Fl::box_dw(FL_UP_BOX);
+          int w = fl_width(W2MB(who.name).get()) + 0.5 + 2*Fl::box_dw(FL_UP_BOX);
           auto* b = new Fl_Button(
                   scroll->x() + Fl::box_dx(scroll->box()),
                   scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
                   w,
                   20);
           b->down_box(FL_FLAT_BOX);
-          b->label(who.name.c_str());
+          b->copy_label(W2MB(who.name).get());
           b->callback(WhoClicked, this);
           ++i;
         }
@@ -338,14 +341,14 @@ void Vindow::CreateWhatList()
         b->callback(OutputClicked, this);
         int i = 1;
         for(auto&& what : model_->whats) {
-          int w = fl_width(what.name.c_str()) + 0.5 + 2*Fl::box_dw(FL_UP_BOX);
+          int w = fl_width(W2MB(what.name).get()) + 0.5 + 2*Fl::box_dw(FL_UP_BOX);
           auto* b = new Fl_Button(
                   scroll->x() + Fl::box_dx(scroll->box()),
                   scroll->y() + Fl::box_dy(scroll->box()) + 20*i,
                   w,
                   20);
           b->down_box(FL_FLAT_BOX);
-          b->label(what.name.c_str());
+          b->copy_label(W2MB(what.name).get());
           b->callback(WhatClicked, this);
           ++i;
         }
@@ -357,12 +360,14 @@ void Vindow::CreateWhatList()
 
 Vindow::~Vindow()
 {
+    LOGGER(l);
     auto found = std::find_if(model_->views.begin(), model_->views.end(), [this](View* v) -> bool {
                 auto* w = dynamic_cast<Vindow*>(v);
                 return w == this;
             });
     if(found == model_->views.end()) {
-        fprintf(stderr, "disconnected window destroyed!\n");
+
+        l(L"disconnected window destroyed!\n");
         return;
     }
 
@@ -385,14 +390,14 @@ void Vindow::OnEvent(Event* e)
                     CreateWhoList();
                     if(active_.compare(e->targetId) == 0) {
                         SetLayout(Layout::OUTPUT);
-                        SelectButton("OUTPUT");
+                        SelectButton(L"OUTPUT");
                     }
                     break;
                 case Event::WHAT:
                     CreateWhatList();
                     if(active_.compare(e->targetId) == 0) {
                         SetLayout(Layout::OUTPUT);
-                        SelectButton("OUTPUT");
+                        SelectButton(L"OUTPUT");
                     }
                     break;
             }
@@ -408,7 +413,7 @@ void Vindow::OnEvent(Event* e)
                         if(e->sourceView == static_cast<View*>(this)) {
                             SelectButton(e->changed.c_str(), Layout::WHO);
                         } else {
-                            SetLayout(Layout::WHO, e->changed.c_str());
+                            SetLayout(Layout::WHO, e->changed);
                         }
                     }
                     break;
@@ -422,7 +427,7 @@ void Vindow::OnEvent(Event* e)
                             SelectButton(e->changed.c_str(), Layout::WHAT);
                         } else {
                             SelectButton(e->changed.c_str(), Layout::WHAT);
-                            SetLayout(Layout::WHAT, e->changed.c_str());
+                            SetLayout(Layout::WHAT, e->changed);
                         }
                     }
                     break;
@@ -442,9 +447,9 @@ void Vindow::OnEvent(Event* e)
                         && layout_ == lyt)
                 {
                     if(e->sourceView != static_cast<View*>(this)
-                            || e->changed == " schema")
+                            || e->changed == L" schema")
                     {
-                        SetLayout(lyt, e->targetId.c_str());
+                        SetLayout(lyt, e->targetId);
                     } else {
                         if(editor_) editor_->Update();
                     }
@@ -455,19 +460,19 @@ void Vindow::OnEvent(Event* e)
     container_->redraw();
 }
 
-void Vindow::SetLayout(Layout lyt, const char* name)
+void Vindow::SetLayout(Layout lyt, std::wstring const& name)
 {
     LOGGER(l);
     int mx = 0, my = 0;
     if(editor_
             && active_ == name)
     {
-        l("keeping old coordinates: %d,%d\n", my, mx);
-        l("active=%s name=%s\n", active_.c_str(), name);
+        l(L"keeping old coordinates: %d,%d\n", my, mx);
+        l(L"active=%ls name=%ls\n", active_.c_str(), name.c_str());
         mx = editor_->mx();
         my = editor_->my();
     }
-    SelectButton(name, lyt);
+    SelectButton(name.c_str(), lyt);
     layout_ = lyt;
     editor_ = nullptr;
 
@@ -523,7 +528,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     TWOTHIRD,
                     25,
                     "WHO");
-            wholbl->value(name);
+            wholbl->value(W2MB(name).get());
             wholbl->callback(WhoNameChanged, this);
             mainGroup_->add(wholbl);
 
@@ -536,7 +541,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
             schemas->input()->readonly(true);
             schemas->callback(SchemaChanged, this);
             for(auto&& s : drumSchemas_) {
-                schemas->add(s.name);
+                schemas->add(W2MB(s.name).get());
             }
 
             auto found = std::find_if(model_->whos.begin(), model_->whos.end(), [name](WhoEntry& e) -> bool {
@@ -548,14 +553,14 @@ void Vindow::SetLayout(Layout lyt, const char* name)
             }
             auto& who = *found;
 
-            schemas->value(who.schema->name);
+            schemas->value(W2MB(who.schema->name).get());
 
-            std::function<const char*(const char*)> getter = [&who](const char* key) -> const char* {
+            std::function<std::string(const wchar_t*)> getter = [&who](const wchar_t* key) -> std::string {
                 auto found = std::find_if(who.params.begin(), who.params.end(), [key](WhoEntry::Params::const_reference e) -> bool {
                             return e.first == key;
                         });
                 if(found == who.params.end()) return "";
-                return found->second.c_str();
+                return W2MB(found->second).get();
             };
 
             auto at = AddControlsFromSchema(
@@ -579,7 +584,7 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                     TWOTHIRD,
                     25,
                     "WHAT");
-            whatlbl->value(name);
+            whatlbl->value(W2MB(name).get());
             whatlbl->callback(WhatNameChanged, this);
             mainGroup_->add(whatlbl);
 
@@ -594,11 +599,11 @@ void Vindow::SetLayout(Layout lyt, const char* name)
                         return e.name == name;
                     });
             if(foundWhat == model_->whats.end()) {
-                fl_alert("Failed to find %s...", name);
+                fl_alert("Failed to find %ls...", name);
                 break;
             }
             auto&& what = *foundWhat;
-            bpmlbl->value(what.bpm.c_str());
+            bpmlbl->value(W2MB(what.bpm).get());
             mainGroup_->add(bpmlbl);
 
             auto* editor = new MatrixEditor(
@@ -622,22 +627,22 @@ void Vindow::SetLayout(Layout lyt, const char* name)
     mainGroup_->end();
 }
 
-void Vindow::SelectButton(const char* reactivate1, Layout lyt)
+void Vindow::SelectButton(std::wstring const& reactivate1, Layout lyt)
 {
     auto* whoGroup = dynamic_cast<Fl_Group*>(whoGroup_->child(WHO_GROUP_BUTTON_START)),
         * whatGroup = dynamic_cast<Fl_Group*>(whatGroup_->child(WHAT_GROUP_BUTTON_START));
-    const char* reactivate = (reactivate1 && *reactivate1)
+    std::wstring reactivate = (!reactivate1.empty())
         ? reactivate1
-        : "OUTPUT"
+        : L"OUTPUT"
         ;
-    active_.assign(reactivate);
+    active_ = reactivate;
     assert(whoGroup);
     assert(whatGroup);
     for(size_t i = 0; i < whoGroup->children(); ++i) {
         auto* b = dynamic_cast<Fl_Button*>(whoGroup->child(i));
         if(b) {
             b->value(0);
-            if(strcmp(b->label(), reactivate) == 0
+            if(MB2W(b->label()) == reactivate
                     && lyt != Layout::WHAT)
                 b->value(1);
         }
@@ -646,7 +651,7 @@ void Vindow::SelectButton(const char* reactivate1, Layout lyt)
         auto* b = dynamic_cast<Fl_Button*>(whatGroup->child(i));
         if(b) {
             b->value(0);
-            if(strcmp(b->label(), reactivate) == 0
+            if(MB2W(b->label()) == reactivate
                     && lyt != Layout::WHO)
                 b->value(1);
         }

@@ -1,6 +1,7 @@
 #include "window.h"
 #include "control.h"
 #include "logger.h"
+#include "string_utils.h"
 
 #include <FL/fl_ask.H>
 #include <FL/Fl_Input.H>
@@ -57,7 +58,7 @@ void Vindow::EditInsertRest(Fl_Widget*, void* p)
     if(me->layout_ == Vindow::Layout::OUTPUT) {
         auto pos = me->model_->output.begin();
         std::advance(pos, me->editor_->mx());
-        ctrl.InsertColumn(me->active_, pos, '.');
+        ctrl.InsertColumn(me->active_, pos, L'.');
         assert(me->editor_);
         me->editor_->Update(me->model_->whats.size());
     } else if(me->layout_ == Vindow::Layout::WHAT) {
@@ -65,12 +66,12 @@ void Vindow::EditInsertRest(Fl_Widget*, void* p)
                     return what.name == me->active_;
                 });
         if(found == me->model_->whats.end()) {
-            l("%s not found\n", me->active_);
+            l(L"%ls not found\n", me->active_.c_str());
             return;
         }
         auto pos = found->columns.begin();
         std::advance(pos, me->editor_->mx());
-        ctrl.InsertColumn(me->active_, pos, '.');
+        ctrl.InsertColumn(me->active_, pos, L'.');
         assert(me->editor_);
         me->editor_->Update(me->model_->whos.size());
     }
@@ -93,7 +94,7 @@ void Vindow::EditInsertBlank(Fl_Widget*, void* p)
                     return what.name == me->active_;
                 });
         if(found == me->model_->whats.end()) {
-            l("%s not found\n", me->active_);
+            l(L"%s not found\n", me->active_);
             return;
         }
         auto pos = found->columns.begin();
@@ -171,20 +172,23 @@ void Vindow::WhatClicked(Fl_Widget* w, void* p)
 {
     Vindow* me = (Vindow*)p;
     const char* label = w->label();
-    me->SetLayout(Layout::WHAT, label);
+    me->SetLayout(Layout::WHAT, MB2W(label));
+    me->redraw();
 }
 
 void Vindow::WhoClicked(Fl_Widget* w, void* p)
 {
     Vindow* me = (Vindow*)p;
     const char* label = w->label();
-    me->SetLayout(Layout::WHO, label);
+    me->SetLayout(Layout::WHO, MB2W(label));
+    me->redraw();
 }
 
 void Vindow::OutputClicked(Fl_Widget* w, void* p)
 {
     Vindow* me = (Vindow*)p;
     me->SetLayout(Layout::OUTPUT);
+    me->redraw();
 }
 
 void Vindow::WindowCallback(Fl_Widget* w, void* p)
@@ -197,17 +201,16 @@ void Vindow::WhoNameChanged(Fl_Widget* w, void* p)
     auto* inp = (Fl_Input*)w;
     auto* me = (Vindow*)p;
 
-    const char* newName = inp->value();
-    const char* oldName = me->active_.c_str();
+    std::wstring newName = MB2W(inp->value());
+    std::wstring oldName = me->active_;
 
-    assert(newName);
     if(std::any_of(me->model_->whos.begin(), me->model_->whos.end(), [newName](WhoEntry const& e) -> bool {
                     return e.name == newName;
                 })
-            || *newName == '\0')
+            || newName.empty())
     {
         fl_alert("Name needs to be unique and not null");
-        inp->value(oldName);
+        inp->value(W2MB(oldName).get());
         // Fl::focus(inp); // doesn't work because e.g. the tab key is
                            // handled later...
         return;
@@ -222,18 +225,17 @@ void Vindow::WhatNameChanged(Fl_Widget* w, void* p)
     auto* inp = (Fl_Input*)w;
     auto* me = (Vindow*)p;
 
-    const char* newName = inp->value();
-    const char* oldName = me->active_.c_str();
+    std::wstring newName = MB2W(inp->value());
+    std::wstring oldName = me->active_;
 
-    assert(newName);
     if(std::any_of(me->model_->whats.begin(), me->model_->whats.end(), [newName](WhatEntry const& e) -> bool {
                     return e.name == newName;
                 })
-            || *newName == '\0'
-            || strcmp(newName, "OUTPUT") == 0)
+            || newName.empty()
+            || newName == L"OUTPUT")
     {
         fl_alert("Name needs to be unique and not null");
-        inp->value(oldName);
+        inp->value(W2MB(oldName).get());
         // Fl::focus(inp); // doesn't work because e.g. the tab key is
                            // handled later...
         return;
@@ -249,7 +251,7 @@ void Vindow::WhatBpmChanged(Fl_Widget* w, void* p)
     auto* me = (Vindow*)p;
 
     auto&& what = me->active_;
-    auto bpm = inp->value();
+    auto bpm = MB2W(inp->value());
 
     Control ctrl(me->model_, me);
     ctrl.SetWhatsBpm(what, bpm);
@@ -275,8 +277,8 @@ void Vindow::ParamChanged(Fl_Widget* w, void* p)
     auto* me = (Vindow*)p;
 
     auto&& who = me->active_;
-    const char* param = inp->label();
-    const char* value = inp->value();
+    std::wstring param = MB2W(inp->label());
+    std::wstring value = MB2W(inp->value());
 
     Control ctrl(me->model_, me);
     ctrl.SetWhosParam(who, param, value);

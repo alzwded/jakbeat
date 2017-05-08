@@ -4,13 +4,13 @@ CC = gcc
 CFLAGS = -o
 
 CXX = g++
-CXXFLAGS = --std=gnu++14 -c -DVERSION=$(VERSION) -g -I. -I.. `fltk-config --cxxflags` -o
+CXXFLAGS = --std=gnu++14 -c -DVERSION=$(VERSION) -g -I. -I.. `fltk-config --cxxflags` -O0 -o
 
 LD = g++ -o
 LDFLAGS = `fltk-config --ldflags`
 
 JAKBEATDEPENDS = parser.o tokenizer.o
-MYOBJS = gui.o file.o window.o window_callbacks.o matrix_editor.o control.o logger.o
+MYOBJS = gui.o file.o window.o window_callbacks.o matrix_editor.o control.o logger.o string_utils.o
 OBJS = $(MYOBJS) $(JAKBEATDEPENDS)
 HEADERS = $(shell echo *.h)
 

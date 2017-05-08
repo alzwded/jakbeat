@@ -49,8 +49,8 @@ struct Event
         RELOADED
     } type;
 
-    std::string targetId;
-    std::string changed;
+    std::wstring targetId;
+    std::wstring changed;
     View* sourceView;
 };
 
