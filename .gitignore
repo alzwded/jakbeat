@@ -48,6 +48,7 @@ vendor/lemon/lemon
 gui/parser.y
 gui/jakbeat-gui
 gui/tokenizer.cpp
+vendor/*
 
 *.txz
 *.tar

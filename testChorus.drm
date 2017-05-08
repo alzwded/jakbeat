@@ -1,22 +1,22 @@
 [WHO]
 kick = (
-    path = kick.wav
+    path = "vendor/samples/kick.wav"
     volume = 80
 )
 snare = (
-    path = snare.wav
+    path = "vendor/samples/snare.wav"
     volume = 80
     stereo = pan
     params = (pan=-50)
 )
 crash = (
-    path = crash.wav
+    path = "vendor/samples/crash.wav"
     volume = 50
     stereo = pan
     params = (pan = 70)
 )
 snareC = (
-    path = snare.wav
+    path = "vendor/samples/snare.wav"
     volume = 80
     stereo = chorus
     params = (
@@ -26,7 +26,7 @@ snareC = (
     )
 )
 crashC = (
-    path = crash.wav
+    path = "vendor/samples/crash.wav"
     volume = 50
     stereo = chorus
     params = (
