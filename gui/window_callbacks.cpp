@@ -105,8 +105,39 @@ void Vindow::EditInsertBlank(Fl_Widget*, void* p)
     }
 }
 
-void Vindow::EditClearColumns(Fl_Widget*, void*)
-{}
+// if selection, goto sel
+// if cursorx == 0, return
+// if previous char == ' ', move cursor left, return
+// if previous char != ' ', replace with '.' and move cursor left, return
+// sel: for each cell
+//          if previous char == ' ', continue
+//          if previous char != ' ', replace with '.', continue
+void Vindow::EditClearColumns(Fl_Widget*, void* p)
+{
+    LOGGER(l);
+    auto* me = (Vindow*)p;
+    if(!me->editor_) return;
+
+    if(me->layout_ == Vindow::Layout::WHO) {
+        l(L"Nothing to do in WHO layout\n");
+        return;
+    }
+
+    if(!me->editor_) {
+        l(L"missing editor!\n");
+        return;
+    }
+    if(me->editor_->mx() == 0) {
+        l(L"no character to the left\n");
+        return;
+    }
+
+    Control ctrl(me->model_, me);
+    ctrl.BlankCell(me->active_, me->editor_->mx() - 1, me->editor_->my());
+
+    me->editor_->SetCursor(me->editor_->my(), me->editor_->mx() - 1);
+    me->editor_->Update();
+}
 
 void Vindow::EditDeleteColumns(Fl_Widget*, void*)
 {}

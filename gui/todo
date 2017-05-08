@@ -6,8 +6,9 @@
 [ ] Edit/Undo
 [ ] Edit/Cut & Copy & Paste (general)
 [ ] Edit/Cut & Copy & Paste (editor)
-[x] Edit/Insert Rest & Blank
-[ ] Edit/Clear Columns
+[ ] Edit/Overwrite
+[X] Edit/Insert Rest & Blank
+[X] Edit/Clear
 [ ] Edit/Delete Columns
 [ ] Deactivate menu items when appropriate
 

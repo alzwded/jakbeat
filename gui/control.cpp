@@ -273,3 +273,67 @@ void Control::SetCell(evData what, column_p_t before, int row, wchar_t c)
     };
     Fire(&e);
 }
+
+void Control::BlankCell(evData id, int col, int row)
+{
+    LOGGER(l);
+    if(id.empty()
+            || id == L"OUTPUT")
+    {
+        auto it = model_->output.begin();
+        std::advance(it, col);
+        auto& col = *it;
+        if(row < 0 || row >= col.size())
+        {
+            l(L"my=%d is out of bounds\n", row);
+            return;
+        }
+        auto cit = col.begin();
+        std::advance(cit, row);
+        auto& cell = *cit;
+        cell = (cell == L' ')
+            ? L' '
+            : L'.'
+            ;
+
+        Event e = {
+            Event::OUTPUT,
+            Event::CHANGED,
+            id,
+            L"",
+            source_
+        };
+        Fire(&e);
+
+        return;
+    } else {
+        FIND_WHAT(id, return);
+        WhatEntry& we = *found;
+        auto it = we.columns.begin();
+        std::advance(it, col);
+        auto& col = *it;
+        if(row < 0 || row >= col.size())
+        {
+            l(L"my=%d is out of bounds\n", row);
+            return;
+        }
+        auto cit = col.begin();
+        std::advance(cit, row);
+        auto& cell = *cit;
+        cell = (cell == L' ')
+            ? L' '
+            : L'.'
+            ;
+
+        Event e = {
+            Event::WHAT,
+            Event::CHANGED,
+            id,
+            L"",
+            source_
+        };
+        Fire(&e);
+
+        return;
+    }
+}

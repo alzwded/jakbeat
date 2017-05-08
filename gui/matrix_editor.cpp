@@ -442,3 +442,12 @@ void MatrixEditor::SetTarget(std::wstring target)
     l(L"new target: %ls\n", target.c_str());
     target_ = std::move(target);
 }
+
+void MatrixEditor::SetCursor(int i, int j)
+{
+    LOGGER(l);
+    l(L"my,mx=%d,%d i,j=%d,%d\n", my_, mx_, i, j), 
+    mx_ = j;
+    my_ = i;
+    l(L"model cursor now at %d,%d\n", i, j);
+}

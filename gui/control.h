@@ -59,6 +59,7 @@ public:
 
     void InsertColumn(evData id, column_p_t before, wchar_t c = ' ');
     void SetCell(evData id, column_p_t column, int row, wchar_t c);
+    void BlankCell(evData id, int col, int row);
     void DeleteColumn(column_p_t column);
 
 private:

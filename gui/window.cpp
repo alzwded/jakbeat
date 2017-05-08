@@ -96,11 +96,20 @@ Vindow::Vindow(
               FL_COMMAND + 'c', (Fl_Callback*)EditCopy },
           { "&Paste",
               FL_COMMAND + 'v', (Fl_Callback*)EditPaste, 0, FL_MENU_DIVIDER },
+#if 0
+        default overwrite;
+        but, when in insert mode, it would allow you to type on the current
+            row and insert '.'/' ' on the others, just like typing at the
+            end of the column;
+        could be a flag on the model
+          { "Overwr&ite",
+              Fl_Insert, (Fl_Callback*)EditOverwrite, this, FL_MENU_TOGGLE|FL_MENU_VALUE },
+#endif
           { "Insert &Rest",
               FL_COMMAND + '0', (Fl_Callback*)EditInsertRest, this },
           { "Insert &Blank",
               FL_COMMAND + 'b', (Fl_Callback*)EditInsertBlank, this },
-          { "C&lear Columns",
+          { "C&lear",
               FL_BackSpace, (Fl_Callback*)EditClearColumns, this },
           { "&Delete Columns",
               FL_Delete, (Fl_Callback*)EditDeleteColumns, this, FL_MENU_DIVIDER },

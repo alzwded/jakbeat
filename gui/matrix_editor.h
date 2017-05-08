@@ -59,6 +59,7 @@ public:
     void Update(int nrows);
     void Update() { Update(nrows_); }
     void SetTarget(std::wstring target);
+    void SetCursor(int, int);
 
 private:
     bool IsSelected(int, int) const;
