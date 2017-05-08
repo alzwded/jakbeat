@@ -6,6 +6,22 @@
 #include <string>
 #include <memory>
 
+#ifdef _MSC_VER
+# define WIN32_LEAN_AND_MEAN
+# define VC_EXTRALEAN
+# include <windows.h>
+// TODO use the functions below instead of the CRT versions (which break
+//     on windows because msvcrt refuses any UTF-8 locale)
+//     Using these should be enough to support unicode; fltk should accept
+//     utf8 for its own internal use, and I use wide strings which are
+//     OK on windows and seem to be okay on linux)
+//
+//     WideCharToMultiByte(CP_UTF8, 0, in.c_str(), in.size(), nullptr, &outLen, nullptr, nullptr);
+//     WideCharToMultiByte(CP_UTF8, 0, in.c_str(), in.size(), out, &outLen, nullptr, nullptr);
+//     MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, in, length, nullptr, &outLen, nullptr, nullptr);
+//     MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, in, length, out, &outLen, nullptr, nullptr);
+#endif
+
 std::wstring MB2W(const char* in, size_t length)
 {
     std::unique_ptr<char> store(new char[length + 1]);
