@@ -38,3 +38,4 @@
 [X] editor->scrolling
 [X] editor->typing
 [X] editor->updating
+[ ] editor->selection
