@@ -42,7 +42,7 @@ struct Token
 struct Tokenizer
 {
     FILE* f;
-    wchar_t c;
+    wint_t c;
 
     Tokenizer(FILE* f_);
 

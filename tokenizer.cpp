@@ -48,6 +48,7 @@ Tokenizer::Tokenizer(FILE* f_)
 
 Token Tokenizer::operator()()
 {
+    if(c == WEOF) return {TEOF};
     while(iswspace(c) || c == L'\u000D' || c == L'\u000A')
     {
         if(c == L'\u000A') tokenizer_lineno++;
@@ -83,7 +84,7 @@ Token Tokenizer::operator()()
     while(condition(c))
     {
         if(c == L'\u000A') tokenizer_lineno++;
-        ss << c;
+        ss << (wchar_t)c;
         c = fgetwc(f);
         if(feof(f)) break;
     }
