@@ -86,7 +86,7 @@ Vindow::Vindow(
           { "&Save",
               FL_COMMAND + 's', (Fl_Callback*)FileSave, this },
           { "Save &As...",
-              FL_COMMAND + FL_SHIFT + 's', (Fl_Callback*)FileSaveAs,  },
+              FL_COMMAND + FL_SHIFT + 's', (Fl_Callback*)FileSaveAs, this },
           { "&Reload",
               FL_F + 5, (Fl_Callback*)FileReload, 0, FL_MENU_DIVIDER },
           { "E&xit",

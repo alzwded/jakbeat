@@ -6,6 +6,7 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Input_Choice.H>
+#include <FL/Fl_Native_File_Chooser.H>
 
 #include <cassert>
 #include <algorithm>
@@ -17,17 +18,48 @@ void Vindow::FileNew(Fl_Widget*, void*)
 void Vindow::FileOpen(Fl_Widget*, void*)
 {}
 
-void Vindow::FileSave(Fl_Widget*, void* p)
+void Vindow::FileSave(Fl_Widget* w, void* p)
 {
     extern void save_model(std::shared_ptr<Model>, std::wstring);
     auto* me = (Vindow*)p;
-
-    std::wstring testPath(L"test.txt");
-    save_model(me->model_, testPath);
+    if(me->model_->path.empty()) return FileSaveAs(w, p);
+    save_model(me->model_, me->model_->path);
 }
 
-void Vindow::FileSaveAs(Fl_Widget*, void*)
-{}
+void Vindow::FileSaveAs(Fl_Widget*, void* p)
+{
+    extern void save_model(std::shared_ptr<Model>, std::wstring);
+    LOGGER(l);
+    auto* me = (Vindow*)p;
+    Fl_Native_File_Chooser f;
+    f.title("Pick a file");
+    f.type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE);
+    f.options(Fl_Native_File_Chooser::SAVEAS_CONFIRM|Fl_Native_File_Chooser::USE_FILTER_EXT|Fl_Native_File_Chooser::NEW_FOLDER);
+    f.filter("jakbeat sequences\t*.drm\n"
+             "any file\t*.*");
+    f.preset_file(W2MB(me->model_->path).get());
+    switch(f.show()) {
+    case -1:
+        l(L"failed to create native file browser\n");
+        break;
+    case 1:
+        l(L"save cancelled");
+        break;
+    default:
+        {
+            std::wstring fname = MB2W(f.filename());
+#if 0
+            // doesn't help because the prompt is before I get the filename
+            if(fname.rfind(L".") == std::wstring::npos) {
+                l(L"concating .drm extension to %ls\n", fname.c_str());
+                fname += L".drm";
+            }
+#endif
+            save_model(me->model_, fname);
+        }
+        break;
+    }
+}
 
 void Vindow::FileReload(Fl_Widget*, void*)
 {}
