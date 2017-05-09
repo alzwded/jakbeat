@@ -79,7 +79,7 @@ Vindow::Vindow(
           { "&Open...",
               FL_COMMAND + 'o', (Fl_Callback*)FileOpen },
           { "&Save",
-              FL_COMMAND + 's', (Fl_Callback*)FileSave },
+              FL_COMMAND + 's', (Fl_Callback*)FileSave, this },
           { "Save &As...",
               FL_COMMAND + FL_SHIFT + 's', (Fl_Callback*)FileSaveAs,  },
           { "&Reload",

@@ -17,8 +17,14 @@ void Vindow::FileNew(Fl_Widget*, void*)
 void Vindow::FileOpen(Fl_Widget*, void*)
 {}
 
-void Vindow::FileSave(Fl_Widget*, void*)
-{}
+void Vindow::FileSave(Fl_Widget*, void* p)
+{
+    extern void save_model(std::shared_ptr<Model>, std::wstring);
+    auto* me = (Vindow*)p;
+
+    std::wstring testPath(L"test.txt");
+    save_model(me->model_, testPath);
+}
 
 void Vindow::FileSaveAs(Fl_Widget*, void*)
 {}

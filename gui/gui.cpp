@@ -92,10 +92,6 @@ std::shared_ptr<Model> load_model(std::string path)
     return {};
 }
 
-void save_model(std::shared_ptr<Model> m)
-{
-}
-
 bool is_any_model_dirty()
 {
     return std::any_of(windows.begin(), windows.end(), [](Vindow* w) -> bool {
