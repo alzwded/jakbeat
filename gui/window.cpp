@@ -398,7 +398,6 @@ void Vindow::OnEvent(Event* e)
     switch(e->type)
     {
         case Event::SAVED:
-            SetTitle();
             break;
         case Event::RELOADED:
             CreateWhoList();
@@ -508,6 +507,7 @@ void Vindow::OnEvent(Event* e)
             }
             break;
     }
+    SetTitle();
     container_->redraw();
 }
 

@@ -345,6 +345,7 @@ void Control::BlankCell(evData id, int col, int row)
 void Control::InsertText(int pos, std::wstring const& text)
 {
     model_->output.insert(pos, text);
+    DIRTY();
     Event e = {
         Event::OUTPUT,
         Event::TEXT_INSERTED,
@@ -358,6 +359,7 @@ void Control::InsertText(int pos, std::wstring const& text)
 void Control::DeleteText(int pos, int length)
 {
     model_->output.erase(pos, length);
+    DIRTY();
     Event e = {
         Event::OUTPUT,
         Event::TEXT_DELETED,
