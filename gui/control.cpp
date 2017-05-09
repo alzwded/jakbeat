@@ -73,9 +73,7 @@ void Control::SetWhosName(evData oldName, std::wstring name)
         name.c_str(),
         source_
     };
-    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
-                v->OnEvent(&e);
-            });
+    Fire(&e);
 }
 
 void Control::SetWhosParam(Control::evData id, std::wstring key, std::wstring value)
@@ -107,9 +105,7 @@ void Control::SetWhosParam(Control::evData id, std::wstring key, std::wstring va
         key,
         source_
     };
-    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
-                v->OnEvent(&e);
-            });
+    Fire(&e);
 }
 
 void Control::SetWhosSchema(Control::evData id, Schema const* schema)
@@ -133,9 +129,7 @@ void Control::SetWhosSchema(Control::evData id, Schema const* schema)
         L" schema",
         source_
     };
-    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
-                v->OnEvent(&e);
-            });
+    Fire(&e);
 }
 
 void Control::SetWhatsName(Control::evData id, std::wstring name)
@@ -158,9 +152,7 @@ void Control::SetWhatsName(Control::evData id, std::wstring name)
         name.c_str(),
         source_
     };
-    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
-                v->OnEvent(&e);
-            });
+    Fire(&e);
 }
 
 void Control::SetWhatsBpm(Control::evData id, std::wstring bpm)
@@ -176,9 +168,7 @@ void Control::SetWhatsBpm(Control::evData id, std::wstring bpm)
         L"bpm",
         source_
     };
-    std::for_each(model_->views.begin(), model_->views.end(), [&e](View* v) {
-                v->OnEvent(&e);
-            });
+    Fire(&e);
 }
 
 Event::Source Control::InsertColumnPrivate(evData id, column_p_t before, wchar_t c)
