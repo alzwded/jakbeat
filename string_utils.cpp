@@ -25,7 +25,7 @@
 
 std::wstring MB2W(const char* in, size_t length)
 {
-    std::unique_ptr<char> store(new char[length + 1]);
+    std::unique_ptr<char, std::default_delete<char[]>> store(new char[length + 1]);
     strncpy(store.get(), in, length);
     store.get()[length] = '\0';
     const char* s = store.get();
@@ -38,7 +38,7 @@ std::wstring MB2W(const char* in, size_t length)
 #endif
     if(len <= 0) return {};
 
-    std::unique_ptr<wchar_t> ws(new wchar_t[len + 1]);
+    std::unique_ptr<wchar_t, std::default_delete<wchar_t[]>> ws(new wchar_t[len + 1]);
 #ifdef _MSC_VER
     int written = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, in, length, ws.get(), len + 1);
 #else
@@ -54,7 +54,7 @@ std::wstring MB2W(const char* in)
     return MB2W(in, strlen(in));
 }
 
-std::unique_ptr<char> W2MB(std::wstring const& in)
+std::unique_ptr<char, std::default_delete<char[]>> W2MB(std::wstring const& in)
 {
     const wchar_t* s = in.c_str();
     mbstate_t ps;
@@ -66,7 +66,7 @@ std::unique_ptr<char> W2MB(std::wstring const& in)
 #endif
     if(len <= 0) return {};
 
-    std::unique_ptr<char> mbs(new char[len + 1]);
+    std::unique_ptr<char, std::default_delete<char[]>> mbs(new char[len + 1]);
 #ifdef _MSC_VER
     int written = WideCharToMultiByte(CP_UTF8, 0, s, in.size(), mbs.get(), len + 1, nullptr, nullptr);
 #else
