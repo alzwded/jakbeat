@@ -277,9 +277,13 @@ void Vindow::WhatNameChanged(Fl_Widget* w, void* p)
                     return e.name == newName;
                 })
             || newName.empty()
-            || newName == L"OUTPUT")
+            /* reserved */
+            || newName == L"OUTPUT"
+            || newName == L"Output"
+            || newName == L"WHO"
+            || newName == L"WHAT")
     {
-        fl_alert("Name needs to be unique and not null");
+        fl_alert("Name needs to be unique, not reserved, and not null");
         inp->value(W2MB(oldName).get());
         // Fl::focus(inp); // doesn't work because e.g. the tab key is
                            // handled later...
