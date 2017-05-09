@@ -1,4 +1,3 @@
-VERSION = 1.1
 CC = gcc
 CXX = g++
 LEMONROOT = vendor/lemon
@@ -7,9 +6,9 @@ LDOPTS = -o jakbeat
 LIBS = -lSDL2
 
 ifeq ($(JAKBEAT_OPTS),debug)
-CFLAGS = -O0 -c -g -msse4 -DVERSION=$(VERSION) -I. -I/usr/include/SDL2 -Wno-multichar
+CFLAGS = -O0 -c -g -msse4 -I. -I/usr/include/SDL2 -Wno-multichar
 else
-CFLAGS = -O2 -c -msse4 -DVERSION=$(VERSION) -I. -I/usr/include/SDL2 -Wno-multichar
+CFLAGS = -O2 -c -msse4 -I. -I/usr/include/SDL2 -Wno-multichar
 endif
 
 CXXFLAGS = $(CFLAGS) --std=gnu++14

@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "matrix_editor.h"
 #include "logger.h"
 #include "string_utils.h"
+#include "version.h"
 
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
@@ -723,13 +724,15 @@ void Vindow::SelectButton(std::wstring const& reactivate1, Layout lyt)
 
 void Vindow::SetTitle()
 {
+    extern std::wstring MY_VERSION;
     LOGGER(l);
-    auto pre = std::wstring(L"jakbeat-gui \u2014 ");
+    std::wstringstream ss;
+    ss << L"jakbeat-gui v" << VERSION << L" \u2014 ";
     auto title = std::wstring(L"Unsaved Document");
-    (void) W2MB(title);
     if(!model_->path.empty()) title = model_->path;
-    if(model_->dirty) title += L" (*)";
-    auto full = pre + title;
+    ss << title;
+    if(model_->dirty) ss << L" (*)";
+    auto full = ss.str();
     l(L"setting title to %ls\n", full.c_str());
     copy_label(W2MB(full).get());
 }

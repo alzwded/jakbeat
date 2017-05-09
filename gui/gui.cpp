@@ -26,6 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "model.h"
 #include "window.h"
 #include "logger.h"
+#include "string_utils.h"
 
 #include <FL/Fl.H>
 

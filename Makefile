@@ -1,4 +1,3 @@
-VERSION = 1.1
 CC = cl.exe
 LEMONROOT = vendor\lemon
 SDLROOT = vendor\SDL2-2.0.4

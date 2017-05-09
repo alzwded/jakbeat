@@ -1,10 +1,8 @@
-VERSION = 1.1
-
 CC = gcc
 CFLAGS = -o
 
 CXX = g++
-CXXFLAGS = --std=gnu++14 -c -DVERSION=$(VERSION) -g -I. -I.. `fltk-config --cxxflags` -O0 -o
+CXXFLAGS = --std=gnu++14 -c -g -I. -I.. `fltk-config --cxxflags` -O0 -o
 
 LD = g++ -o
 LDFLAGS = `fltk-config --ldflags`
