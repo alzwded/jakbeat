@@ -105,6 +105,7 @@ private:
     };
 
     void SetLayout(Layout, std::wstring const& = std::wstring(L""));
+    void SetTitle();
 
     void CreateWhoList();
     void CreateWhatList();

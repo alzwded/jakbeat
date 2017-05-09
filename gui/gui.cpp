@@ -124,6 +124,9 @@ void destroy_window(Vindow* whom)
 
 int main(int argc, char* argv[])
 {
+#ifdef __GNUC__
+    setlocale(LC_CTYPE, "C.UTF-8");
+#endif
     Fl::scheme("gtk+");
 #if 1
     /* test code */

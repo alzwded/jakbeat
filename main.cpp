@@ -50,6 +50,9 @@ int wmain(int argc, wchar_t* argv[])
 int main(int argc, char* argv[])
 #endif
 {
+#ifdef __GNUC__
+    setlocale(LC_CTYPE, "C.UTF-8");
+#endif
     std::wstring fileName = L"test.wav";
     for(int i = 1; i < argc; ++i) {
 #ifdef _MSC_VER

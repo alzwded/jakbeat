@@ -72,7 +72,7 @@ Vindow::Vindow(
 {
     assert(model_);
     model_->views.push_back(this);
-    copy_label(W2MB(t).get());
+    SetTitle();
     buffer_->add_modify_callback(&OutputChanged, this);
 
     // init menu
@@ -397,6 +397,9 @@ void Vindow::OnEvent(Event* e)
     LOGGER(l);
     switch(e->type)
     {
+        case Event::SAVED:
+            SetTitle();
+            break;
         case Event::RELOADED:
             CreateWhoList();
             CreateWhatList();
@@ -716,4 +719,17 @@ void Vindow::SelectButton(std::wstring const& reactivate1, Layout lyt)
                 b->value(1);
         }
     }
+}
+
+void Vindow::SetTitle()
+{
+    LOGGER(l);
+    auto pre = std::wstring(L"jakbeat-gui \u2014 ");
+    auto title = std::wstring(L"Unsaved Document");
+    (void) W2MB(title);
+    if(!model_->path.empty()) title = model_->path;
+    if(model_->dirty) title += L" (*)";
+    auto full = pre + title;
+    l(L"setting title to %ls\n", full.c_str());
+    copy_label(W2MB(full).get());
 }
