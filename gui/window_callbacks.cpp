@@ -12,6 +12,14 @@
 #include <algorithm>
 #include <vector>
 
+// for cwd
+#ifdef _MSC_VER
+# include <wchar.h>
+#else
+# include <string.h>
+# include <unistd.h>
+#endif
+
 void Vindow::FileNew(Fl_Widget*, void*)
 {}
 
@@ -37,7 +45,37 @@ void Vindow::FileSaveAs(Fl_Widget*, void* p)
     f.options(Fl_Native_File_Chooser::SAVEAS_CONFIRM|Fl_Native_File_Chooser::USE_FILTER_EXT|Fl_Native_File_Chooser::NEW_FOLDER);
     f.filter("jakbeat sequences\t*.drm\n"
              "any file\t*.*");
-    f.preset_file(W2MB(me->model_->path).get());
+    if(me->model_->path.empty()) {
+#ifdef _MSC_VER
+        wchar_t path[1024];
+        auto hr = _wgetcwd(path, 1023);
+        if(hr) {
+            std::wstring dir(hr);
+            f.directory(W2MB(dir).get());
+        } else {
+            l(L"failed to get cwd\n");
+        }
+#elif defined(_GNU_SOURCE)
+        l(L"using get_current_dir_name()\n");
+        char* path = get_current_dir_name();
+        if(path) f.directory(path);
+        else {
+            l(L"failed to get cwd because %s\n", strerror(errno));
+        }
+        free(path);
+#else
+        l(L"using getcwd()\n");
+        char path[1024];
+        auto hr = getcwd(path, 1023);
+        if(hr) f.directory(hr);
+        else {
+            l(L"failed to get cwd because %s\n", strerror(errno));
+        }
+#endif
+        f.preset_file("sequence.drm");
+    } else {
+        f.preset_file(W2MB(me->model_->path).get());
+    }
     switch(f.show()) {
     case -1:
         l(L"failed to create native file browser\n");
