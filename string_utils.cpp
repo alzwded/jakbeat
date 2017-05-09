@@ -31,11 +31,19 @@ std::wstring MB2W(const char* in, size_t length)
     const char* s = store.get();
     mbstate_t ps;
     memset(&ps, 0, sizeof(ps));
-    int len = mbsrtowcs(nullptr, &s, 0, &ps);
+#ifdef _MSC_VER
+    int len = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, in, length, nullptr, 0);
+#else
+    size_t len = mbsrtowcs(nullptr, &s, 0, &ps);
+#endif
     if(len <= 0) return {};
 
     std::unique_ptr<wchar_t> ws(new wchar_t[len + 1]);
+#ifdef _MSC_VER
+    int written = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, in, length, ws.get(), len + 1);
+#else
     size_t written = mbsrtowcs(ws.get(), &s, len + 1, &ps);
+#endif
     if(written != len) return {};
 
     return std::wstring(ws.get());
@@ -51,11 +59,19 @@ std::unique_ptr<char> W2MB(std::wstring const& in)
     const wchar_t* s = in.c_str();
     mbstate_t ps;
     memset(&ps, 0, sizeof(ps));
+#ifdef _MSC_VER
+    int len = WideCharToMultiByte(CP_UTF8, 0, s, in.size(), nullptr, 0, nullptr, nullptr);
+#else
     int len = wcsrtombs(nullptr, &s, 0, &ps);
+#endif
     if(len <= 0) return {};
 
     std::unique_ptr<char> mbs(new char[len + 1]);
+#ifdef _MSC_VER
+    int written = WideCharToMultiByte(CP_UTF8, 0, s, in.size(), mbs.get(), len + 1, nullptr, nullptr);
+#else
     size_t written = wcsrtombs(mbs.get(), &s, len + 1, &ps);
+#endif
     if(written != len) return {};
 
     return std::move(mbs);

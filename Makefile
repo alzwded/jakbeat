@@ -3,9 +3,9 @@ CC = cl.exe
 LEMONROOT = vendor\lemon
 SDLROOT = vendor\SDL2-2.0.4
 !IF DEFINED(JAKBEAT_OPTS) && "$(JAKBEAT_OPTS)" == "debug"
-CFLAGS = /Od /c /EHa /I. /Zi /arch:SSE2 /DVERSION=$(VERSION) /I"$(SDLROOT)\include"
+CFLAGS = /Od /c /EHa /I. /Zi /arch:SSE2 /DVERSION=$(VERSION) /I"$(SDLROOT)\include" /D_CRT_STDIO_ISO_WIDE_SPECIFIERS=1
 !ELSE
-CFLAGS = /Ox /c /EHa /I. /arch:SSE2 /DVERSION=$(VERSION) /I"$(SDLROOT)\include"
+CFLAGS = /Ox /c /EHa /I. /arch:SSE2 /DVERSION=$(VERSION) /I"$(SDLROOT)\include" /D_CRT_STDIO_ISO_WIDE_SPECIFIERS=1
 !ENDIF
 #CFLAGS = /c /EHsc /I. /Zi /arch:SSE2 /DVERSION=$(VERSION) /RTC1 /analyze  /Ge /GS /Gs
 LD = link.exe
