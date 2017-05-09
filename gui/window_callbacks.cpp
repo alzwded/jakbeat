@@ -419,9 +419,18 @@ void Vindow::OutputChanged(int pos, int inserted, int deleted, int restyled, con
     l(L"text=%ls\n", text.c_str());
     Control ctrl(me->model_, me);
     if(deleted) {
-        ctrl.DeleteText(pos, deleted);
+        auto* fulltext = me->buffer_->text();
+        std::wstring allText = MB2W(fulltext);
+        auto mm = std::mismatch(me->model_->output.begin(), me->model_->output.end(), allText.begin(), allText.end());
+        delete fulltext;
+        auto realDeleted = MB2W(deletedText).size();
+        ctrl.DeleteText(mm.first - me->model_->output.begin(), realDeleted, pos, deleted);
     }
     if(inserted) {
-        ctrl.InsertText(pos, text);
+        auto* fulltext = me->buffer_->text();
+        std::wstring allText = MB2W(fulltext);
+        auto mm = std::mismatch(me->model_->output.begin(), me->model_->output.end(), allText.begin(), allText.end());
+        delete fulltext;
+        ctrl.InsertText(mm.first - me->model_->output.begin(), pos, text);
     }
 }

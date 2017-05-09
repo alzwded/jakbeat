@@ -342,9 +342,11 @@ void Control::BlankCell(evData id, int col, int row)
     }
 }
 
-void Control::InsertText(int pos, std::wstring const& text)
+void Control::InsertText(int mpos, int pos, std::wstring const& text)
 {
-    model_->output.insert(pos, text);
+    LOGGER(l);
+    l(L"model: %d view: %d %ls\n", mpos, pos, text.c_str());
+    model_->output.insert(mpos, text);
     DIRTY();
     Event e = {
         Event::OUTPUT,
@@ -356,9 +358,11 @@ void Control::InsertText(int pos, std::wstring const& text)
     Fire(&e);
 }
 
-void Control::DeleteText(int pos, int length)
+void Control::DeleteText(int mpos, int mlength, int pos, int length)
 {
-    model_->output.erase(pos, length);
+    LOGGER(l);
+    l(L"model: %d+%d view: %d+%d\n", mpos, mlength, pos, length);
+    model_->output.erase(mpos, mlength);
     DIRTY();
     Event e = {
         Event::OUTPUT,

@@ -62,8 +62,8 @@ public:
     void BlankCell(evData id, int col, int row);
     void DeleteColumn(column_p_t column);
 
-    void InsertText(int pos, std::wstring const& text);
-    void DeleteText(int pos, int length);
+    void InsertText(int mpos, int pos, std::wstring const& text);
+    void DeleteText(int mpos, int mlength, int pos, int length);
 
 private:
     auto FindWhat(evData id) -> decltype(model_->whats)::iterator;
