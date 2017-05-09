@@ -108,7 +108,7 @@ void save_model(std::shared_ptr<Model> m, std::wstring path)
     l(L"Writing WHAT section, %ld entries\n", 1 + m->whats.size());
     fwprintf(f, L"[WHAT]\n");
     l(L"Writing Output\n");
-    // TODO write output
+    fwprintf(f, L"Output = (\n%ls\n)\n", m->output.c_str());
     l(L"Writing WHAT definitions\n");
     for(auto&& what : m->whats) {
         fwprintf(f, L"%ls = ( bpm = %ls )\n", what.name.c_str(), what.bpm.c_str());
