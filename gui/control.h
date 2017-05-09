@@ -62,6 +62,9 @@ public:
     void BlankCell(evData id, int col, int row);
     void DeleteColumn(column_p_t column);
 
+    void InsertText(int pos, std::wstring const& text);
+    void DeleteText(int pos, int length);
+
 private:
     auto FindWhat(evData id) -> decltype(model_->whats)::iterator;
     Event::Source InsertColumnPrivate(evData id, column_p_t before, wchar_t c = ' ');

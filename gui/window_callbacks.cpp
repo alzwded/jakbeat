@@ -62,11 +62,15 @@ void Vindow::EditInsertRest(Fl_Widget*, void* p)
     assert(me->editor_);
     Control ctrl(me->model_, me);
     if(me->layout_ == Vindow::Layout::OUTPUT) {
+#if 1
+        l(L"using text editor, this should not be called\n");
+#else
         auto pos = me->model_->output.begin();
         std::advance(pos, me->editor_->mx());
         ctrl.InsertColumn(me->active_, pos, L'.');
         assert(me->editor_);
         me->editor_->Update(me->model_->whats.size());
+#endif
     } else if(me->layout_ == Vindow::Layout::WHAT) {
         auto found = std::find_if(me->model_->whats.begin(), me->model_->whats.end(), [me](WhatEntry& what) -> bool {
                     return what.name == me->active_;
@@ -90,11 +94,15 @@ void Vindow::EditInsertBlank(Fl_Widget*, void* p)
     assert(me->editor_);
     Control ctrl(me->model_, me);
     if(me->layout_ == Vindow::Layout::OUTPUT) {
+#if 1
+        l(L"using text editor, should not be called\n");
+#else
         auto pos = me->model_->output.begin();
         std::advance(pos, me->editor_->mx());
         ctrl.InsertColumn(me->active_, pos, ' ');
         assert(me->editor_);
         me->editor_->Update(me->model_->whats.size());
+#endif
     } else if(me->layout_ == Vindow::Layout::WHAT) {
         auto found = std::find_if(me->model_->whats.begin(), me->model_->whats.end(), [me](WhatEntry& what) -> bool {
                     return what.name == me->active_;
@@ -319,4 +327,27 @@ void Vindow::ParamChanged(Fl_Widget* w, void* p)
 
     Control ctrl(me->model_, me);
     ctrl.SetWhosParam(who, param, value);
+}
+
+void Vindow::OutputChanged(int pos, int inserted, int deleted, int restyled, const char* deletedText, void* cbArg)
+{
+    LOGGER(l);
+    auto* me = (Vindow*)cbArg;
+    if(me->blockBufferChanged_) {
+        l(L"refreshed, not triggering event\n");
+        return;
+    }
+    l(L"pos=%d inserted=%d deleted=%d restyled=%d\n", pos, inserted, deleted, restyled);
+    if(deletedText)
+        l(L"deletedText=%ls\n", MB2W(deletedText).c_str());
+    auto* ss = me->buffer_->address(pos);
+    auto text = MB2W(ss, inserted);
+    l(L"text=%ls\n", text.c_str());
+    Control ctrl(me->model_, me);
+    if(deleted) {
+        ctrl.DeleteText(pos, deleted);
+    }
+    if(inserted) {
+        ctrl.InsertText(pos, text);
+    }
 }

@@ -169,12 +169,16 @@ int main(int argc, char* argv[])
                     { L'.', L'!', L':', },
                     { L'.', L'.', L'/', },
                 }});
+#if 1
+    m->output = L"A1 A1 A1";
+#else
     m->output.push_back({{ L'1' }});
     m->output.push_back({{ L'1' }});
     for(size_t i = 0; i < 80; ++i) {
         m->output.push_back({{ L'.' }});
     }
     m->output.push_back({{ L'1' }});
+#endif
     create_window(m);
 
     return Fl::run();

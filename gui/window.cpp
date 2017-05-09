@@ -38,10 +38,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FL/Fl_Input_Choice.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Scroll.H>
+#include <FL/Fl_Text_Editor.H>
 #include <FL/Fl_Tile.H>
 
 #include <cassert>
 #include <algorithm>
+#include <sstream>
 #include <type_traits>
 
 #define WHO_GROUP_BUTTON_START 1u
@@ -65,10 +67,13 @@ Vindow::Vindow(
     , whoGroup_(nullptr)
     , whatGroup_(nullptr)
     , editor_(nullptr)
+    , buffer_()
+    , blockBufferChanged_(false)
 {
     assert(model_);
     model_->views.push_back(this);
     copy_label(W2MB(t).get());
+    buffer_->add_modify_callback(&OutputChanged, this);
 
     // init menu
     Fl_Menu_Item menuitems[] = {
@@ -370,6 +375,10 @@ void Vindow::CreateWhatList()
 Vindow::~Vindow()
 {
     LOGGER(l);
+
+    clear(); // !!! important to do this before buffer_ gets destroyed
+    buffer_->remove_modify_callback(&OutputChanged, this);
+
     auto found = std::find_if(model_->views.begin(), model_->views.end(), [this](View* v) -> bool {
                 auto* w = dynamic_cast<Vindow*>(v);
                 return w == this;
@@ -465,6 +474,36 @@ void Vindow::OnEvent(Event* e)
                 }
             }
             break;
+        case Event::TEXT_INSERTED:
+            {
+                if(e->sourceView == this) break;
+                if(e->source != Event::OUTPUT) break;
+                std::wstringstream posSS;
+                posSS << e->targetId;
+                int pos(0);
+                posSS >> pos;
+                blockBufferChanged_ = true;
+                l(L"to insert %ls at %d\n", e->changed.c_str(), pos);
+                buffer_->insert(pos, W2MB(e->changed).get());
+                blockBufferChanged_ = false;
+            }
+            break;
+        case Event::TEXT_DELETED:
+            {
+                if(e->sourceView == this) break;
+                if(e->source != Event::OUTPUT) break;
+                std::wstringstream posSS, numSS;
+                int pos(0), num(0);
+                posSS << e->targetId;
+                posSS >> pos;
+                numSS << e->changed;
+                numSS >> num;
+                blockBufferChanged_ = true;
+                l(L"to deleted from %d to %d\n", pos, pos+num);
+                buffer_->remove(pos, pos + num);
+                blockBufferChanged_ = false;
+            }
+            break;
     }
     container_->redraw();
 }
@@ -512,6 +551,17 @@ void Vindow::SetLayout(Layout lyt, std::wstring const& name)
             label->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
             mainGroup_->add(label);
 
+#if 1
+            auto* editor = new Fl_Text_Editor(
+                    label->x(),
+                    label->y() + label->h(),
+                    mainGroup_->w() - 10,
+                    mainGroup_->h() - label->h() - 10);
+            blockBufferChanged_ = true;
+            buffer_->text(W2MB(model_->output).get());
+            editor->buffer(buffer_.get());
+            blockBufferChanged_ = false;
+#else
             auto* editor = new MatrixEditor(
                     Control(model_, this),
                     label->x(),
@@ -524,6 +574,7 @@ void Vindow::SetLayout(Layout lyt, std::wstring const& name)
                     mx,
                     my);
             editor_ = editor;
+#endif
 
             mainGroup_->add(editor);
             mainGroup_->resizable(editor);

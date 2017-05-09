@@ -177,11 +177,15 @@ Event::Source Control::InsertColumnPrivate(evData id, column_p_t before, wchar_t
     if(id.empty()
             || id == L"OUTPUT")
     {
+#if 1
+        l(L"using text editor, should not be called\n");
+#else
         Column col;
         auto size = model_->whats.size();
         model_->output.insert(before, column_t(size, c));
         DIRTY();
         return Event::OUTPUT;
+#endif
     }
 
     FIND_WHAT(id, return Event::WHAT);
@@ -220,6 +224,9 @@ void Control::SetCell(evData what, column_p_t before, int row, wchar_t c)
     if(what.empty()
             || what == L"OUTPUT")
     {
+#if 1
+        l(L"using text editor, should not be called\n");
+#else
         if(before == model_->output.end())
         {
             (void) InsertColumnPrivate(what, before, ' ');
@@ -239,6 +246,7 @@ void Control::SetCell(evData what, column_p_t before, int row, wchar_t c)
             source_
         };
         Fire(&e);
+#endif
         return;
     }
 
@@ -270,6 +278,9 @@ void Control::BlankCell(evData id, int col, int row)
     if(id.empty()
             || id == L"OUTPUT")
     {
+#if 1
+        l(L"using text editor, should not be called\n");
+#else
         auto it = model_->output.begin();
         std::advance(it, col);
         auto& col = *it;
@@ -295,6 +306,7 @@ void Control::BlankCell(evData id, int col, int row)
             source_
         };
         Fire(&e);
+#endif
 
         return;
     } else {
@@ -328,4 +340,30 @@ void Control::BlankCell(evData id, int col, int row)
 
         return;
     }
+}
+
+void Control::InsertText(int pos, std::wstring const& text)
+{
+    model_->output.insert(pos, text);
+    Event e = {
+        Event::OUTPUT,
+        Event::TEXT_INSERTED,
+        std::to_wstring(pos),
+        text,
+        source_
+    };
+    Fire(&e);
+}
+
+void Control::DeleteText(int pos, int length)
+{
+    model_->output.erase(pos, length);
+    Event e = {
+        Event::OUTPUT,
+        Event::TEXT_DELETED,
+        std::to_wstring(pos),
+        std::to_wstring(length),
+        source_
+    };
+    Fire(&e);
 }

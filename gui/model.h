@@ -81,7 +81,11 @@ struct Model
     std::list<View*> views;
     std::list<WhoEntry> whos;
     std::list<WhatEntry> whats;
+#if 1
+    std::wstring output;
+#else
     columns_t output;
+#endif
 
     bool dirty = false;
 };

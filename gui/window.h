@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Fl/Fl_Double_Window.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Tile.H>
+#include <FL/Fl_Text_Buffer.H>
 #include <cwchar>
 
 // if you're wondering why it's called Vindow,
@@ -93,6 +94,8 @@ private:
     static void WhatNameChanged(Fl_Widget*, void*);
     static void WhatBpmChanged(Fl_Widget*, void*);
 
+    static void OutputChanged(int pos, int inserted, int deleted, int restyled, const char* deletedText, void* cbArg);
+
 private:
     enum class Layout
     {
@@ -121,10 +124,19 @@ private:
     std::wstring active_;
 
 private:
+    struct WR {
+        WR() : p(new Fl_Text_Buffer) {}
+        ~WR() { delete p; }
+        Fl_Text_Buffer* operator->() { return p; }
+        Fl_Text_Buffer& operator*() { return *p; }
+        Fl_Text_Buffer* get() { return p; }
+        Fl_Text_Buffer* p;
+    } buffer_;
     Fl_Menu_Bar* menu_;
     Fl_Group* mainGroup_, * whoGroup_, * whatGroup_;
     Fl_Tile* container_;
     MatrixEditor* editor_;
+    bool blockBufferChanged_;
 };
 
 #endif

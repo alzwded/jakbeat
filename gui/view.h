@@ -45,6 +45,8 @@ struct Event
         NAME_CHANGED,
         CHANGED,
         DELETED,
+        TEXT_INSERTED,
+        TEXT_DELETED,
         SAVED,
         RELOADED
     } type;
