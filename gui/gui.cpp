@@ -113,12 +113,13 @@ void create_window(std::shared_ptr<Model> m)
 
 void destroy_window(Vindow* whom)
 {
+    LOGGER(l);
     auto found = std::find_if(windows.begin(), windows.end(), [whom](Vindow * w) -> bool {
                 return w == whom;
             });
     if(found == windows.end())
     {
-        fprintf(stderr, "window not found... not abort()-ing to not lose data, but it should be fixed");
+        l(L"window not found... not abort()-ing to not lose data, but it should be fixed");
         return;
     }
     windows.erase(found);
