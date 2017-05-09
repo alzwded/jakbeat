@@ -295,6 +295,7 @@ void Control::BlankCell(evData id, int col, int row)
             ? L' '
             : L'.'
             ;
+        DIRTY();    
 
         Event e = {
             Event::OUTPUT,
@@ -324,6 +325,7 @@ void Control::BlankCell(evData id, int col, int row)
             ? L' '
             : L'.'
             ;
+        DIRTY();
 
         Event e = {
             Event::WHAT,
