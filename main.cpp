@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
     extern void Render(File, std::wstring);
 
     File f;
+    reopen_read_unicode(stdin);
     Tokenizer tok(stdin);
     auto pParser = ParseAlloc(malloc);
     do {

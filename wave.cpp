@@ -89,7 +89,7 @@ static void wav_write_samples(FILE* f, std::vector<float> const& samples)
 
 void wav_write_file(std::wstring const& filename, std::vector<float> const& samples, unsigned samples_per_second, unsigned numChannels)
 {
-    FILE* f = wfopen(filename.c_str(), L"wb");
+    FILE* f = open_write_binary(filename.c_str());
     if(!f) {
         throw std::invalid_argument(W2MB(std::wstring() + L"Failed to open " + filename + L" for writing").get());
     }
@@ -99,11 +99,11 @@ void wav_write_file(std::wstring const& filename, std::vector<float> const& samp
         wav_write_header(f, samples_per_second, samples.size() / numChannels, numChannels);
         wav_write_samples(f, samples);
     } catch(std::exception e) {
-        fclose(f);
+        close_file(f);
         throw std::runtime_error(std::string() + "Failed to write wave file: " + e.what());
     }
 
-    fclose(f);
+    close_file(f);
 }
 
 #ifdef TEST_WAVE

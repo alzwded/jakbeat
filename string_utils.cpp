@@ -77,9 +77,42 @@ std::unique_ptr<char> W2MB(std::wstring const& in)
     return std::move(mbs);
 }
 
-#ifndef _MSC_VER
-FILE* wfopen(const wchar_t* path, const wchar_t* mode)
+#ifdef _MSC_VER
+#include <fcntl.h>
+#include <io.h>
+
+FILE* open_read_unicode(const wchar_t* path)
 {
-    return fopen(W2MB(path).get(), W2MB(mode).get());
+    return _wfopen(path, L"rt, ccs=UTF-8");
+}
+FILE* reopen_read_unicode(FILE* f)
+{
+    int hr = _setmode( _fileno(f), _O_U8TEXT);
+    return f;
+}
+FILE* open_write_binary(const wchar_t* path)
+{
+    return _wfopen(path, L"wb");
+}
+FILE* open_write_unicode(const wchar_t* path)
+{
+    return _wfopen(path, L"wt, ccs=UTF-8");
+}
+#else
+FILE* open_read_unicode(const wchar_t* path)
+{
+    return fopen(W2MB(path).get(), "r");
+}
+FILE* reopen_read_unicode(FILE* f)
+{
+    return f;
+}
+FILE* open_write_binary(const wchar_t* path)
+{
+    return fopen(W2MB(path).get(), "wb");
+}
+FILE* open_write_unicode(const wchar_t* path)
+{
+    return fopen(W2MB(path).get(), "w");
 }
 #endif
