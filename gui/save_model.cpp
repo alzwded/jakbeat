@@ -95,8 +95,10 @@ void save_model(std::shared_ptr<Model> m, std::wstring path)
     }
 
     l(L"Writing WHO section, %ld entries\n", m->whos.size());
+    size_t longest_who_name = 0;
     fwprintf(f, L"[WHO]\n");
     for(auto&& who : m->whos) {
+        if(who.name.size() > longest_who_name) longest_who_name = who.name.size();
         l(L"writing %ls\n", who.name.c_str());
         fwprintf(f, L"%ls = (\n", who.name.c_str());
         std::wstring padding(4, L' ');
@@ -116,8 +118,21 @@ void save_model(std::shared_ptr<Model> m, std::wstring path)
     fwprintf(f, L"\n");
 
     l(L"Writing %ld WHAT sections\n", m->whats.size());
+    wchar_t format[48];
+    swprintf(format, sizeof(format)/sizeof(wchar_t), L"%%-%dls = \"", longest_who_name);
     for(auto&& what : m->whats) {
         fwprintf(f, L"[%ls]\n", what.name.c_str());
+        size_t idx = 0;
+        for(auto&& who : m->whos) {
+            fwprintf(f, format, who.name.c_str());
+            for(auto&& col : what.columns) {
+                auto pos = col.begin();
+                std::advance(pos, idx);
+                fwprintf(f, L"%lc", *pos);
+            }
+            fwprintf(f, L"\"\n");
+            ++idx;
+        }
         fwprintf(f, L"\n");
     }
 
