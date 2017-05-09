@@ -1,5 +1,5 @@
 [WHO]
-kick = (
+kîck = (
     path = "vendor/samples/kick.wav"
     volume = 50
 )
@@ -23,14 +23,14 @@ A2 = ( bpm = 480 )
 A3 = ( bpm = 480 )
 
 [A1]
-kick =  !...!!.!
+kîck =  !...!!.!
 snare = ../...!.
 crash = /....../
 
 [A2]
-kick =  !!!!....
+kîck =  !!!!....
 snare = ....!/!/
 
 [A3]
-kick =  ..!.!.!.
+kîck =  ..!.!.!.
 crash = !.......
