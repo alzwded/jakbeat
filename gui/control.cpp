@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef USE_REGEX_RENAME
 # include <regex>
+# include <sstream>
 #endif
 
 #define FIND_WHAT(id, then) \
