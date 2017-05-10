@@ -120,11 +120,11 @@ Vindow::Vindow(
           { "&Delete Columns",
               FL_Delete, (Fl_Callback*)EditDeleteColumns, this, FL_MENU_DIVIDER },
           { "Add WH&AT Section",
-              0, (Fl_Callback*)EditAddWhat },
+              0, (Fl_Callback*)EditAddWhat, this },
           { "Add WH&O Section",
-              0, (Fl_Callback*)EditAddWho },
+              0, (Fl_Callback*)EditAddWho, this },
           { "Delete &Section",
-              0, (Fl_Callback*)EditDeleteSection },
+              0, (Fl_Callback*)EditDeleteSection, this },
           { 0 },
         { "&Window",
             0, 0, 0, FL_SUBMENU },
@@ -422,6 +422,7 @@ void Vindow::OnEvent(Event* e)
                         SetLayout(Layout::OUTPUT);
                         SelectButton(L"OUTPUT");
                     }
+                    if(layout_ == Layout::OUTPUT) UpdateStyle();
                     break;
             }
             break;
@@ -454,6 +455,7 @@ void Vindow::OnEvent(Event* e)
                             SetLayout(Layout::WHAT, e->changed);
                         }
                     }
+                    if(layout_ == Layout::OUTPUT) UpdateStyle();
                     break;
             }
             break;

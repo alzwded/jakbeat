@@ -373,3 +373,61 @@ void Control::DeleteText(int mpos, int mlength, int pos, int length)
     };
     Fire(&e);
 }
+
+void Control::DeleteWhat(evData id)
+{
+    LOGGER(l);
+    auto found = std::find_if(model_->whats.begin(), model_->whats.end(), [&id](WhatEntry& what) -> bool {
+                return what.name == id;
+            });
+    if(found == model_->whats.end()) {
+        l(L"%ls not found in model\n", id.c_str());
+        return;
+    }
+    model_->whats.erase(found);
+    Event e = {
+        Event::WHAT,
+        Event::DELETED,
+        id,
+        L"",
+        source_
+    };
+    Fire(&e);
+}
+
+void Control::DeleteWho(evData id)
+{
+    LOGGER(l);
+    size_t nth = 0;
+    auto found = model_->whos.end();
+    for(auto it = model_->whos.begin(); it != model_->whos.end(); ++it, ++nth) {
+        if(it->name == id) {
+            found = it;
+            break;
+        }
+    }
+    if(found == model_->whos.end()) {
+        l(L"%ls not found in model\n", id.c_str());
+        return;
+    }
+    l(L"cleaning up row %ld\n", nth);
+    std::for_each(model_->whats.begin(), model_->whats.end(), [nth, &l](WhatEntry& e) {
+                l(L"cleaning up in %ls\n", e.name.c_str());
+                std::for_each(e.columns.begin(), e.columns.end(), [nth](column_t& col) {
+                            auto pos = col.begin();
+                            std::advance(pos, nth);
+                            col.erase(pos);
+                        });
+            });
+
+    l(L"erasing entry\n");
+    model_->whos.erase(found);
+    Event e = {
+        Event::WHO,
+        Event::DELETED,
+        id,
+        L"",
+        source_
+    };
+    Fire(&e);
+}

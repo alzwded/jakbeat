@@ -232,8 +232,19 @@ void Vindow::EditAddWhat(Fl_Widget*, void*)
 void Vindow::EditAddWho(Fl_Widget*, void*)
 {}
 
-void Vindow::EditDeleteSection(Fl_Widget*, void*)
-{}
+void Vindow::EditDeleteSection(Fl_Widget*, void* p)
+{
+    auto* me = (Vindow*)p;
+    Control ctrl(me->model_, me);
+    switch(me->layout_) {
+    case Vindow::Layout::WHAT:
+        ctrl.DeleteWhat(me->active_);
+        break;
+    case Vindow::Layout::WHO:
+        ctrl.DeleteWho(me->active_);
+        break;
+    }
+}
 
 void Vindow::WindowNew(Fl_Widget*, void* p)
 {
