@@ -56,6 +56,8 @@ std::wstring MB2W(const char* in)
 
 std::unique_ptr<char, std::default_delete<char[]>> W2MB(std::wstring const& in)
 {
+    std::unique_ptr<char, std::default_delete<char[]>> empty(new char[1]);
+    empty.get()[0] = '\0';
     const wchar_t* s = in.c_str();
     mbstate_t ps;
     memset(&ps, 0, sizeof(ps));
@@ -64,7 +66,7 @@ std::unique_ptr<char, std::default_delete<char[]>> W2MB(std::wstring const& in)
 #else
     int len = wcsrtombs(nullptr, &s, 0, &ps);
 #endif
-    if(len <= 0) return {};
+    if(len <= 0) return std::move(empty);
 
     std::unique_ptr<char, std::default_delete<char[]>> mbs(new char[len + 1]);
 #ifdef _MSC_VER
@@ -72,7 +74,7 @@ std::unique_ptr<char, std::default_delete<char[]>> W2MB(std::wstring const& in)
 #else
     size_t written = wcsrtombs(mbs.get(), &s, len + 1, &ps);
 #endif
-    if(written != len) return {};
+    if(written != len) return std::move(empty);
 
     return std::move(mbs);
 }
