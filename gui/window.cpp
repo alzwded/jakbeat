@@ -95,7 +95,7 @@ Vindow::Vindow(
           { 0 },
         { "&Edit", 0, 0, 0, FL_SUBMENU },
           { "&Undo",
-              FL_COMMAND + 'z', (Fl_Callback*)EditUndo, 0, FL_MENU_DIVIDER },
+              FL_COMMAND + 'z', (Fl_Callback*)EditUndo, 0, FL_MENU_DIVIDER|FL_MENU_INACTIVE },
           { "Cu&t",
               FL_COMMAND + 'x', (Fl_Callback*)EditCut },
           { "&Copy",
