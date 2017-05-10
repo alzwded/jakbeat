@@ -32,6 +32,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cassert>
 #include <cstdio>
 
+#ifndef USE_REGEX_RENAME
+# ifdef __GNUC__
+#  define USE_REGEX_RENAME
+# endif
+#endif
+
+#ifdef USE_REGEX_RENAME
+# include <regex>
+#endif
+
 #define FIND_WHAT(id, then) \
     auto found = FindWhat(id); \
     if(found == model_->whats.end()) then;
@@ -153,6 +163,26 @@ void Control::SetWhatsName(Control::evData id, std::wstring name)
         source_
     };
     Fire(&e);
+#ifdef USE_REGEX_RENAME
+    std::wstringstream pattern;
+    pattern << L"\\b" << id << L"\\b";
+    std::wregex r(pattern.str(), std::wregex::ECMAScript);
+    std::wstringstream buf;
+    std::regex_replace(std::ostreambuf_iterator<wchar_t>(buf),
+            model_->output.begin(), model_->output.end(), r, name);
+    auto newOutput = buf.str();
+    if(newOutput != model_->output) {
+        model_->output = newOutput;
+        Event e = {
+            Event::OUTPUT,
+            Event::CHANGED,
+            L"OUTPUT",
+            L"",
+            source_
+        };
+        Fire(&e);
+    }
+#endif
 }
 
 void Control::SetWhatsBpm(Control::evData id, std::wstring bpm)

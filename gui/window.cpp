@@ -476,7 +476,8 @@ void Vindow::OnEvent(Event* e)
                         && layout_ == lyt)
                 {
                     if(e->sourceView != static_cast<View*>(this)
-                            || e->changed == L" schema")
+                            || e->changed == L" schema"
+                            || e->source == Event::OUTPUT)
                     {
                         SetLayout(lyt, e->targetId);
                     } else {
