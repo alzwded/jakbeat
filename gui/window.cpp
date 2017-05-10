@@ -403,6 +403,7 @@ void Vindow::OnEvent(Event* e)
         case Event::RELOADED:
             CreateWhoList();
             CreateWhatList();
+            prefixes_.reset();
             break;
         case Event::DELETED:
             switch(e->source)
@@ -415,6 +416,7 @@ void Vindow::OnEvent(Event* e)
                     }
                     break;
                 case Event::WHAT:
+                    prefixes_.reset();
                     CreateWhatList();
                     if(active_.compare(e->targetId) == 0) {
                         SetLayout(Layout::OUTPUT);
@@ -439,6 +441,7 @@ void Vindow::OnEvent(Event* e)
                     }
                     break;
                 case Event::WHAT:
+                    prefixes_.reset();
                     CreateWhatList();
                     if(active_.compare(e->targetId) == 0
                             && layout_ == Layout::WHAT)
@@ -460,7 +463,9 @@ void Vindow::OnEvent(Event* e)
                 switch(e->source)
                 {
                 case Event::WHO: lyt = Layout::WHO; break;
-                case Event::WHAT: lyt = Layout::WHAT; break;
+                case Event::WHAT: lyt = Layout::WHAT;
+                                  prefixes_.reset();
+                                  break;
                 case Event::OUTPUT: lyt = Layout::OUTPUT; break;
                 }
 
@@ -479,6 +484,7 @@ void Vindow::OnEvent(Event* e)
             break;
         case Event::TEXT_INSERTED:
             {
+                UpdateStyle();
                 if(e->sourceView == this) break;
                 if(e->source != Event::OUTPUT) break;
                 std::wstringstream posSS;
@@ -493,6 +499,7 @@ void Vindow::OnEvent(Event* e)
             break;
         case Event::TEXT_DELETED:
             {
+                UpdateStyle();
                 if(e->sourceView == this) break;
                 if(e->source != Event::OUTPUT) break;
                 std::wstringstream posSS, numSS;
@@ -562,8 +569,10 @@ void Vindow::SetLayout(Layout lyt, std::wstring const& name)
                     mainGroup_->w() - 10,
                     mainGroup_->h() - label->h() - 10);
             blockBufferChanged_ = true;
-            buffer_->text(W2MB(model_->output).get());
+            auto mbtext = W2MB(model_->output);
+            buffer_->text(mbtext.get());
             editor->buffer(buffer_.get());
+            SetupStyle(editor, mbtext.get());
             blockBufferChanged_ = false;
 #else
             auto* editor = new MatrixEditor(
@@ -735,4 +744,111 @@ void Vindow::SetTitle()
     auto full = ss.str();
     l(L"setting title to %ls\n", full.c_str());
     copy_label(W2MB(full).get());
+}
+
+void Vindow::UpdateStyle(const char* text)
+{
+    LOGGER(l);
+
+    auto* mbtext = text;
+    decltype(W2MB(L"")) fromModel;
+    if(!mbtext) {
+        l(L"getting text from model\n");
+        fromModel = W2MB(model_->output);
+        mbtext = fromModel.get();
+    }
+
+    size_t len = strlen(mbtext);
+    char* styleText = (char*)malloc(len + 1);
+    memset(styleText, 'A', len * sizeof(char));
+    styleText[len] = '\0';
+    for(size_t i = 0; i < len;) {
+        auto m = GetPrefixes().has(&mbtext[i], &mbtext[len]);
+        if(m) {
+            for(size_t j = 0; j < m.size(); ++j) {
+                styleText[i + j] = 'B';
+            }
+            i += m.size();
+        } else {
+            if(isspace(mbtext[i])) {
+                ++i;
+            } else {
+                while(i < len && !isspace(mbtext[i])) ++i;
+            }
+        }
+    }
+    l(L"updateing style_\n");
+    style_->text(styleText);
+    free(styleText);
+}
+
+void Vindow::SetupStyle(Fl_Text_Editor* editor, const char* mbtext)
+{
+    UpdateStyle(mbtext);
+
+    auto defaultFont = editor->textfont();
+    auto defaultSize = editor->textsize();
+    auto defaultColor = editor->textcolor();
+    auto defaultBackground = editor->color();
+
+    static Fl_Text_Display::Style_Table_Entry table[] = {
+        { fl_contrast(FL_RED, defaultBackground), defaultFont, defaultSize },
+        { defaultColor, defaultFont, defaultSize },
+    };
+
+    editor->highlight_data(
+            style_.get(),
+            table,
+            sizeof(table)/sizeof(Fl_Text_Display::Style_Table_Entry),
+            '\0',
+            nullptr, nullptr);
+}
+
+static void Push(std::vector<Vindow::Prefixes::Node*>& nodes, const char* s)
+{
+    typedef Vindow::Prefixes::Node Node;
+    auto found = std::find_if(nodes.begin(), nodes.end(), [s](Node* n) -> bool {
+                return n->c == *s;
+            });
+    if(found == nodes.end()) {
+        found = nodes.insert(nodes.end(), new Node(*s));
+    }
+    if(!*s) return;
+    else return Push((*found)->nodes, s + 1);
+}
+
+Vindow::Prefixes& Vindow::GetPrefixes()
+{
+    if(prefixes_) return *prefixes_.get();
+
+    prefixes_.reset(new Prefixes());
+    for(auto&& what : model_->whats) {
+        auto text = W2MB(what.name);
+        Push(prefixes_->nodes, text.get());
+    }
+    return *prefixes_.get();
+}
+
+static Vindow::Prefixes::Match Find(int len, std::vector<Vindow::Prefixes::Node*> const& nodes, const char* first, const char* last)
+{
+    typedef Vindow::Prefixes::Node Node;
+    if(first == last || isspace(*first)) {
+        auto foundEnd = std::find_if(nodes.begin(), nodes.end(), [](Node* n) -> bool {
+                    return n->c == '\0';
+                });
+        if(foundEnd != nodes.end()) return { (size_t)len };
+        else return { 0 };
+    }
+
+    auto found = std::find_if(nodes.begin(), nodes.end(), [first](Node* n) -> bool {
+                return n->c == *first;
+            });
+    if(found == nodes.end()) return { 0 };
+    else return Find(len + 1, (*found)->nodes, first + 1, last);
+}
+
+Vindow::Prefixes::Match Vindow::Prefixes::has(const char* first, const char* last) const
+{
+    if(first == last) return { 0 };
+    return Find(0, nodes, first, last);
 }

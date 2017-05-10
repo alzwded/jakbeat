@@ -29,12 +29,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "view.h"
 #include "model.h"
 #include "matrix_editor.h"
+
 #include <FL/Fl.H>
 #include <Fl/Fl_Double_Window.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Tile.H>
 #include <FL/Fl_Text_Buffer.H>
+
 #include <cwchar>
+#include <algorithm>
+#include <vector>
+
+class Fl_Text_Editor;
 
 // if you're wondering why it's called Vindow,
 // it's because a particular FL header has a typedef ... Window
@@ -117,12 +123,42 @@ private:
 
     void SelectButton(std::wstring const& reactivate = std::wstring(L""), Layout lyt = Layout::OUTPUT);
 
+    void SetupStyle(Fl_Text_Editor*, const char* mbtext);
+    void UpdateStyle(const char* mbtext = nullptr);
+
+public:
+    struct Prefixes {
+        struct Node {
+            char c;
+            std::vector<Node*> nodes;
+
+            Node(char c_) : c(c_), nodes() {}
+            ~Node() { std::for_each(nodes.begin(), nodes.end(), std::default_delete<Node>()); }
+        };
+        struct Match {
+            size_t length;
+            size_t size() const { return length; }
+            explicit operator bool() const { return length != 0; }
+        };
+
+        Prefixes() = default;
+        ~Prefixes() { std::for_each(nodes.begin(), nodes.end(), std::default_delete<Node>()); }
+        Match has(const char* first, const char* last) const;
+
+        std::vector<Node*> nodes;
+    };
+
+private:
+    Prefixes& GetPrefixes();
+
 private:
     std::shared_ptr<Model> model_;
     std::vector<Schema> const& drumSchemas_;
     std::vector<Schema> const& whatSchemas_;
     Layout layout_;
     std::wstring active_;
+    bool blockBufferChanged_;
+    std::unique_ptr<Prefixes> prefixes_;
 
 private:
     struct WR {
@@ -132,12 +168,11 @@ private:
         Fl_Text_Buffer& operator*() { return *p; }
         Fl_Text_Buffer* get() { return p; }
         Fl_Text_Buffer* p;
-    } buffer_;
+    } buffer_, style_;
     Fl_Menu_Bar* menu_;
     Fl_Group* mainGroup_, * whoGroup_, * whatGroup_;
     Fl_Tile* container_;
     MatrixEditor* editor_;
-    bool blockBufferChanged_;
 };
 
 #endif
