@@ -414,6 +414,7 @@ void Vindow::OnEvent(Event* e)
                         SetLayout(Layout::OUTPUT);
                         SelectButton(L"OUTPUT");
                     }
+                    if(layout_ == Layout::WHAT) editor_->Update(model_->whos.size());
                     break;
                 case Event::WHAT:
                     prefixes_.reset();
