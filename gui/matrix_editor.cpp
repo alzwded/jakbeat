@@ -360,7 +360,7 @@ void MatrixEditor::Update(int nrows)
     nrows_ = nrows;
     
     mx_ = std::min<int>(mx_, columns_.size());
-    my_ = std::min<int>(my_, nrows);
+    my_ = std::min<int>(my_, nrows - 1);
 
     auto sb1full = std::max<size_t>(1, columns_.size());
 #if 0
