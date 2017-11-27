@@ -43,7 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 void help(std::wstring argv0)
 {
-    wprintf(L"usage: %0 [-v|-w fileName|-W fileNamePattern]\n", argv0.c_str());
+    wprintf(L"usage: %ls [-v|-w fileName|-W fileNamePattern]\n", argv0.c_str());
     exit(2);
 }
 
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 #else
         if(strcmp(argv[i], "-v") == 0) {
 #endif
-            wprintf(L"jakbeat v%ls\nCopyright Vlad Mesco 2016\n\n", VERSION);
+            wprintf(L"jakbeat v%ls\nCopyright Vlad Mesco 2015-2017\n\n", VERSION);
             exit(0);
 #ifdef _MSC_VER
         } else if(wcscmp(argv[i], L"-w") == 0) {
