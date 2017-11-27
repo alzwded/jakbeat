@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <parser_types.h>
 #include <map>
 #include <SDL.h>
-#include <cassert>
 #include <errorassert.h>
 #include <cmath>
 #include <algorithm>
@@ -244,7 +243,7 @@ void RenderNew(File f, std::wstring filename, bool split)
 
 void RenderOld(File f, std::wstring filename, bool split)
 {
-    assert(split == false);
+    ASSERT(split == false, L"Split mode not supported in old renderer");
     auto&& data = LoadData(f);
     std::vector<float> outWAV;
 
