@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <parser_types.h>
 #include <map>
 #include <SDL.h>
+#include <cassert>
 #include <errorassert.h>
 #include <cmath>
 #include <algorithm>
@@ -55,8 +56,9 @@ std::map<std::wstring, std::vector<float>> LoadData(File& f)
         };
         desired.callback = nullptr;
         desired.userdata = nullptr;
+        auto wpath = W2MB(path);
         auto hr = SDL_LoadWAV(
-                W2MB(path).get(),
+                wpath.get(),
                 &desired,
                 &sdlWavData,
                 &len);
@@ -85,7 +87,7 @@ std::map<std::wstring, std::vector<float>> LoadData(File& f)
 
 #define RenderNew Render
 
-void RenderNew(File f, std::wstring filename)
+void RenderNew(File f, std::wstring filename, bool split)
 {
     std::map<std::wstring, std::vector<float>> data = LoadData(f);
     std::map<std::wstring, std::pair<std::vector<float>, std::vector<float>>> unmixed;
@@ -178,43 +180,71 @@ void RenderNew(File f, std::wstring filename)
         }
     }
 
-    std::vector<float> left;
-    std::vector<float> right;
-    size_t maxLen = 0;
-    maxLen = std::accumulate(unmixed.begin(), unmixed.end(), maxLen, [](size_t a, decltype(unmixed)::value_type const& b) -> size_t {
-                return std::max(a, std::max(b.second.first.size(), b.second.second.size()));
-            });
-    left.resize(maxLen);
-    right.resize(maxLen);
-
-    for(auto&& track: unmixed) {
-        for(size_t i = 0; i < track.second.first.size(); ++i) {
-            left[i] += track.second.first[i];
-        }
-        for(size_t i = 0; i < track.second.second.size(); ++i) {
-            right[i] += track.second.second[i];
-        }
-    }
-
-    std::for_each(left.begin(), left.end(), [](float& f) { f = tanhf(f); });
-    std::for_each(right.begin(), right.end(), [](float& f) { f = tanhf(f); });
-
-    while(left.size() < right.size()) left.emplace_back();
-    while(right.size() < left.size()) right.emplace_back();
-
-    std::vector<float> outWAV;
-
-    for(size_t i = 0; i < left.size(); ++i) {
-        outWAV.push_back(left[i]);
-        outWAV.push_back(right[i]);
-    }
-
     extern void wav_write_file(std::wstring const&, std::vector<float> const&, unsigned, unsigned);
-    wav_write_file(filename, outWAV, 44100, 2);
+
+    if(split)
+    {
+        size_t maxLen = 0;
+        maxLen = std::accumulate(unmixed.begin(), unmixed.end(), maxLen, [](size_t a, decltype(unmixed)::value_type const& b) -> size_t {
+                    return std::max(a, std::max(b.second.first.size(), b.second.second.size()));
+                });
+
+        for(auto&& channel : unmixed) {
+            std::wstringstream fnameBuilder;
+            fnameBuilder << filename << L"_" << channel.first << L".wav";
+
+            std::vector<float> outWAV(maxLen * 2, 0.f);
+
+            for(size_t i = 0; i < maxLen; ++i) {
+                if(i < channel.second.first.size())
+                    outWAV[2 * i + 0] = tanhf(channel.second.first[i]);
+                if(i < channel.second.second.size())
+                    outWAV[2 * i + 1] = tanhf(channel.second.second[i]);
+            }
+
+            wav_write_file(fnameBuilder.str(), outWAV, 44100, 2);
+        }
+    }
+    else
+    {
+        std::vector<float> left;
+        std::vector<float> right;
+        size_t maxLen = 0;
+        maxLen = std::accumulate(unmixed.begin(), unmixed.end(), maxLen, [](size_t a, decltype(unmixed)::value_type const& b) -> size_t {
+                    return std::max(a, std::max(b.second.first.size(), b.second.second.size()));
+                });
+        left.resize(maxLen);
+        right.resize(maxLen);
+
+        for(auto&& track: unmixed) {
+            for(size_t i = 0; i < track.second.first.size(); ++i) {
+                left[i] += track.second.first[i];
+            }
+            for(size_t i = 0; i < track.second.second.size(); ++i) {
+                right[i] += track.second.second[i];
+            }
+        }
+
+        std::for_each(left.begin(), left.end(), [](float& f) { f = tanhf(f); });
+        std::for_each(right.begin(), right.end(), [](float& f) { f = tanhf(f); });
+
+        while(left.size() < right.size()) left.emplace_back();
+        while(right.size() < left.size()) right.emplace_back();
+
+        std::vector<float> outWAV;
+
+        for(size_t i = 0; i < left.size(); ++i) {
+            outWAV.push_back(left[i]);
+            outWAV.push_back(right[i]);
+        }
+
+        wav_write_file(filename, outWAV, 44100, 2);
+    }
 }
 
-void RenderOld(File f, std::wstring filename)
+void RenderOld(File f, std::wstring filename, bool split)
 {
+    assert(split == false);
     auto&& data = LoadData(f);
     std::vector<float> outWAV;
 

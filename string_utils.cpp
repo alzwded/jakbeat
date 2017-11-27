@@ -39,11 +39,18 @@ std::wstring MB2W(const char* in, size_t length)
     if(len <= 0) return {};
 
     std::unique_ptr<wchar_t, std::default_delete<wchar_t[]>> ws(new wchar_t[len + 1]);
+#ifdef JAKDEBUG
+    memset(ws.get(), (wchar_t)0xFFFF, len + 1);
+#endif
 #ifdef _MSC_VER
     int written = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, in, length, ws.get(), len + 1);
 #else
-    size_t written = mbsrtowcs(ws.get(), &s, len + 1, &ps);
+    size_t written = mbsrtowcs(ws.get(), &s, len, &ps);
 #endif
+    // at least on windows it's guaranteed to NOT write out the null terminator
+    // in normal stdlib, it's not clear... so force the null in there; at most, there will
+    // be an invalid trailing
+    ws.get()[len] = L'\0';
     if(written != len) return {};
 
     return std::wstring(ws.get());
@@ -69,12 +76,18 @@ std::unique_ptr<char, std::default_delete<char[]>> W2MB(std::wstring const& in)
     if(len <= 0) return std::move(empty);
 
     std::unique_ptr<char, std::default_delete<char[]>> mbs(new char[len + 1]);
+#ifdef JAKDEBUG
+    memset(mbs.get(), (char)1, len + 1);
+#endif
 #ifdef _MSC_VER
-    int written = WideCharToMultiByte(CP_UTF8, 0, s, in.size(), mbs.get(), len + 1, nullptr, nullptr);
+    int written = WideCharToMultiByte(CP_UTF8, 0, s, -1, mbs.get(), len + 1, nullptr, nullptr);
+    // on windows, the null terminator *is* counted, hence the +1
+    if(written != len + 1) return std::move(empty);
 #else
     size_t written = wcsrtombs(mbs.get(), &s, len + 1, &ps);
-#endif
+    // in normal stdlib, the null terminator is not counted
     if(written != len) return std::move(empty);
+#endif
 
     return std::move(mbs);
 }
