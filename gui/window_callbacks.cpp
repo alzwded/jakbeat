@@ -107,8 +107,8 @@ void Vindow::FileExit(Fl_Widget*, void*)
     extern bool is_any_model_dirty();
     if(is_any_model_dirty())
     {
-        int which = fl_choice("There are unsaved documents.\nAre you sure you want to exit?\n(Hint: use Vindow/Close to close just one window)", "&No", nullptr, "&Yes");
-        if(which != 2) return;
+        int which = fl_choice("There are unsaved documents.\nAre you sure you want to exit?\n(Hint: use Vindow/Close to close just one window)", "&Close", "&No", nullptr);
+        if(which != 0) return;
     }
     exit(0);
 }
@@ -260,8 +260,8 @@ void Vindow::WindowClose(Fl_Widget*, void* p)
     if(me->model_->dirty
             && me->model_->views.size() == 1)
     {
-        int which = fl_choice("There are unsaved changes in the document.\nClosing this window will discard all changes.\nDo you want to close this document?", "&No", nullptr, "&Yes");
-        if(which != 2) return;
+        int which = fl_choice("There are unsaved changes in the document.\nClosing this window will discard all changes.\nDo you want to close this document?", "&Close", "&No", nullptr);
+        if(which != 0) return;
     }
     return destroy_window(me);
 }
@@ -272,8 +272,8 @@ void Vindow::WindowCloseAll(Fl_Widget*, void* p)
     Vindow* me = (Vindow*)p;
     if(me->model_->dirty)
     {
-        int which = fl_choice("There are unsaved changes in the document.\nDo you want to close this document, discarding changes?", "&No", nullptr, "&Yes");
-        if(which != 2) return;
+        int which = fl_choice("There are unsaved changes in the document.\nDo you want to close this document, discarding changes?", "&Close", "&No", nullptr);
+        if(which != 0) return;
     }
     std::vector<View*> toDestroy;
     std::copy_if(me->model_->views.begin(), me->model_->views.end(), std::back_inserter(toDestroy), [me](View* view) -> bool {
