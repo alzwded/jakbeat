@@ -31,5 +31,10 @@ parser.y: ../parser.y
 ../vendor/lemon/lemon: ../vendor/lemon/lemon.c ../vendor/lemon/lempar.c
 	$(CC) $(CFLAGS) ../vendor/lemon/lemon ../vendor/lemon/lemon.c
 
+tags:
+	ctags -f tags --tag-relative=yes --fields=+a+f+i+k+l+m+n+s+S+z+t --extra=+f+q --c-kinds=+c+d+e+f+g+l+m+n+p+s+t+u+v+x --c++-kinds=+c+d+e+f+g+l+m+n+p+s+t+u+v+x *
+
 clean:
 	rm -f parser.cpp jakbeat-gui parser.y parser.h parser.out *.o tokenizer.cpp ../vendor/lemon/lemon
+
+.PHONY: tags
