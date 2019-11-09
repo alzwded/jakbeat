@@ -41,6 +41,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string_utils.h>
 #include <version.h>
 
+void help(std::wstring argv0)
+{
+    wprintf(L"usage: %ls [-v|-w fileName|-W fileNamePattern]\n", argv0.c_str());
+    exit(2);
+}
+
 #ifdef _MSC_VER
 int wmain(int argc, wchar_t* argv[])
 #else
@@ -51,13 +57,14 @@ int main(int argc, char* argv[])
     setlocale(LC_CTYPE, "C.UTF-8");
 #endif
     std::wstring fileName = L"test.wav";
+    bool split = false;
     for(int i = 1; i < argc; ++i) {
 #ifdef _MSC_VER
         if(wcscmp(argv[i], L"-v") == 0) {
 #else
         if(strcmp(argv[i], "-v") == 0) {
 #endif
-            wprintf(L"jakbeat v%ls\nCopyright Vlad Mesco 2016\n\n", VERSION);
+            wprintf(L"jakbeat v%ls\nCopyright Vlad Mesco 2015-2017\n\n", VERSION);
             exit(0);
 #ifdef _MSC_VER
         } else if(wcscmp(argv[i], L"-w") == 0) {
@@ -71,13 +78,34 @@ int main(int argc, char* argv[])
 #else
             fileName = MB2W(argv[i]);
 #endif
+#ifdef _MSC_VER
+        } else if(wcscmp(argv[i], L"-W") == 0) {
+#else
+        } else if(strcmp(argv[i], "-W") == 0) {
+#endif
+            ++i;
+            ASSERT(i < argc);
+            split = true;
+#ifdef _MSC_VER
+            fileName.assign(argv[i]);
+#else
+            fileName = MB2W(argv[i]);
+#endif
+        } else {
+            std::wstring argv0 =
+#ifdef _MSC_VER
+                argv[0];
+#else
+                MB2W(argv[0]);
+#endif
+            help(argv0);
         }
     }
 
     extern void* ParseAlloc(void* (*)(size_t));
     extern void Parse(void*, int, wchar_t*, File*);
     extern void ParseFree(void*, void (*)(void*));
-    extern void Render(File, std::wstring);
+    extern void Render(File, std::wstring, bool);
 
     File f;
     reopen_read_unicode(stdin);
@@ -92,7 +120,7 @@ int main(int argc, char* argv[])
     } while(1);
     ParseFree(pParser, free);
 
-    Render(f, fileName);
+    Render(f, fileName, split);
 
     return 0;
 }
