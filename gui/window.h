@@ -38,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cwchar>
 #include <algorithm>
+#include <functional>
 #include <vector>
 
 class Fl_Text_Editor;
